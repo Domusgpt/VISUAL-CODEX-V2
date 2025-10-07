@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Canvas Visualizer System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: white;
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+            background: radial-gradient(ellipse at center, #1a0033 0%, #000000 70%);
+        }
+        
+        .main-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .canvas-strip {
+            flex: 1;
+            width: 100%;
+            position: relative;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .canvas-strip:last-child {
+            border-bottom: none;
+        }
+        
+        .canvas-strip:hover {
+            box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.2);
+        }
+        
+        .canvas-strip.active {
+            box-shadow: inset 0 0 100px rgba(255, 0, 255, 0.4);
+            border-color: rgba(255, 0, 255, 0.8);
+        }
+        
+        .visualizer-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .group-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            color: #00ffff;
+            font-family: 'JetBrains Mono', monospace;
+            z-index: 1000;
+            min-width: 200px;
+        }
+        
+        .group-title {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #ff00ff;
+            text-transform: uppercase;
+        }
+        
+        .group-button {
+            display: block;
+            width: 100%;
+            background: linear-gradient(45deg, rgba(255, 0, 128, 0.2), rgba(0, 255, 255, 0.2));
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        
+        .group-button:hover {
+            background: linear-gradient(45deg, rgba(255, 0, 128, 0.4), rgba(0, 255, 255, 0.4));
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .group-button.active {
+            background: linear-gradient(45deg, rgba(255, 0, 255, 0.6), rgba(0, 255, 255, 0.6));
+            border-color: #ff00ff;
+            color: #ffffff;
+        }
+        
+        .info-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            border: 2px solid #ff00ff;
+            border-radius: 15px;
+            padding: 20px;
+            color: #ff00ff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            z-index: 1000;
+            max-width: 280px;
+        }
+        
+        .info-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #00ffff;
+            text-transform: uppercase;
+        }
+        
+        .info-item {
+            margin-bottom: 8px;
+            font-size: 0.7rem;
+            line-height: 1.4;
+        }
+        
+        .info-key {
+            color: #00ffff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-panel">
+        <div class="info-title">Multi-Canvas System</div>
+        <div class="info-item"><span class="info-key">Layout:</span> 5 Horizontal Canvas Strips</div>
+        <div class="info-item"><span class="info-key">Interaction:</span> Click Strip to Set Master Style</div>
+        <div class="info-item"><span class="info-key">Sync:</span> All Strips Match Active Style</div>
+        <div class="info-item"><span class="info-key">Random:</span> Grid Density, Color, Rotation</div>
+        <div class="info-item"><span class="info-key">Groups:</span> 4D Geometries, Holographic, Matrix, Cosmic</div>
+        <div class="info-item"><span class="info-key">WebGL:</span> 5 Independent Contexts</div>
+    </div>
+
+    <div class="group-selector">
+        <div class="group-title">Visualizer Groups</div>
+        <button class="group-button active" data-group="4d-geometries">4D Geometries</button>
+        <button class="group-button" data-group="holographic">Holographic Effects</button>
+        <button class="group-button" data-group="matrix">Matrix Systems</button>
+        <button class="group-button" data-group="cosmic">Cosmic Patterns</button>
+        <button class="group-button" data-group="experimental">Experimental</button>
+    </div>
+
+    <div class="main-container">
+        <div class="canvas-strip active" data-strip="0">
+            <canvas class="visualizer-canvas" id="canvas0"></canvas>
+        </div>
+        <div class="canvas-strip" data-strip="1">
+            <canvas class="visualizer-canvas" id="canvas1"></canvas>
+        </div>
+        <div class="canvas-strip" data-strip="2">
+            <canvas class="visualizer-canvas" id="canvas2"></canvas>
+        </div>
+        <div class="canvas-strip" data-strip="3">
+            <canvas class="visualizer-canvas" id="canvas3"></canvas>
+        </div>
+        <div class="canvas-strip" data-strip="4">
+            <canvas class="visualizer-canvas" id="canvas4"></canvas>
+        </div>
+    </div>
+
+    <script>
+        class MultiCanvasVisualizerSystem {
+            constructor() {
+                this.canvases = [];
+                this.contexts = [];
+                this.visualizers = [];
+                this.activeStrip = 0;
+                this.currentGroup = '4d-geometries';
+                
+                // Visualizer groups
+                this.visualizerGroups = {
+                    '4d-geometries': [
+                        { name: 'Hypercube', type: 'hypercube' },
+                        { name: 'Tesseract Lattice', type: 'tesseract' },
+                        { name: '4D Torus', type: 'torus4d' },
+                        { name: 'Polytopal Grid', type: 'polytopal' },
+                        { name: '5-Cube Projection', type: '5cube' }
+                    ],
+                    'holographic': [
+                        { name: 'Hologram Waves', type: 'holowaves' },
+                        { name: 'RGB Shimmer', type: 'rgbshimmer' },
+                        { name: 'Prismatic Flow', type: 'prismatic' },
+                        { name: 'Aurora Field', type: 'aurora' },
+                        { name: 'Spectral Burst', type: 'spectral' }
+                    ],
+                    'matrix': [
+                        { name: 'Digital Rain', type: 'rain' },
+                        { name: 'Code Matrix', type: 'codematrix' },
+                        { name: 'Data Stream', type: 'datastream' },
+                        { name: 'Cyber Grid', type: 'cybergrid' },
+                        { name: 'Binary Flow', type: 'binary' }
+                    ],
+                    'cosmic': [
+                        { name: 'Nebula Field', type: 'nebula' },
+                        { name: 'Star Formation', type: 'starform' },
+                        { name: 'Galaxy Spiral', type: 'galaxy' },
+                        { name: 'Cosmic Web', type: 'cosmicweb' },
+                        { name: 'Dark Matter', type: 'darkmatter' }
+                    ],
+                    'experimental': [
+                        { name: 'Quantum Foam', type: 'quantum' },
+                        { name: 'Dimensional Rift', type: 'rift' },
+                        { name: 'Reality Mesh', type: 'realitymesh' },
+                        { name: 'Chaos Theory', type: 'chaos' },
+                        { name: 'Fractal Dimension', type: 'fractal' }
+                    ]
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupCanvases();
+                this.setupEventListeners();
+                this.loadVisualizerGroup(this.currentGroup);
+                console.log('🎯 Multi-Canvas Visualizer System initialized');
+            }
+            
+            setupCanvases() {
+                for (let i = 0; i < 5; i++) {
+                    const canvas = document.getElementById(`canvas${i}`);
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Set canvas size
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight / 5;
+                    
+                    this.canvases.push(canvas);
+                    this.contexts.push(ctx);
+                    this.visualizers.push(null);
+                }
+            }
+            
+            setupEventListeners() {
+                // Canvas strip click handlers
+                document.querySelectorAll('.canvas-strip').forEach((strip, index) => {
+                    strip.addEventListener('click', () => {
+                        this.setActiveStrip(index);
+                    });
+                });
+                
+                // Group button handlers
+                document.querySelectorAll('.group-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const group = button.dataset.group;
+                        this.switchGroup(group);
+                    });
+                });
+                
+                // Window resize
+                window.addEventListener('resize', () => {
+                    this.resizeCanvases();
+                });
+            }
+            
+            setActiveStrip(index) {
+                this.activeStrip = index;
+                
+                // Update UI
+                document.querySelectorAll('.canvas-strip').forEach((strip, i) => {
+                    strip.classList.toggle('active', i === index);
+                });
+                
+                // Sync all strips to match active strip's style
+                this.syncAllToActive();
+                
+                console.log(`🎯 Active strip set to ${index}`);
+            }
+            
+            syncAllToActive() {
+                if (!this.visualizers[this.activeStrip]) return;
+                
+                const masterStyle = this.visualizers[this.activeStrip].getStyle();
+                
+                // Apply master style to all other strips with randomization
+                for (let i = 0; i < 5; i++) {
+                    if (i !== this.activeStrip && this.visualizers[i]) {
+                        const randomizedStyle = this.randomizeStyle(masterStyle);
+                        this.visualizers[i].applyStyle(randomizedStyle);
+                    }
+                }
+            }
+            
+            randomizeStyle(baseStyle) {
+                return {
+                    ...baseStyle,
+                    gridDensity: 5 + Math.random() * 20,
+                    colorShift: Math.random() * 360,
+                    rotationSpeed: 0.1 + Math.random() * 2.0,
+                    intensity: 0.3 + Math.random() * 0.7,
+                    morphFactor: Math.random() * 1.5,
+                    glitchLevel: Math.random() * 0.8
+                };
+            }
+            
+            switchGroup(groupName) {
+                this.currentGroup = groupName;
+                
+                // Update UI
+                document.querySelectorAll('.group-button').forEach(button => {
+                    button.classList.toggle('active', button.dataset.group === groupName);
+                });
+                
+                this.loadVisualizerGroup(groupName);
+                console.log(`🔄 Switched to group: ${groupName}`);
+            }
+            
+            loadVisualizerGroup(groupName) {
+                const group = this.visualizerGroups[groupName];
+                if (!group) return;
+                
+                // Load each visualizer type into the 5 strips
+                for (let i = 0; i < 5; i++) {
+                    const visualizerConfig = group[i % group.length];
+                    this.loadVisualizer(i, visualizerConfig);
+                }
+                
+                // Auto-sync after loading
+                setTimeout(() => {
+                    this.syncAllToActive();
+                }, 100);
+            }
+            
+            loadVisualizer(stripIndex, config) {
+                // Stop existing visualizer
+                if (this.visualizers[stripIndex]) {
+                    this.visualizers[stripIndex].stop();
+                }
+                
+                // Create new visualizer based on type
+                const canvas = this.canvases[stripIndex];
+                const ctx = this.contexts[stripIndex];
+                
+                this.visualizers[stripIndex] = new Visualizer(canvas, ctx, config);
+                this.visualizers[stripIndex].start();
+            }
+            
+            resizeCanvases() {
+                for (let i = 0; i < 5; i++) {
+                    this.canvases[i].width = window.innerWidth;
+                    this.canvases[i].height = window.innerHeight / 5;
+                }
+            }
+        }
+        
+        // Generic Visualizer Class
+        class Visualizer {
+            constructor(canvas, ctx, config) {
+                this.canvas = canvas;
+                this.ctx = ctx;
+                this.config = config;
+                this.animationId = null;
+                this.time = 0;
+                
+                // Default style parameters
+                this.style = {
+                    gridDensity: 12,
+                    colorShift: 0,
+                    rotationSpeed: 0.5,
+                    intensity: 0.6,
+                    morphFactor: 0.8,
+                    glitchLevel: 0.3
+                };
+                
+                this.particles = [];
+                this.initParticles();
+            }
+            
+            initParticles() {
+                const count = Math.floor(this.style.gridDensity * 10);
+                this.particles = [];
+                
+                for (let i = 0; i < count; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        size: 1 + Math.random() * 3,
+                        hue: Math.random() * 360,
+                        life: Math.random()
+                    });
+                }
+            }
+            
+            start() {
+                this.animate();
+            }
+            
+            stop() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+            }
+            
+            animate() {
+                this.time += 0.016 * this.style.rotationSpeed;
+                this.render();
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+            
+            render() {
+                const { width, height } = this.canvas;
+                const ctx = this.ctx;
+                
+                // Clear with fade
+                ctx.fillStyle = `rgba(0, 0, 0, ${0.1 + this.style.intensity * 0.1})`;
+                ctx.fillRect(0, 0, width, height);
+                
+                // Render based on visualizer type
+                switch (this.config.type) {
+                    case 'hypercube':
+                        this.renderHypercube(ctx, width, height);
+                        break;
+                    case 'tesseract':
+                        this.renderTesseract(ctx, width, height);
+                        break;
+                    case 'holowaves':
+                        this.renderHolographicWaves(ctx, width, height);
+                        break;
+                    case 'rain':
+                        this.renderDigitalRain(ctx, width, height);
+                        break;
+                    case 'nebula':
+                        this.renderNebula(ctx, width, height);
+                        break;
+                    default:
+                        this.renderDefault(ctx, width, height);
+                }
+                
+                // Update particles
+                this.updateParticles();
+            }
+            
+            renderHypercube(ctx, width, height) {
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const size = Math.min(width, height) * 0.3;
+                
+                ctx.strokeStyle = `hsl(${(this.style.colorShift + this.time * 50) % 360}, 80%, 60%)`;
+                ctx.lineWidth = 2;
+                
+                // Draw rotating 4D projection
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2 + this.time;
+                    const x = centerX + Math.cos(angle) * size * this.style.morphFactor;
+                    const y = centerY + Math.sin(angle) * size * 0.5;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3 + this.style.intensity * 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    // Connect to center
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                }
+            }
+            
+            renderTesseract(ctx, width, height) {
+                const gridSize = this.style.gridDensity;
+                const cellWidth = width / gridSize;
+                const cellHeight = height / gridSize;
+                
+                for (let x = 0; x < gridSize; x++) {
+                    for (let y = 0; y < gridSize; y++) {
+                        const intensity = Math.sin(x * 0.1 + this.time) * Math.cos(y * 0.1 + this.time);
+                        const hue = (this.style.colorShift + intensity * 60) % 360;
+                        
+                        ctx.fillStyle = `hsla(${hue}, 70%, ${50 + intensity * 30}%, ${this.style.intensity})`;
+                        ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth - 1, cellHeight - 1);
+                    }
+                }
+            }
+            
+            renderHolographicWaves(ctx, width, height) {
+                const waveCount = this.style.gridDensity;
+                
+                for (let i = 0; i < waveCount; i++) {
+                    const y = (i / waveCount) * height;
+                    const hue = (this.style.colorShift + i * 30) % 360;
+                    
+                    ctx.strokeStyle = `hsla(${hue}, 90%, 60%, ${this.style.intensity})`;
+                    ctx.lineWidth = 2 + this.style.intensity * 3;
+                    
+                    ctx.beginPath();
+                    for (let x = 0; x < width; x += 2) {
+                        const wave = Math.sin(x * 0.01 + this.time + i) * 20 * this.style.morphFactor;
+                        if (x === 0) {
+                            ctx.moveTo(x, y + wave);
+                        } else {
+                            ctx.lineTo(x, y + wave);
+                        }
+                    }
+                    ctx.stroke();
+                }
+            }
+            
+            renderDigitalRain(ctx, width, height) {
+                ctx.fillStyle = `rgba(0, 255, 0, ${this.style.intensity})`;
+                ctx.font = `${8 + this.style.gridDensity}px monospace`;
+                
+                const chars = '01アイウエオカキクケコサシスセソ';
+                const columns = Math.floor(width / (8 + this.style.gridDensity));
+                
+                for (let i = 0; i < columns; i++) {
+                    const char = chars[Math.floor(Math.random() * chars.length)];
+                    const x = i * (8 + this.style.gridDensity);
+                    const y = (this.time * 100 * this.style.rotationSpeed + i * 20) % height;
+                    
+                    ctx.fillText(char, x, y);
+                }
+            }
+            
+            renderNebula(ctx, width, height) {
+                const centerX = width / 2;
+                const centerY = height / 2;
+                
+                for (let i = 0; i < this.style.gridDensity * 5; i++) {
+                    const angle = (i / (this.style.gridDensity * 5)) * Math.PI * 2 + this.time;
+                    const radius = 50 + i * 2;
+                    const x = centerX + Math.cos(angle) * radius * this.style.morphFactor;
+                    const y = centerY + Math.sin(angle) * radius * 0.5;
+                    
+                    const hue = (this.style.colorShift + angle * 57.3) % 360;
+                    const gradient = ctx.createRadialGradient(x, y, 0, x, y, 20);
+                    gradient.addColorStop(0, `hsla(${hue}, 80%, 60%, ${this.style.intensity})`);
+                    gradient.addColorStop(1, 'transparent');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 20, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            renderDefault(ctx, width, height) {
+                // Generic particle system
+                this.particles.forEach(particle => {
+                    const hue = (particle.hue + this.style.colorShift) % 360;
+                    ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${this.style.intensity})`;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+            
+            updateParticles() {
+                this.particles.forEach(particle => {
+                    particle.x += particle.vx * this.style.rotationSpeed;
+                    particle.y += particle.vy * this.style.rotationSpeed;
+                    
+                    // Wrap around edges
+                    if (particle.x < 0) particle.x = this.canvas.width;
+                    if (particle.x > this.canvas.width) particle.x = 0;
+                    if (particle.y < 0) particle.y = this.canvas.height;
+                    if (particle.y > this.canvas.height) particle.y = 0;
+                    
+                    // Add some chaos
+                    if (Math.random() < this.style.glitchLevel * 0.01) {
+                        particle.vx += (Math.random() - 0.5) * 0.5;
+                        particle.vy += (Math.random() - 0.5) * 0.5;
+                    }
+                });
+            }
+            
+            getStyle() {
+                return { ...this.style };
+            }
+            
+            applyStyle(newStyle) {
+                this.style = { ...this.style, ...newStyle };
+                
+                // Re-initialize particles if grid density changed significantly
+                if (Math.abs(newStyle.gridDensity - this.style.gridDensity) > 5) {
+                    this.initParticles();
+                }
+            }
+        }
+        
+        // Initialize the system
+        document.addEventListener('DOMContentLoaded', () => {
+            const system = new MultiCanvasVisualizerSystem();
+            window.visualizerSystem = system;
+        });
+    </script>
+</body>
+</html>

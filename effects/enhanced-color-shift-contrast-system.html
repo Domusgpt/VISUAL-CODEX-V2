@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Color Shift & Contrast System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: white;
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+            
+            /* Advanced Color Variables */
+            --hue-rotation: 0deg;
+            --saturation-boost: 100%;
+            --contrast-level: 100%;
+            --brightness-shift: 100%;
+            --invert-amount: 0%;
+            --sepia-tone: 0%;
+            --grayscale-level: 0%;
+            --blur-radius: 0px;
+            --opacity-level: 100%;
+            --mix-blend-mode: normal;
+            
+            /* Extreme Color Parameters */
+            --color-chaos: 0.0;
+            --rainbow-intensity: 0.0;
+            --glitch-chromatic: 0.0;
+            --psychedelic-factor: 0.0;
+            --neon-glow: 0.0;
+            --cosmic-shift: 0.0;
+        }
+        
+        .color-playground {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .color-demo-card {
+            position: relative;
+            background: linear-gradient(135deg, #ff0080, #00ffff, #ffff00, #8000ff);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            
+            /* Base filter effects */
+            filter: 
+                hue-rotate(var(--hue-rotation))
+                saturate(var(--saturation-boost))
+                contrast(var(--contrast-level))
+                brightness(var(--brightness-shift))
+                invert(var(--invert-amount))
+                sepia(var(--sepia-tone))
+                grayscale(var(--grayscale-level))
+                blur(var(--blur-radius));
+            
+            opacity: calc(var(--opacity-level) / 100);
+            mix-blend-mode: var(--mix-blend-mode);
+        }
+        
+        .color-demo-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.3);
+        }
+        
+        .card-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+            backdrop-filter: blur(10px);
+            pointer-events: none;
+        }
+        
+        .card-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .card-description {
+            font-size: 0.8em;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        /* Individual Card Color Behaviors */
+        .color-demo-card.rainbow-shift {
+            background: linear-gradient(45deg, 
+                hsl(calc(0deg + var(--hue-rotation)), 100%, 50%),
+                hsl(calc(60deg + var(--hue-rotation)), 100%, 50%),
+                hsl(calc(120deg + var(--hue-rotation)), 100%, 50%),
+                hsl(calc(180deg + var(--hue-rotation)), 100%, 50%),
+                hsl(calc(240deg + var(--hue-rotation)), 100%, 50%),
+                hsl(calc(300deg + var(--hue-rotation)), 100%, 50%)
+            );
+            animation: rainbow-cycle 3s linear infinite;
+        }
+
+        @keyframes rainbow-cycle {
+            0% { filter: hue-rotate(0deg) saturate(200%) contrast(120%); }
+            16.67% { filter: hue-rotate(60deg) saturate(250%) contrast(130%); }
+            33.33% { filter: hue-rotate(120deg) saturate(200%) contrast(140%); }
+            50% { filter: hue-rotate(180deg) saturate(300%) contrast(120%); }
+            66.67% { filter: hue-rotate(240deg) saturate(250%) contrast(130%); }
+            83.33% { filter: hue-rotate(300deg) saturate(200%) contrast(140%); }
+            100% { filter: hue-rotate(360deg) saturate(200%) contrast(120%); }
+        }
+
+        .color-demo-card.extreme-contrast {
+            background: linear-gradient(90deg, #000000, #ffffff, #ff0000, #00ff00, #0000ff);
+            filter: 
+                contrast(calc(var(--contrast-level) * 2))
+                saturate(calc(var(--saturation-boost) * 1.5))
+                brightness(calc(var(--brightness-shift) * 1.2));
+        }
+
+        .color-demo-card.psychedelic-waves {
+            background: 
+                radial-gradient(circle at 20% 30%, #ff006e, transparent 50%),
+                radial-gradient(circle at 80% 70%, #00b4d8, transparent 50%),
+                radial-gradient(circle at 40% 80%, #ffbe0b, transparent 50%),
+                linear-gradient(45deg, #8338ec, #3a86ff);
+            animation: psychedelic-pulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes psychedelic-pulse {
+            0% { 
+                filter: hue-rotate(0deg) saturate(300%) contrast(150%) brightness(120%);
+                transform: scale(1);
+            }
+            50% {
+                filter: hue-rotate(180deg) saturate(400%) contrast(200%) brightness(140%);
+                transform: scale(1.05);
+            }
+            100% { 
+                filter: hue-rotate(360deg) saturate(300%) contrast(150%) brightness(120%);
+                transform: scale(1);
+            }
+        }
+
+        .color-demo-card.neon-cyberpunk {
+            background: 
+                linear-gradient(45deg, #0a0a0a, #1a0033, #330066, #0a0a0a),
+                linear-gradient(135deg, transparent, #00ffff, transparent),
+                linear-gradient(225deg, transparent, #ff00ff, transparent);
+            border: 2px solid #00ffff;
+            box-shadow: 
+                0 0 20px #00ffff,
+                inset 0 0 20px rgba(0, 255, 255, 0.2),
+                0 0 40px #ff00ff,
+                inset 0 0 40px rgba(255, 0, 255, 0.1);
+            animation: neon-flicker 1.5s ease-in-out infinite;
+        }
+
+        @keyframes neon-flicker {
+            0%, 100% { 
+                box-shadow: 
+                    0 0 20px #00ffff,
+                    inset 0 0 20px rgba(0, 255, 255, 0.2),
+                    0 0 40px #ff00ff,
+                    inset 0 0 40px rgba(255, 0, 255, 0.1);
+            }
+            50% { 
+                box-shadow: 
+                    0 0 40px #00ffff,
+                    inset 0 0 40px rgba(0, 255, 255, 0.4),
+                    0 0 80px #ff00ff,
+                    inset 0 0 80px rgba(255, 0, 255, 0.2);
+            }
+        }
+
+        .color-demo-card.chromatic-aberration {
+            background: linear-gradient(45deg, #ff0000, #00ff00, #0000ff);
+            position: relative;
+        }
+
+        .color-demo-card.chromatic-aberration::before,
+        .color-demo-card.chromatic-aberration::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: inherit;
+            mix-blend-mode: screen;
+        }
+
+        .color-demo-card.chromatic-aberration::before {
+            transform: translateX(-2px);
+            filter: hue-rotate(-120deg);
+        }
+
+        .color-demo-card.chromatic-aberration::after {
+            transform: translateX(2px);
+            filter: hue-rotate(120deg);
+        }
+
+        .color-demo-card.cosmic-nebula {
+            background: 
+                radial-gradient(ellipse at top left, rgba(255, 0, 128, 0.8), transparent 70%),
+                radial-gradient(ellipse at top right, rgba(0, 255, 255, 0.8), transparent 70%),
+                radial-gradient(ellipse at bottom left, rgba(255, 255, 0, 0.8), transparent 70%),
+                radial-gradient(ellipse at bottom right, rgba(128, 0, 255, 0.8), transparent 70%),
+                linear-gradient(45deg, #000011, #001122, #000033);
+            animation: cosmic-swirl 4s ease-in-out infinite;
+        }
+
+        @keyframes cosmic-swirl {
+            0% { 
+                filter: hue-rotate(0deg) saturate(200%) contrast(120%) brightness(110%);
+                transform: rotate(0deg);
+            }
+            25% {
+                filter: hue-rotate(90deg) saturate(250%) contrast(140%) brightness(130%);
+                transform: rotate(1deg);
+            }
+            50% {
+                filter: hue-rotate(180deg) saturate(300%) contrast(160%) brightness(120%);
+                transform: rotate(0deg);
+            }
+            75% {
+                filter: hue-rotate(270deg) saturate(250%) contrast(140%) brightness(130%);
+                transform: rotate(-1deg);
+            }
+            100% { 
+                filter: hue-rotate(360deg) saturate(200%) contrast(120%) brightness(110%);
+                transform: rotate(0deg);
+            }
+        }
+
+        .color-demo-card.glitch-rgb {
+            background: linear-gradient(90deg, #ff0000, #00ff00, #0000ff, #ff0000);
+            animation: glitch-distort 0.3s ease-in-out infinite;
+        }
+
+        @keyframes glitch-distort {
+            0% { filter: saturate(100%) contrast(100%) hue-rotate(0deg); }
+            20% { filter: saturate(300%) contrast(200%) hue-rotate(10deg); transform: translateX(2px); }
+            40% { filter: saturate(50%) contrast(300%) hue-rotate(-5deg); transform: translateX(-2px); }
+            60% { filter: saturate(400%) contrast(80%) hue-rotate(15deg); transform: translateX(1px); }
+            80% { filter: saturate(150%) contrast(250%) hue-rotate(-10deg); transform: translateX(-1px); }
+            100% { filter: saturate(100%) contrast(100%) hue-rotate(0deg); transform: translateX(0px); }
+        }
+
+        .color-demo-card.holographic-foil {
+            background: 
+                linear-gradient(45deg, 
+                    hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%),
+                    hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%)
+                );
+            background-size: 600% 600%;
+            animation: holographic-shift 2s ease-in-out infinite;
+        }
+
+        @keyframes holographic-shift {
+            0% { 
+                background-position: 0% 50%;
+                filter: saturate(200%) contrast(120%) brightness(110%);
+            }
+            50% { 
+                background-position: 100% 50%;
+                filter: saturate(300%) contrast(150%) brightness(130%);
+            }
+            100% { 
+                background-position: 0% 50%;
+                filter: saturate(200%) contrast(120%) brightness(110%);
+            }
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 10;
+            padding: 15px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .card-title {
+            font-size: clamp(0.8rem, 2vw, 1.2rem);
+            font-weight: 900;
+            margin-bottom: 8px;
+            color: #ffffff;
+            text-shadow: 
+                0 0 5px currentColor,
+                0 0 10px currentColor;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .card-description {
+            font-size: clamp(0.5rem, 1.2vw, 0.7rem);
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.3;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .color-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 25px;
+            color: #00ffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            z-index: 1000;
+            min-width: 320px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .control-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #ff00ff;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-label {
+            flex: 1.2;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .control-slider {
+            flex: 2;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: linear-gradient(90deg, #ff0080, #00ffff, #ffff00, #8000ff);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .control-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff, #00ffff);
+            cursor: pointer;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .control-value {
+            flex: 0.8;
+            text-align: right;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 0.7rem;
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .preset-button {
+            background: linear-gradient(45deg, rgba(255, 0, 128, 0.2), rgba(0, 255, 255, 0.2));
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .preset-button:hover {
+            background: linear-gradient(45deg, rgba(255, 0, 128, 0.4), rgba(0, 255, 255, 0.4));
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .info-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid #ff00ff;
+            border-radius: 15px;
+            padding: 20px;
+            color: #ff00ff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            z-index: 1000;
+            max-width: 280px;
+        }
+
+        .info-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #00ffff;
+            text-transform: uppercase;
+        }
+
+        .info-item {
+            margin-bottom: 8px;
+            font-size: 0.7rem;
+            line-height: 1.4;
+        }
+
+        .info-key {
+            color: #00ffff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-panel">
+        <div class="info-title">Color Shift Engine</div>
+        <div class="info-item"><span class="info-key">System:</span> Extreme CSS Filter Chain</div>
+        <div class="info-item"><span class="info-key">Effects:</span> 12 Advanced Color Manipulations</div>
+        <div class="info-item"><span class="info-key">Range:</span> From Subtle to Psychedelic</div>
+        <div class="info-item"><span class="info-key">Controls:</span> Real-time Filter Adjustment</div>
+        <div class="info-item"><span class="info-key">Presets:</span> Instant Color Transformations</div>
+        <div class="info-item"><span class="info-key">Demo:</span> 12 Unique Card Behaviors</div>
+        <div class="info-item"><span class="info-key">Blend:</span> Multiple Mix-Blend Modes</div>
+    </div>
+
+    <div class="color-controls">
+        <div class="info-title">Color Parameters</div>
+        
+        <div class="control-section">
+            <div class="section-title">Core Filters</div>
+            <div class="control-group">
+                <label class="control-label">Hue Rotation:</label>
+                <input type="range" class="control-slider" id="hueRotation" min="0" max="360" value="0">
+                <span class="control-value" id="hueRotationValue">0°</span>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Saturation:</label>
+                <input type="range" class="control-slider" id="saturation" min="0" max="500" value="100">
+                <span class="control-value" id="saturationValue">100%</span>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Contrast:</label>
+                <input type="range" class="control-slider" id="contrast" min="0" max="300" value="100">
+                <span class="control-value" id="contrastValue">100%</span>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Brightness:</label>
+                <input type="range" class="control-slider" id="brightness" min="0" max="300" value="100">
+                <span class="control-value" id="brightnessValue">100%</span>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Advanced Effects</div>
+            <div class="control-group">
+                <label class="control-label">Invert:</label>
+                <input type="range" class="control-slider" id="invert" min="0" max="100" value="0">
+                <span class="control-value" id="invertValue">0%</span>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Sepia:</label>
+                <input type="range" class="control-slider" id="sepia" min="0" max="100" value="0">
+                <span class="control-value" id="sepiaValue">0%</span>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Grayscale:</label>
+                <input type="range" class="control-slider" id="grayscale" min="0" max="100" value="0">
+                <span class="control-value" id="grayscaleValue">0%</span>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Blur:</label>
+                <input type="range" class="control-slider" id="blur" min="0" max="20" step="0.5" value="0">
+                <span class="control-value" id="blurValue">0px</span>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Opacity:</label>
+                <input type="range" class="control-slider" id="opacity" min="10" max="100" value="100">
+                <span class="control-value" id="opacityValue">100%</span>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Mix Blend Mode</div>
+            <div class="control-group">
+                <label class="control-label">Blend:</label>
+                <select id="blendMode" style="flex: 2; background: rgba(0,0,0,0.5); color: #00ffff; border: 1px solid #00ffff; padding: 5px; border-radius: 4px;">
+                    <option value="normal">Normal</option>
+                    <option value="multiply">Multiply</option>
+                    <option value="screen">Screen</option>
+                    <option value="overlay">Overlay</option>
+                    <option value="hard-light">Hard Light</option>
+                    <option value="soft-light">Soft Light</option>
+                    <option value="color-dodge">Color Dodge</option>
+                    <option value="color-burn">Color Burn</option>
+                    <option value="darken">Darken</option>
+                    <option value="lighten">Lighten</option>
+                    <option value="difference">Difference</option>
+                    <option value="exclusion">Exclusion</option>
+                    <option value="hue">Hue</option>
+                    <option value="saturation">Saturation</option>
+                    <option value="color">Color</option>
+                    <option value="luminosity">Luminosity</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="preset-buttons">
+            <button class="preset-button" onclick="loadPreset('normal')">Normal</button>
+            <button class="preset-button" onclick="loadPreset('psychedelic')">Psychedelic</button>
+            <button class="preset-button" onclick="loadPreset('cyberpunk')">Cyberpunk</button>
+            <button class="preset-button" onclick="loadPreset('vintage')">Vintage</button>
+            <button class="preset-button" onclick="loadPreset('alien')">Alien</button>
+            <button class="preset-button" onclick="loadPreset('matrix')">Matrix</button>
+            <button class="preset-button" onclick="loadPreset('infrared')">Infrared</button>
+            <button class="preset-button" onclick="loadPreset('nuclear')">Nuclear</button>
+        </div>
+    </div>
+
+    <div class="color-playground">
+        <div class="color-demo-card rainbow-shift">
+            <div class="card-content">
+                <div class="card-title">Rainbow Shift</div>
+                <div class="card-description">Continuous hue cycling through full spectrum with animated saturation and contrast boosting.</div>
+            </div>
+        </div>
+
+        <div class="color-demo-card extreme-contrast">
+            <div class="card-content">
+                <div class="card-title">Extreme Contrast</div>
+                <div class="card-description">Maximum contrast enhancement with 2x multiplier and enhanced saturation for dramatic visual impact.</div>
+            </div>
+        </div>
+
+        <div class="color-demo-card psychedelic-waves">
+            <div class="card-content">
+                <div class="card-title">Psychedelic Waves</div>
+                <div class="card-description">Multi-layer radial gradients with pulsing hue rotation and enhanced brightness effects.</div>
+            </div>
+        </div>
+
+        <div class="color-demo-card neon-cyberpunk">
+            <div class="card-content">
+                <div class="card-title">Neon Cyberpunk</div>
+                <div class="card-description">Flickering neon glow effects with cyan and magenta multi-layer box shadows.</div>
+            </div>
+        </div>
+
+        <div class="color-demo-card chromatic-aberration">
+            <div class="card-content">
+                <div class="card-title">Chromatic Aberration</div>
+                <div class="card-description">RGB channel separation effect using pseudo-elements with offset transforms and hue shifts.</div>
+            </div>
+        </div>
+
+        <div class="color-demo-card cosmic-nebula">
+            <div class="card-content">
+                <div class="card-title">Cosmic Nebula</div>
+                <div class="card-description">Space-like radial gradients with swirling hue rotation and gentle rotation transforms.</div>
+            </div>
+        </div>
+
+        <div class="color-demo-card glitch-rgb">
+            <div class="card-content">
+                <div class="card-title">Glitch RGB</div>
+                <div class="card-description">Rapid filter distortion with translateX offsets simulating digital glitch artifacts.</div>
+            </div>
+        </div>
+
+        <div class="color-demo-card holographic-foil">
+            <div class="card-content">
+                <div class="card-title">Holographic Foil</div>
+                <div class="card-description">Moving rainbow gradient with large background-size creating hologram-like reflections.</div>
+            </div>
+        </div>
+
+        <div class="color-demo-card">
+            <div class="card-content">
+                <div class="card-title">Control Demo 1</div>
+                <div class="card-description">Live demonstration of global filter controls. Adjust parameters to see real-time effects.</div>
+            </div>
+        </div>
+
+        <div class="color-demo-card">
+            <div class="card-content">
+                <div class="card-title">Control Demo 2</div>
+                <div class="card-description">Mix blend mode testing ground. Try different blend modes with current filter settings.</div>
+            </div>
+        </div>
+
+        <div class="color-demo-card">
+            <div class="card-content">
+                <div class="card-title">Control Demo 3</div>
+                <div class="card-description">Extreme parameter testing zone. Push saturation, contrast, and brightness to their limits.</div>
+            </div>
+        </div>
+
+        <div class="color-demo-card">
+            <div class="card-content">
+                <div class="card-title">Control Demo 4</div>
+                <div class="card-description">Complete filter chain demonstration showing all CSS filter effects in combination.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class EnhancedColorShiftSystem {
+            constructor() {
+                this.params = {
+                    hueRotation: 0,
+                    saturation: 100,
+                    contrast: 100,
+                    brightness: 100,
+                    invert: 0,
+                    sepia: 0,
+                    grayscale: 0,
+                    blur: 0,
+                    opacity: 100,
+                    blendMode: 'normal'
+                };
+                
+                this.isAutoMode = true; // Start in auto mode to show effects
+                this.init();
+            }
+            
+            init() {
+                this.setupControls();
+                this.applyFilters();
+                this.startAutoDemo();
+                console.log('🌈 Enhanced Color Shift System initialized');
+            }
+            
+            setupControls() {
+                const controls = [
+                    'hueRotation', 'saturation', 'contrast', 'brightness',
+                    'invert', 'sepia', 'grayscale', 'blur', 'opacity'
+                ];
+                
+                controls.forEach(control => {
+                    const slider = document.getElementById(control);
+                    const display = document.getElementById(control + 'Value');
+                    
+                    if (slider && display) {
+                        slider.addEventListener('input', (e) => {
+                            const value = parseFloat(e.target.value);
+                            this.params[control] = value;
+                            
+                            let displayValue;
+                            switch(control) {
+                                case 'hueRotation':
+                                    displayValue = value + '°';
+                                    break;
+                                case 'blur':
+                                    displayValue = value + 'px';
+                                    break;
+                                default:
+                                    displayValue = value + '%';
+                            }
+                            
+                            display.textContent = displayValue;
+                            this.applyFilters();
+                        });
+                    }
+                });
+                
+                // Blend mode control
+                const blendSelect = document.getElementById('blendMode');
+                if (blendSelect) {
+                    blendSelect.addEventListener('change', (e) => {
+                        this.params.blendMode = e.target.value;
+                        this.applyFilters();
+                    });
+                }
+            }
+            
+            applyFilters() {
+                const root = document.documentElement;
+                
+                // Apply CSS custom properties
+                root.style.setProperty('--hue-rotation', this.params.hueRotation + 'deg');
+                root.style.setProperty('--saturation-boost', this.params.saturation + '%');
+                root.style.setProperty('--contrast-level', this.params.contrast + '%');
+                root.style.setProperty('--brightness-shift', this.params.brightness + '%');
+                root.style.setProperty('--invert-amount', this.params.invert + '%');
+                root.style.setProperty('--sepia-tone', this.params.sepia + '%');
+                root.style.setProperty('--grayscale-level', this.params.grayscale + '%');
+                root.style.setProperty('--blur-radius', this.params.blur + 'px');
+                root.style.setProperty('--opacity-level', this.params.opacity);
+                root.style.setProperty('--mix-blend-mode', this.params.blendMode);
+            }
+            
+            loadPreset(presetName) {
+                const presets = {
+                    normal: {
+                        hueRotation: 0, saturation: 100, contrast: 100, brightness: 100,
+                        invert: 0, sepia: 0, grayscale: 0, blur: 0, opacity: 100, blendMode: 'normal'
+                    },
+                    psychedelic: {
+                        hueRotation: 180, saturation: 300, contrast: 150, brightness: 120,
+                        invert: 0, sepia: 0, grayscale: 0, blur: 0, opacity: 100, blendMode: 'screen'
+                    },
+                    cyberpunk: {
+                        hueRotation: 270, saturation: 200, contrast: 180, brightness: 110,
+                        invert: 0, sepia: 0, grayscale: 0, blur: 0, opacity: 90, blendMode: 'hard-light'
+                    },
+                    vintage: {
+                        hueRotation: 30, saturation: 80, contrast: 120, brightness: 110,
+                        invert: 0, sepia: 40, grayscale: 20, blur: 0.5, opacity: 95, blendMode: 'multiply'
+                    },
+                    alien: {
+                        hueRotation: 120, saturation: 250, contrast: 200, brightness: 90,
+                        invert: 20, sepia: 0, grayscale: 0, blur: 1, opacity: 100, blendMode: 'color-dodge'
+                    },
+                    matrix: {
+                        hueRotation: 90, saturation: 0, contrast: 150, brightness: 80,
+                        invert: 0, sepia: 100, grayscale: 0, blur: 0, opacity: 100, blendMode: 'overlay'
+                    },
+                    infrared: {
+                        hueRotation: 0, saturation: 200, contrast: 180, brightness: 120,
+                        invert: 100, sepia: 0, grayscale: 0, blur: 0, opacity: 100, blendMode: 'difference'
+                    },
+                    nuclear: {
+                        hueRotation: 60, saturation: 400, contrast: 250, brightness: 150,
+                        invert: 0, sepia: 0, grayscale: 0, blur: 2, opacity: 100, blendMode: 'color-burn'
+                    }
+                };
+                
+                const preset = presets[presetName];
+                if (preset) {
+                    Object.assign(this.params, preset);
+                    this.updateControlsFromParams();
+                    this.applyFilters();
+                    console.log(`🎨 Loaded preset: ${presetName}`);
+                }
+            }
+            
+            updateControlsFromParams() {
+                Object.keys(this.params).forEach(param => {
+                    const slider = document.getElementById(param);
+                    const display = document.getElementById(param + 'Value');
+                    const select = document.getElementById(param);
+                    
+                    if (slider && display) {
+                        slider.value = this.params[param];
+                        
+                        let displayValue;
+                        switch(param) {
+                            case 'hueRotation':
+                                displayValue = this.params[param] + '°';
+                                break;
+                            case 'blur':
+                                displayValue = this.params[param] + 'px';
+                                break;
+                            default:
+                                displayValue = this.params[param] + '%';
+                        }
+                        
+                        display.textContent = displayValue;
+                    } else if (select && param === 'blendMode') {
+                        select.value = this.params[param];
+                    }
+                });
+            }
+            
+            startAutoDemo() {
+                // Subtle automatic cycling for demonstration
+                setInterval(() => {
+                    const time = Date.now() / 1000;
+                    
+                    // Gentle automatic parameter modulation
+                    const autoHue = Math.sin(time * 0.1) * 30;
+                    const autoSat = 100 + Math.sin(time * 0.15) * 50;
+                    const autoContrast = 100 + Math.sin(time * 0.08) * 20;
+                    
+                    // Only apply auto-demo if no user interaction recently
+                    if (this.isAutoMode) {
+                        this.params.hueRotation = autoHue;
+                        this.params.saturation = autoSat;
+                        this.params.contrast = autoContrast;
+                        
+                        this.applyFilters();
+                        this.updateControlsFromParams();
+                    }
+                }, 100);
+            }
+            
+            // Enable/disable auto mode
+            toggleAutoMode() {
+                this.isAutoMode = !this.isAutoMode;
+                console.log(`🤖 Auto mode: ${this.isAutoMode ? 'ON' : 'OFF'}`);
+            }
+        }
+        
+        // Global function to load presets
+        function loadPreset(presetName) {
+            window.colorSystem.loadPreset(presetName);
+        }
+        
+        // Initialize the system
+        document.addEventListener('DOMContentLoaded', () => {
+            const colorSystem = new EnhancedColorShiftSystem();
+            window.colorSystem = colorSystem;
+            
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                switch(e.key.toLowerCase()) {
+                    case 'a':
+                        colorSystem.toggleAutoMode();
+                        break;
+                    case 'r':
+                        colorSystem.loadPreset('normal');
+                        break;
+                    case '1':
+                        colorSystem.loadPreset('psychedelic');
+                        break;
+                    case '2':
+                        colorSystem.loadPreset('cyberpunk');
+                        break;
+                    case '3':
+                        colorSystem.loadPreset('vintage');
+                        break;
+                    case '4':
+                        colorSystem.loadPreset('alien');
+                        break;
+                    case '5':
+                        colorSystem.loadPreset('matrix');
+                        break;
+                    case '6':
+                        colorSystem.loadPreset('infrared');
+                        break;
+                    case '7':
+                        colorSystem.loadPreset('nuclear');
+                        break;
+                }
+            });
+            
+            // Disable auto mode on any user interaction with controls
+            const controls = document.querySelector('.color-controls');
+            if (controls) {
+                ['click', 'input', 'change'].forEach(event => {
+                    controls.addEventListener(event, () => {
+                        colorSystem.isAutoMode = false;
+                    });
+                });
+            }
+            
+            // Show initial auto mode status
+            console.log('🌈 Color Shift System started in AUTO MODE - Press A to toggle');
+        });
+    </script>
+    
+    <!-- Add collapsible menu system -->
+    <script>
+        window.COLLAPSIBLE_MENU_CONFIG = {
+            startCollapsed: true,
+            position: 'top-right',
+            theme: 'dark'
+        };
+    </script>
+    <script src="../js/inject-collapsible-menu.js"></script>
+</body>
+</html>

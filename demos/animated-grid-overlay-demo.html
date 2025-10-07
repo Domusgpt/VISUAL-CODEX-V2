@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Grid Overlay Demo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: radial-gradient(ellipse at center, #1a0033 0%, #000000 70%);
+            color: white;
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+            cursor: crosshair;
+        }
+        
+        .demo-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* ANIMATED GRID OVERLAY SYSTEM */
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+            background: 
+                /* Primary grid - horizontal and vertical */
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 20px,
+                    rgba(0, 255, 255, 0.1) 20px,
+                    rgba(0, 255, 255, 0.1) 21px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 20px,
+                    rgba(0, 255, 255, 0.1) 20px,
+                    rgba(0, 255, 255, 0.1) 21px
+                ),
+                /* Secondary diagonal grid */
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 40px,
+                    rgba(255, 0, 255, 0.05) 40px,
+                    rgba(255, 0, 255, 0.05) 41px
+                );
+            animation: gridPulse 2s ease-in-out infinite;
+        }
+        
+        .grid-overlay.active {
+            opacity: 0.6;
+            animation: gridPulse 1.5s ease-in-out infinite, gridShift 8s linear infinite;
+        }
+        
+        @keyframes gridPulse {
+            0%, 100% { 
+                opacity: 0.2;
+                filter: brightness(1);
+            }
+            50% { 
+                opacity: 0.4;
+                filter: brightness(1.3);
+            }
+        }
+        
+        @keyframes gridShift {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(10px, 5px) rotate(0.5deg); }
+            50% { transform: translate(0, 10px) rotate(0deg); }
+            75% { transform: translate(-10px, 5px) rotate(-0.5deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        
+        /* ENHANCED GRID VARIATIONS */
+        .grid-overlay.variant-2 {
+            background: 
+                /* Fine mesh grid */
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(255, 255, 0, 0.08) 10px,
+                    rgba(255, 255, 0, 0.08) 11px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(255, 255, 0, 0.08) 10px,
+                    rgba(255, 255, 0, 0.08) 11px
+                ),
+                /* Hexagonal pattern */
+                repeating-linear-gradient(
+                    120deg,
+                    transparent,
+                    transparent 30px,
+                    rgba(0, 255, 255, 0.03) 30px,
+                    rgba(0, 255, 255, 0.03) 31px
+                ),
+                repeating-linear-gradient(
+                    60deg,
+                    transparent,
+                    transparent 30px,
+                    rgba(255, 0, 255, 0.03) 30px,
+                    rgba(255, 0, 255, 0.03) 31px
+                );
+        }
+        
+        .grid-overlay.variant-3 {
+            background: 
+                /* Radial concentric circles */
+                radial-gradient(circle at 50% 50%, 
+                    transparent 98px, 
+                    rgba(0, 255, 255, 0.06) 98px, 
+                    rgba(0, 255, 255, 0.06) 100px,
+                    transparent 100px,
+                    transparent 198px,
+                    rgba(255, 0, 255, 0.04) 198px,
+                    rgba(255, 0, 255, 0.04) 200px,
+                    transparent 200px
+                ),
+                /* Crossing diagonal lines */
+                repeating-linear-gradient(
+                    30deg,
+                    transparent,
+                    transparent 35px,
+                    rgba(255, 255, 0, 0.03) 35px,
+                    rgba(255, 255, 0, 0.03) 36px
+                ),
+                repeating-linear-gradient(
+                    150deg,
+                    transparent,
+                    transparent 35px,
+                    rgba(255, 80, 0, 0.03) 35px,
+                    rgba(255, 80, 0, 0.03) 36px
+                );
+        }
+        
+        /* INTERACTIVE DEMO CARD */
+        .demo-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 25px;
+            padding: 40px;
+            backdrop-filter: blur(15px);
+            max-width: 600px;
+            text-align: center;
+            z-index: 100;
+            position: relative;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(0, 255, 255, 0.2),
+                0 0 30px rgba(0, 255, 255, 0.1);
+        }
+        
+        .demo-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        
+        .demo-description {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        /* CONTROL BUTTONS */
+        .grid-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .grid-button {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.15) 0%,
+                rgba(255, 0, 255, 0.1) 50%,
+                rgba(0, 255, 255, 0.15) 100%
+            );
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 12px;
+            color: #00ffff;
+            cursor: pointer;
+            padding: 12px 20px;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px #00ffff;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1),
+                0 0 0 1px rgba(0, 255, 255, 0.2);
+        }
+        
+        .grid-button:hover {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.25) 0%,
+                rgba(255, 0, 255, 0.2) 50%,
+                rgba(0, 255, 255, 0.25) 100%
+            );
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 
+                0 8px 16px rgba(0, 255, 255, 0.2),
+                inset 0 2px 2px rgba(255, 255, 255, 0.15),
+                0 0 0 2px rgba(0, 255, 255, 0.4),
+                0 0 20px rgba(0, 255, 255, 0.3);
+            border-color: #00ffff;
+        }
+        
+        .grid-button.active {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 0, 0.25) 0%,
+                rgba(255, 0, 255, 0.2) 50%,
+                rgba(255, 255, 0, 0.25) 100%
+            );
+            border-color: #ffff00;
+            color: #ffff00;
+            text-shadow: 0 0 8px #ffff00;
+            box-shadow: 
+                0 8px 16px rgba(255, 255, 0, 0.2),
+                0 0 0 2px rgba(255, 255, 0, 0.4),
+                0 0 30px rgba(255, 255, 0, 0.3);
+        }
+        
+        /* STATUS INDICATOR */
+        .status-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #ff00ff;
+            border-radius: 15px;
+            padding: 15px;
+            z-index: 1000;
+            backdrop-filter: blur(15px);
+            color: #ff00ff;
+            font-size: 0.8rem;
+        }
+        
+        .status-item {
+            margin: 5px 0;
+        }
+        
+        .status-value {
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .demo-card {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+            
+            .demo-title {
+                font-size: 1.5rem;
+            }
+            
+            .grid-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="grid-overlay" id="gridOverlay"></div>
+        
+        <div class="demo-card">
+            <h1 class="demo-title">ANIMATED GRID OVERLAYS</h1>
+            <p class="demo-description">
+                Interactive holographic grid system with multiple pattern variations, pulsing animations, 
+                and dynamic shifting effects. Perfect for sci-fi interfaces and futuristic dashboards.
+            </p>
+            
+            <div class="grid-controls">
+                <button class="grid-button active" onclick="setGridPattern('standard')">Standard Grid</button>
+                <button class="grid-button" onclick="setGridPattern('mesh')">Fine Mesh</button>
+                <button class="grid-button" onclick="setGridPattern('radial')">Radial Circles</button>
+                <button class="grid-button" onclick="toggleActive()">Toggle Intensity</button>
+                <button class="grid-button" onclick="toggleVisibility()">Show/Hide</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="status-display">
+        <div class="status-item">Grid Pattern: <span class="status-value" id="currentPattern">Standard</span></div>
+        <div class="status-item">Animation: <span class="status-value" id="animationState">Active</span></div>
+        <div class="status-item">Visibility: <span class="status-value" id="visibilityState">Visible</span></div>
+        <div class="status-item">Intensity: <span class="status-value" id="intensityLevel">Normal</span></div>
+    </div>
+    
+    <script>
+        let currentPattern = 'standard';
+        let isActive = true;
+        let isVisible = true;
+        let isIntensive = false;
+        
+        const gridOverlay = document.getElementById('gridOverlay');
+        
+        function setGridPattern(pattern) {
+            // Remove all pattern classes
+            gridOverlay.classList.remove('variant-2', 'variant-3');
+            
+            // Remove active state from all buttons
+            document.querySelectorAll('.grid-button').forEach(btn => btn.classList.remove('active'));
+            
+            // Apply new pattern
+            switch(pattern) {
+                case 'standard':
+                    currentPattern = 'Standard';
+                    break;
+                case 'mesh':
+                    gridOverlay.classList.add('variant-2');
+                    currentPattern = 'Fine Mesh';
+                    break;
+                case 'radial':
+                    gridOverlay.classList.add('variant-3');
+                    currentPattern = 'Radial Circles';
+                    break;
+            }
+            
+            // Update active button
+            event.target.classList.add('active');
+            
+            // Update status
+            updateStatus();
+            
+            console.log(`Grid pattern changed to: ${currentPattern}`);
+        }
+        
+        function toggleActive() {
+            isIntensive = !isIntensive;
+            
+            if (isIntensive) {
+                gridOverlay.classList.add('active');
+            } else {
+                gridOverlay.classList.remove('active');
+            }
+            
+            updateStatus();
+            console.log(`Grid intensity: ${isIntensive ? 'High' : 'Normal'}`);
+        }
+        
+        function toggleVisibility() {
+            isVisible = !isVisible;
+            gridOverlay.style.display = isVisible ? 'block' : 'none';
+            
+            updateStatus();
+            console.log(`Grid visibility: ${isVisible ? 'Visible' : 'Hidden'}`);
+        }
+        
+        function updateStatus() {
+            document.getElementById('currentPattern').textContent = currentPattern;
+            document.getElementById('animationState').textContent = isActive ? 'Active' : 'Paused';
+            document.getElementById('visibilityState').textContent = isVisible ? 'Visible' : 'Hidden';
+            document.getElementById('intensityLevel').textContent = isIntensive ? 'High' : 'Normal';
+        }
+        
+        // Mouse tracking for additional effects
+        document.addEventListener('mousemove', (e) => {
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            
+            // Subtle mouse-reactive effects
+            const rotateX = (mouseY - 0.5) * 0.5;
+            const rotateY = (mouseX - 0.5) * 0.5;
+            
+            gridOverlay.style.transform = `translate3d(0, 0, 0) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+        
+        // Initialize
+        updateStatus();
+        console.log('🎨 Animated Grid Overlay Demo loaded - 3 pattern variations with interactive controls');
+    </script>
+</body>
+</html>

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIB34D Morphing Blog - Interactive Tesseract Navigation</title>
+    <style>
+        :root {
+            --cyber-cyan: #00ffff;
+            --cyber-magenta: #ff00ff;
+            --cyber-yellow: #ffff00;
+            --cyber-purple: #8b00ff;
+            --deep-space: #0a0a1a;
+            --card-glass: rgba(20, 30, 60, 0.7);
+            
+            --visualizer-opacity: 0.8;
+            --focused-opacity: 0.3;
+            --reading-opacity: 0.1;
+            --gravity-opacity: 0.6;
+            --board-opacity: 0.9;
+            --grid-vibrance: 0.5;
+            --transition-phase: 0;
+            --portal-intensity: 0;
+            --reality-tear: 0;
+            --portal-x: 50%;
+            --portal-y: 50%;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--deep-space);
+            color: #fff;
+            overflow-x: hidden;
+            perspective: 2000px;
+            transform-style: preserve-3d;
+        }
+
+        /* 4D Tesseract Container */
+        .tesseract-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 100vh;
+            transform: translate(-50%, -50%) rotateX(15deg) rotateY(15deg);
+            transform-style: preserve-3d;
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .tesseract-container.tension-building {
+            filter: blur(2px);
+            transform: translate(-50%, -50%) rotateX(15deg) rotateY(15deg) scale(1.05) rotateZ(2deg);
+        }
+
+        .hypercube-face {
+            position: absolute;
+            width: 80vw;
+            height: 80vh;
+            top: 10vh;
+            left: 10vw;
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.05) 0%, 
+                rgba(255, 0, 255, 0.05) 50%,
+                rgba(255, 255, 0, 0.05) 100%);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            transform-style: preserve-3d;
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        /* Tesseract Folding States */
+        .tesseract-container.folding-right .hypercube-face.face-0 {
+            transform: rotateY(-90deg) translateZ(-200px);
+        }
+        .tesseract-container.folding-right .hypercube-face.face-1 {
+            transform: rotateY(0deg) translateZ(0px);
+        }
+        
+        .tesseract-container.folding-left .hypercube-face.face-0 {
+            transform: rotateY(90deg) translateZ(-200px);
+        }
+        .tesseract-container.folding-left .hypercube-face.face-1 {
+            transform: rotateY(0deg) translateZ(0px);
+        }
+        
+        .tesseract-container.folding-up .hypercube-face.face-0 {
+            transform: rotateX(-90deg) translateZ(-200px);
+        }
+        .tesseract-container.folding-up .hypercube-face.face-1 {
+            transform: rotateX(0deg) translateZ(0px);
+        }
+        
+        .tesseract-container.folding-down .hypercube-face.face-0 {
+            transform: rotateX(90deg) translateZ(-200px);
+        }
+        .tesseract-container.folding-down .hypercube-face.face-1 {
+            transform: rotateX(0deg) translateZ(0px);
+        }
+
+        /* Blog Cards with Advanced Effects */
+        .blog-card {
+            position: relative;
+            background: var(--card-glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            transform-style: preserve-3d;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 
+                0 10px 30px rgba(0, 255, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .blog-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(
+                calc(135deg + var(--transition-phase) * 180deg),
+                rgba(0, 255, 255, calc(0.08 + var(--grid-vibrance) * 0.12)) 0%,
+                rgba(255, 0, 255, calc(0.06 + var(--grid-vibrance) * 0.10)) 25%,
+                rgba(255, 255, 0, calc(0.04 + var(--grid-vibrance) * 0.08)) 50%,
+                rgba(138, 0, 255, calc(0.06 + var(--grid-vibrance) * 0.10)) 75%,
+                rgba(0, 255, 255, calc(0.08 + var(--grid-vibrance) * 0.12)) 100%
+            );
+            border-radius: 17px;
+            z-index: -1;
+            opacity: 0;
+            animation: pulse-glow calc(2s / (1 + var(--grid-vibrance))) ease-in-out infinite;
+            transition: opacity 0.3s;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.02); }
+        }
+
+        .blog-card:hover::before {
+            opacity: 1;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-10px) translateZ(20px) rotateX(-5deg) rotateY(5deg) scale(1.02);
+            box-shadow: 
+                0 20px 50px rgba(0, 255, 255, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2),
+                0 0 30px rgba(255, 0, 255, 0.3);
+            backdrop-filter: blur(20px);
+            border-color: rgba(255, 0, 255, 0.6);
+        }
+
+        .card-title {
+            font-size: 2rem;
+            background: linear-gradient(45deg, var(--cyber-cyan), var(--cyber-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .card-meta {
+            color: var(--cyber-yellow);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+        }
+
+        .card-content {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        /* WebGL Background Board */
+        #board-visualizer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            opacity: var(--board-opacity);
+            transition: opacity 0.5s;
+            display: block;
+        }
+
+        /* Portal Transition Effects */
+        .portal-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+            background:
+                radial-gradient(circle at var(--portal-x, 50%) var(--portal-y, 50%),
+                    rgba(0, 255, 255, 0.3) 0%, transparent 60%),
+                conic-gradient(from 0deg at var(--portal-x, 50%) var(--portal-y, 50%),
+                    rgba(255, 0, 255, 0.2), rgba(0, 255, 255, 0.2), 
+                    rgba(255, 255, 0, 0.2), rgba(138, 0, 255, 0.2));
+            animation: portal-spin calc(0.8s / (1 + var(--portal-intensity))) linear infinite;
+            backdrop-filter: blur(calc(var(--portal-intensity) * 20px)) hue-rotate(calc(var(--portal-intensity) * 180deg));
+            transition: opacity 0.3s;
+        }
+
+        @keyframes portal-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Reality Tear Effects */
+        .reality-tear {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9;
+            opacity: 0;
+            background:
+                repeating-linear-gradient(
+                    calc(45deg + var(--transition-phase) * 90deg), 
+                    transparent, transparent 2px, 
+                    rgba(255, 0, 255, calc(0.1 * var(--reality-tear))) 2px, 
+                    rgba(255, 0, 255, calc(0.1 * var(--reality-tear))) 4px
+                ),
+                repeating-linear-gradient(
+                    calc(-45deg + var(--transition-phase) * 90deg), 
+                    transparent, transparent 3px, 
+                    rgba(0, 255, 255, calc(0.08 * var(--reality-tear))) 3px, 
+                    rgba(0, 255, 255, calc(0.08 * var(--reality-tear))) 6px
+                );
+            filter: contrast(calc(1 + var(--reality-tear) * 0.5)) brightness(calc(1 + var(--reality-tear) * 0.3));
+            animation: reality-glitch calc(0.15s / (1 + var(--reality-tear))) infinite;
+            transition: opacity 0.2s;
+        }
+
+        @keyframes reality-glitch {
+            0%, 100% { transform: translateX(0px); }
+            25% { transform: translateX(2px); }
+            50% { transform: translateX(0px); }
+            75% { transform: translateX(-2px); }
+        }
+
+        /* 4D Navigation Bezels */
+        .nav-bezel {
+            position: fixed;
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.1), 
+                rgba(255, 0, 255, 0.1));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cyber-cyan);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            z-index: 100;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .nav-bezel:hover {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.2), 
+                rgba(255, 0, 255, 0.2));
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .nav-bezel.left { left: 20px; top: 50%; transform: translateY(-50%); width: 60px; height: 200px; }
+        .nav-bezel.right { right: 20px; top: 50%; transform: translateY(-50%); width: 60px; height: 200px; }
+        .nav-bezel.top { top: 20px; left: 50%; transform: translateX(-50%); width: 200px; height: 60px; }
+        .nav-bezel.bottom { bottom: 20px; left: 50%; transform: translateX(-50%); width: 200px; height: 60px; }
+
+        /* Blog State Controls */
+        .blog-controls {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 25px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            z-index: 100;
+        }
+
+        .state-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .state-dot.active {
+            background: linear-gradient(45deg, var(--cyber-cyan), var(--cyber-magenta));
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+            transform: scale(1.5);
+        }
+
+        /* Scroll Progress */
+        .scroll-progress {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            z-index: 100;
+        }
+
+        .scroll-fill {
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(180deg, 
+                var(--cyber-cyan), 
+                var(--cyber-magenta), 
+                var(--cyber-yellow));
+            border-radius: 4px;
+            transition: height 0.3s;
+        }
+
+        .morphing-indicator {
+            position: fixed;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--cyber-yellow);
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px rgba(255, 255, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+        }
+
+        /* Face visibility */
+        .hypercube-face.face-1 {
+            transform: translateZ(100px);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="board-visualizer"></canvas>
+    
+    <div class="portal-transition"></div>
+    <div class="reality-tear"></div>
+    
+    <div class="tesseract-container" id="tesseract">
+        <div class="hypercube-face face-0">
+            <h1 style="text-align: center; font-size: 3rem; margin-bottom: 40px; background: linear-gradient(45deg, #00ffff, #ff00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                VIB34D Morphing Blog
+            </h1>
+            
+            <div class="blog-card">
+                <div class="card-title">Tesseract Navigation Interface</div>
+                <div class="card-meta">Hyperdimensional • Interactive • Real-time</div>
+                <div class="card-content">
+                    Navigate through 4D space using intuitive folding mechanics. Each face of the tesseract 
+                    contains unique content while maintaining spatial relationships in higher dimensions.
+                </div>
+            </div>
+            
+            <div class="blog-card">
+                <div class="card-title">Dynamic Reality Morphing</div>
+                <div class="card-meta">WebGL • Physics • Quantum States</div>
+                <div class="card-content">
+                    Experience reality distortion through portal transitions and dimensional tears. 
+                    The fabric of space-time responds to user interaction and navigation patterns.
+                </div>
+            </div>
+            
+            <div class="blog-card">
+                <div class="card-title">Consciousness Visualization</div>
+                <div class="card-meta">Neural Networks • Emergence • Complexity</div>
+                <div class="card-content">
+                    Visualize the emergence of consciousness through complex geometric patterns 
+                    and multi-dimensional projections that respond to cognitive load.
+                </div>
+            </div>
+        </div>
+        
+        <div class="hypercube-face face-1">
+            <h2 style="text-align: center; margin-bottom: 40px; color: #ff00ff; text-shadow: 0 0 20px #ff00ff;">
+                Advanced Interface States
+            </h2>
+            
+            <div class="blog-card">
+                <div class="card-title">Quantum Entanglement UI</div>
+                <div class="card-meta">Quantum • Superposition • Coherence</div>
+                <div class="card-content">
+                    Interface elements exist in quantum superposition until observed. 
+                    User interaction collapses the wave function into deterministic states.
+                </div>
+            </div>
+            
+            <div class="blog-card">
+                <div class="card-title">Hypercube Folding Mechanics</div>
+                <div class="card-meta">4D Geometry • Topology • Transformation</div>
+                <div class="card-content">
+                    Mathematical precision in 4D transformations creates seamless navigation 
+                    between dimensional faces while preserving spatial continuity.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation Bezels -->
+    <div class="nav-bezel left" data-direction="left">←</div>
+    <div class="nav-bezel right" data-direction="right">→</div>
+    <div class="nav-bezel top" data-direction="up">↑</div>
+    <div class="nav-bezel bottom" data-direction="down">↓</div>
+    
+    <!-- Controls -->
+    <div class="blog-controls">
+        <div class="state-dot active" data-state="home"></div>
+        <div class="state-dot" data-state="tech"></div>
+        <div class="state-dot" data-state="quantum"></div>
+        <div class="state-dot" data-state="neural"></div>
+    </div>
+    
+    <div class="scroll-progress">
+        <div class="scroll-fill"></div>
+    </div>
+    
+    <div class="morphing-indicator">DIMENSIONAL FOLD IN PROGRESS...</div>
+
+    <script>
+        // WebGL Background Visualizer
+        const canvas = document.getElementById('board-visualizer');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        
+        if (gl) {
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                gl.viewport(0, 0, canvas.width, canvas.height);
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            const vertexShaderSource = `
+                attribute vec2 a_position;
+                void main() {
+                    gl_Position = vec4(a_position, 0.0, 1.0);
+                }
+            `;
+
+            const fragmentShaderSource = `
+                precision highp float;
+                uniform float u_time;
+                uniform vec2 u_resolution;
+                uniform vec2 u_mouse;
+                uniform float u_portalIntensity;
+                uniform float u_realityTear;
+                
+                // 4D rotation matrix
+                mat4 rotateXW(float theta) {
+                    float c = cos(theta);
+                    float s = sin(theta);
+                    return mat4(
+                        c, 0, 0, -s,
+                        0, 1, 0, 0,
+                        0, 0, 1, 0,
+                        s, 0, 0, c
+                    );
+                }
+                
+                float hypercubeLattice(vec3 p, float gridSize) {
+                    vec3 grid = abs(fract(p / gridSize) - 0.5);
+                    float thickness = 0.02;
+                    float lines = min(min(grid.x, grid.y), grid.z);
+                    return smoothstep(thickness, thickness * 0.5, lines);
+                }
+                
+                vec3 rgbGlitch(vec3 color, vec2 uv, float intensity) {
+                    float offset = intensity * 0.01;
+                    vec3 glitch = vec3(
+                        color.r,
+                        mix(color.g, color.r, intensity * 0.5),
+                        mix(color.b, color.g, intensity * 0.3)
+                    );
+                    return mix(color, glitch, intensity);
+                }
+                
+                void main() {
+                    vec2 uv = gl_FragCoord.xy / u_resolution;
+                    vec2 mouse = u_mouse / u_resolution;
+                    
+                    // 4D space coordinates
+                    vec4 p4d = vec4(uv * 4.0 - 2.0, sin(u_time * 0.5), cos(u_time * 0.3));
+                    p4d = rotateXW(u_time * 0.2) * p4d;
+                    
+                    vec3 p = p4d.xyz;
+                    
+                    // Hypercube lattice
+                    float lattice = hypercubeLattice(p + vec3(u_time * 0.1), 0.5);
+                    
+                    // Color based on position and mouse
+                    vec3 color1 = vec3(0.0, 1.0, 1.0); // Cyan
+                    vec3 color2 = vec3(1.0, 0.0, 1.0); // Magenta
+                    vec3 color3 = vec3(1.0, 1.0, 0.0); // Yellow
+                    
+                    float mouseDist = length(uv - mouse);
+                    vec3 color = mix(mix(color1, color2, sin(u_time + p.z) * 0.5 + 0.5), color3, lattice);
+                    
+                    // Mouse interaction glow
+                    color += exp(-mouseDist * 8.0) * 0.3;
+                    
+                    // Portal effects
+                    if (u_portalIntensity > 0.0) {
+                        float portalDist = length(uv - vec2(0.5));
+                        color += vec3(0.0, 1.0, 1.0) * (1.0 - portalDist) * u_portalIntensity * 0.5;
+                    }
+                    
+                    // Reality tear effects
+                    color = rgbGlitch(color, uv, u_realityTear);
+                    
+                    // Depth fade
+                    color *= 0.1 + lattice * 0.9;
+                    
+                    gl_FragColor = vec4(color, 1.0);
+                }
+            `;
+
+            function createShader(type, source) {
+                const shader = gl.createShader(type);
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                return shader;
+            }
+
+            const vertexShader = createShader(gl.VERTEX_SHADER, vertexShaderSource);
+            const fragmentShader = createShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+            const program = gl.createProgram();
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+            gl.useProgram(program);
+
+            const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+            const positionBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+            const positionLocation = gl.getAttribLocation(program, 'a_position');
+            gl.enableVertexAttribArray(positionLocation);
+            gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+            const timeLocation = gl.getUniformLocation(program, 'u_time');
+            const resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
+            const mouseLocation = gl.getUniformLocation(program, 'u_mouse');
+            const portalLocation = gl.getUniformLocation(program, 'u_portalIntensity');
+            const tearLocation = gl.getUniformLocation(program, 'u_realityTear');
+
+            let mouseX = 0, mouseY = 0;
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = window.innerHeight - e.clientY;
+            });
+
+            function animate(time) {
+                gl.uniform1f(timeLocation, time * 0.001);
+                gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+                gl.uniform2f(mouseLocation, mouseX, mouseY);
+                gl.uniform1f(portalLocation, parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--portal-intensity')));
+                gl.uniform1f(tearLocation, parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--reality-tear')));
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                requestAnimationFrame(animate);
+            }
+            animate(0);
+        }
+
+        // Tesseract Navigation System
+        const tesseract = document.getElementById('tesseract');
+        const navBezels = document.querySelectorAll('.nav-bezel');
+        const stateDots = document.querySelectorAll('.state-dot');
+        const morphingIndicator = document.querySelector('.morphing-indicator');
+        const portalTransition = document.querySelector('.portal-transition');
+        const realityTear = document.querySelector('.reality-tear');
+        
+        let currentState = 'home';
+        let isTransitioning = false;
+
+        // Navigation bezel handlers
+        navBezels.forEach(bezel => {
+            bezel.addEventListener('click', () => {
+                if (isTransitioning) return;
+                
+                const direction = bezel.dataset.direction;
+                foldTesseract(direction);
+            });
+        });
+
+        function foldTesseract(direction) {
+            if (isTransitioning) return;
+            
+            isTransitioning = true;
+            morphingIndicator.style.opacity = '1';
+            
+            // Trigger portal and reality effects
+            document.documentElement.style.setProperty('--portal-intensity', '1');
+            document.documentElement.style.setProperty('--reality-tear', '1');
+            portalTransition.style.opacity = '1';
+            realityTear.style.opacity = '1';
+            
+            // Add folding class
+            tesseract.className = `tesseract-container folding-${direction} tension-building`;
+            
+            setTimeout(() => {
+                // Reset to normal state
+                tesseract.className = 'tesseract-container';
+                morphingIndicator.style.opacity = '0';
+                portalTransition.style.opacity = '0';
+                realityTear.style.opacity = '0';
+                document.documentElement.style.setProperty('--portal-intensity', '0');
+                document.documentElement.style.setProperty('--reality-tear', '0');
+                isTransitioning = false;
+            }, 1500);
+        }
+
+        // State control handlers
+        stateDots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                stateDots.forEach(d => d.classList.remove('active'));
+                dot.classList.add('active');
+                
+                // Change grid vibrance based on state
+                const vibrance = (index + 1) * 0.25;
+                document.documentElement.style.setProperty('--grid-vibrance', vibrance.toString());
+            });
+        });
+
+        // Mouse interaction for portal positioning
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth) * 100;
+            const y = (e.clientY / window.innerHeight) * 100;
+            document.documentElement.style.setProperty('--portal-x', `${x}%`);
+            document.documentElement.style.setProperty('--portal-y', `${y}%`);
+        });
+
+        // Scroll progress tracking
+        function updateScrollProgress() {
+            const scrollable = document.querySelector('.hypercube-face.face-0');
+            if (scrollable) {
+                const scrollPercent = scrollable.scrollTop / (scrollable.scrollHeight - scrollable.clientHeight);
+                document.querySelector('.scroll-fill').style.height = `${Math.max(10, scrollPercent * 100)}%`;
+            }
+        }
+
+        document.querySelector('.hypercube-face.face-0').addEventListener('scroll', updateScrollProgress);
+
+        // Animate transition phase
+        setInterval(() => {
+            const phase = (Date.now() / 3000) % 1;
+            document.documentElement.style.setProperty('--transition-phase', phase.toString());
+        }, 50);
+    </script>
+</body>
+</html>

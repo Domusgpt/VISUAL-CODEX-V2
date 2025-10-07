@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Codex Gallery - Treasure Hunt Experience</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        :root {
+            --neon-cyan: #00ffff;
+            --neon-magenta: #ff00ff;
+            --neon-yellow: #ffff00;
+            --electric-blue: #0080ff;
+            --hot-pink: #ff1088;
+            --cyber-purple: #8000ff;
+            --treasure-gold: #ffd700;
+            --card-bg: rgba(4, 4, 12, 0.95);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: var(--neon-cyan);
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow-x: hidden;
+            cursor: crosshair;
+            height: 100vh;
+            overflow-y: hidden;
+            perspective: 2000px;
+        }
+        
+        /* EVOLVING BACKGROUND SYSTEM */
+        .background-visualizer-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+        
+        .background-visualizer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1.2s ease;
+        }
+        
+        .background-visualizer.active {
+            opacity: 0.8;
+        }
+        
+        /* TREASURE CARD SYSTEM - MUCH LARGER */
+        .treasure-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 95vw;
+            max-width: 1400px;
+            height: 85vh;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 30px;
+            z-index: 100;
+            perspective: 2000px;
+        }
+        
+        .treasure-card {
+            background: var(--card-bg);
+            border: 3px solid var(--treasure-gold);
+            border-radius: 25px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            transform-style: preserve-3d;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            
+            /* Epic R,G,B Moire Shadow System */
+            box-shadow: 
+                /* Red shadow layer */
+                -8px -8px 25px rgba(255, 0, 0, 0.4),
+                /* Green shadow layer */
+                0px 0px 25px rgba(0, 255, 0, 0.4),
+                /* Blue shadow layer */
+                8px 8px 25px rgba(0, 0, 255, 0.4),
+                /* Main glow */
+                0 0 50px var(--treasure-gold),
+                /* Inner glow */
+                inset 0 3px 0 rgba(255, 255, 255, 0.2),
+                /* Depth shadow */
+                0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+        
+        .treasure-card::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: linear-gradient(45deg, 
+                var(--neon-cyan), var(--neon-magenta), var(--neon-yellow), 
+                var(--electric-blue), var(--hot-pink), var(--cyber-purple),
+                var(--treasure-gold), var(--neon-cyan));
+            border-radius: 30px;
+            z-index: -1;
+            opacity: 0;
+            animation: treasureAura 3s ease-in-out infinite alternate;
+        }
+        
+        .treasure-card:hover {
+            transform: scale(1.12) translateZ(50px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 
+                /* Enhanced R,G,B moire on hover */
+                -15px -15px 40px rgba(255, 0, 0, 0.6),
+                0px 0px 40px rgba(0, 255, 0, 0.6),
+                15px 15px 40px rgba(0, 0, 255, 0.6),
+                /* Epic main glow */
+                0 0 80px var(--treasure-gold),
+                /* Treasure aura */
+                0 0 120px rgba(255, 215, 0, 0.5),
+                /* Inner radiance */
+                inset 0 3px 0 rgba(255, 255, 255, 0.4),
+                /* Deep shadow */
+                0 30px 60px rgba(0, 0, 0, 0.8);
+            border-color: var(--neon-magenta);
+        }
+        
+        .treasure-card:hover::before {
+            opacity: 0.7;
+        }
+        
+        @keyframes treasureAura {
+            0% { 
+                opacity: 0.3;
+                transform: scale(1);
+                filter: blur(2px);
+            }
+            100% { 
+                opacity: 0.6;
+                transform: scale(1.02);
+                filter: blur(4px);
+            }
+        }
+        
+        /* TREASURE DISCOVERY STATES */
+        .treasure-card.locked {
+            filter: brightness(0.4) sepia(1) hue-rotate(240deg);
+            transform: scale(0.9) translateZ(-20px);
+            cursor: pointer;
+        }
+        
+        .treasure-card.unlocking {
+            animation: treasureUnlock 1.2s ease-out forwards;
+        }
+        
+        .treasure-card.breaking {
+            animation: treasureBreak 0.8s ease-in forwards;
+        }
+        
+        .treasure-card.reforming {
+            animation: treasureReform 1.0s ease-out forwards;
+        }
+        
+        @keyframes treasureUnlock {
+            0% { 
+                transform: scale(0.9) translateZ(-20px);
+                filter: brightness(0.4) sepia(1) hue-rotate(240deg);
+            }
+            30% {
+                transform: scale(1.1) translateZ(10px) rotateY(10deg);
+                filter: brightness(1.2) saturate(1.5);
+            }
+            60% {
+                transform: scale(1.05) translateZ(20px) rotateY(-5deg);
+                filter: brightness(1.5) saturate(2);
+            }
+            100% { 
+                transform: scale(1) translateZ(0px);
+                filter: brightness(1) saturate(1);
+            }
+        }
+        
+        @keyframes treasureBreak {
+            0% { 
+                transform: scale(1) translateZ(0px) rotateY(0deg);
+                opacity: 1;
+                filter: brightness(1);
+            }
+            30% {
+                transform: scale(1.1) translateZ(30px) rotateY(15deg);
+                filter: brightness(1.5) blur(1px);
+            }
+            70% {
+                transform: scale(0.8) translateZ(-10px) rotateY(-10deg) rotateX(5deg);
+                opacity: 0.7;
+                filter: brightness(0.8) blur(2px);
+            }
+            100% { 
+                transform: scale(0.6) translateZ(-50px) rotateY(30deg) rotateX(15deg);
+                opacity: 0.3;
+                filter: brightness(0.5) blur(3px);
+            }
+        }
+        
+        @keyframes treasureReform {
+            0% { 
+                transform: scale(0.6) translateZ(-50px) rotateY(-30deg) rotateX(-15deg);
+                opacity: 0.3;
+                filter: brightness(2) blur(3px);
+            }
+            40% {
+                transform: scale(0.9) translateZ(10px) rotateY(10deg) rotateX(5deg);
+                opacity: 0.8;
+                filter: brightness(1.5) blur(1px);
+            }
+            70% {
+                transform: scale(1.05) translateZ(20px) rotateY(-5deg);
+                opacity: 1;
+                filter: brightness(1.2) saturate(1.5);
+            }
+            100% { 
+                transform: scale(1) translateZ(0px);
+                opacity: 1;
+                filter: brightness(1) saturate(1);
+            }
+        }
+        
+        /* CARD CONTENT */
+        .card-header {
+            margin-bottom: 20px;
+            z-index: 10;
+            position: relative;
+        }
+        
+        .card-title {
+            color: var(--treasure-gold);
+            font-size: 1.6em;
+            font-weight: 900;
+            margin-bottom: 12px;
+            text-shadow: 
+                0 0 20px var(--treasure-gold),
+                0 0 40px rgba(255, 215, 0, 0.5);
+            transition: all 0.6s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .card-description {
+            color: var(--neon-cyan);
+            font-size: 1.0em;
+            line-height: 1.6;
+            transition: all 0.6s ease;
+            flex-grow: 1;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        
+        .card-preview {
+            width: 100%;
+            height: 220px;
+            border: 3px solid var(--electric-blue);
+            border-radius: 15px;
+            background: rgba(0, 5, 20, 0.9);
+            position: relative;
+            overflow: hidden;
+            margin: 20px 0;
+            transition: all 0.6s ease;
+            box-shadow: 
+                inset 0 0 30px rgba(0, 128, 255, 0.3),
+                0 0 20px rgba(0, 128, 255, 0.2);
+        }
+        
+        .card-preview iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
+        }
+        
+        .card-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: auto;
+            z-index: 10;
+            position: relative;
+        }
+        
+        .card-tag {
+            background: linear-gradient(45deg, rgba(255, 0, 255, 0.3), rgba(0, 255, 255, 0.3));
+            color: var(--neon-magenta);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8em;
+            font-weight: bold;
+            border: 2px solid rgba(255, 0, 255, 0.6);
+            transition: all 0.6s ease;
+            text-shadow: 0 0 8px var(--neon-magenta);
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+        }
+        
+        .card-tag:hover {
+            background: linear-gradient(45deg, rgba(255, 0, 255, 0.6), rgba(0, 255, 255, 0.6));
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.6);
+        }
+        
+        /* PARTICLE TREASURE EFFECTS */
+        .treasure-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+        
+        .treasure-card:hover .treasure-particles {
+            opacity: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--treasure-gold);
+            border-radius: 50%;
+            animation: treasureSparkle 2s ease-in-out infinite;
+            box-shadow: 0 0 10px var(--treasure-gold);
+        }
+        
+        @keyframes treasureSparkle {
+            0%, 100% { 
+                opacity: 0;
+                transform: scale(0) translateY(0px);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1) translateY(-20px);
+            }
+        }
+        
+        /* EPIC UI INDICATORS */
+        .section-indicator {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            background: var(--card-bg);
+            border: 3px solid var(--treasure-gold);
+            border-radius: 20px;
+            padding: 25px 30px;
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            box-shadow: 
+                0 0 40px var(--treasure-gold),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .section-title {
+            color: var(--treasure-gold);
+            font-size: 1.6em;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-shadow: 
+                0 0 20px var(--treasure-gold),
+                0 0 40px rgba(255, 215, 0, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .section-subtitle {
+            color: var(--neon-cyan);
+            font-size: 1.0em;
+            text-shadow: 0 0 15px var(--neon-cyan);
+        }
+        
+        /* CHAOS EVOLUTION METER */
+        .chaos-evolution {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            background: var(--card-bg);
+            border: 3px solid var(--electric-blue);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            min-width: 250px;
+            box-shadow: 
+                0 0 40px var(--electric-blue),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .chaos-title {
+            color: var(--electric-blue);
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px var(--electric-blue);
+            text-transform: uppercase;
+        }
+        
+        .chaos-progress {
+            width: 100%;
+            height: 15px;
+            background: rgba(0, 128, 255, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 10px;
+            border: 1px solid var(--electric-blue);
+        }
+        
+        .chaos-fill {
+            height: 100%;
+            background: linear-gradient(90deg, 
+                var(--electric-blue), var(--hot-pink), 
+                var(--neon-magenta), var(--treasure-gold));
+            border-radius: 8px;
+            transition: width 1.0s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 
+                0 0 20px var(--electric-blue),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            animation: chaosGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes chaosGlow {
+            0% { box-shadow: 0 0 20px var(--electric-blue); }
+            100% { box-shadow: 0 0 30px var(--hot-pink); }
+        }
+        
+        .chaos-label {
+            color: var(--electric-blue);
+            font-size: 0.9em;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 0 0 10px var(--electric-blue);
+        }
+        
+        /* MOMENTUM INDICATOR */
+        .momentum-indicator {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            background: var(--card-bg);
+            border: 3px solid var(--hot-pink);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 0 40px var(--hot-pink),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .momentum-indicator.active {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        
+        .momentum-title {
+            color: var(--hot-pink);
+            font-size: 1.0em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px var(--hot-pink);
+        }
+        
+        .momentum-bar {
+            width: 150px;
+            height: 12px;
+            background: rgba(255, 16, 136, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--hot-pink);
+        }
+        
+        .momentum-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--hot-pink), var(--neon-yellow));
+            border-radius: 6px;
+            transition: width 0.1s ease;
+            box-shadow: 0 0 15px var(--hot-pink);
+        }
+        
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .treasure-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(6, 1fr);
+                gap: 20px;
+                width: 95vw;
+                height: 90vh;
+            }
+            
+            .treasure-card {
+                padding: 25px;
+            }
+            
+            .card-preview {
+                height: 150px;
+            }
+            
+            .card-title {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Visualizer Container -->
+    <div class="background-visualizer-container" id="backgroundContainer">
+        <!-- 7 background visualizers will be created dynamically -->
+    </div>
+    
+    <!-- Section Indicator -->
+    <div class="section-indicator">
+        <div class="section-title" id="sectionTitle">Holographic Genesis</div>
+        <div class="section-subtitle" id="sectionSubtitle">Treasure Hunt • Visual Codex Gallery</div>
+    </div>
+    
+    <!-- Chaos Evolution Meter -->
+    <div class="chaos-evolution">
+        <div class="chaos-title">Chaos Evolution</div>
+        <div class="chaos-progress">
+            <div class="chaos-fill" id="chaosFill" style="width: 15%;"></div>
+        </div>
+        <div class="chaos-label" id="chaosLabel">15% • Genesis Phase</div>
+    </div>
+    
+    <!-- Momentum Indicator -->
+    <div class="momentum-indicator" id="momentumIndicator">
+        <div class="momentum-title">Scroll Power</div>
+        <div class="momentum-bar">
+            <div class="momentum-fill" id="momentumFill" style="width: 0%;"></div>
+        </div>
+    </div>
+    
+    <!-- Treasure Container -->
+    <div class="treasure-container" id="treasureContainer">
+        <!-- 6 treasure cards will be created -->
+    </div>
+
+    <script>
+        console.log('🏆 Visual Codex Treasure Hunt Experience - Epic Discovery System');
+        
+        // REAL VISUAL EFFECTS DATA
+        const contentSets = [
+            // Set 1: Holographic Genesis (15% chaos)
+            [
+                { title: "Neoskeuomorphic Cards", description: "Modern depth-based card design with advanced shadow systems and interactive hover states", tags: ["CSS", "Design", "Cards"], file: "demos/neoskeuomorphic-cards-demo.html", type: "css" },
+                { title: "CSS Glassmorphism", description: "Translucent glass-like interface elements with backdrop blur and transparency", tags: ["CSS", "Glass", "Modern"], file: "demos/css-glassmorphism-demo.html", type: "css" },
+                { title: "Holographic Progress", description: "Futuristic progress indicators with neon glow effects and smooth animations", tags: ["CSS", "Progress", "Neon"], file: "demos/holographic-progress-indicators-demo.html", type: "css" },
+                { title: "State Control Dots", description: "Interactive navigation dot systems with smooth state transitions", tags: ["CSS", "Controls", "Interactive"], file: "demos/state-control-dots-demo.html", type: "css" },
+                { title: "CSS Vaporwave", description: "Retro-futuristic aesthetic elements with classic 80s styling", tags: ["CSS", "Retro", "Aesthetic"], file: "demos/css-vaporwave-aesthetics-demo.html", type: "css" },
+                { title: "Animated Grid Overlay", description: "Dynamic grid pattern animations with morphing geometric structures", tags: ["CSS", "Grid", "Animation"], file: "demos/animated-grid-overlay-demo.html", type: "css" }
+            ],
+            // Set 2: Plasma Emergence (35% chaos)
+            [
+                { title: "Holographic Visualizer", description: "Multi-layer WebGL blend mode system with depth-based holographic effects", tags: ["WebGL", "Holographic", "Blend"], file: "effects/holographic-visualizer.html", type: "webgl" },
+                { title: "CSS Cyberpunk UI", description: "Futuristic interface design elements with neon highlights and tech aesthetics", tags: ["CSS", "Cyberpunk", "Interface"], file: "demos/css-cyberpunk-ui-demo.html", type: "css" },
+                { title: "Holographic Particle System", description: "Advanced particle physics visualization with 3D depth and movement", tags: ["WebGL", "Particles", "Physics"], file: "demos/holographic-particle-system-demo.html", type: "webgl" },
+                { title: "CSS Glitch Effects", description: "Digital corruption and distortion effects with RGB channel separation", tags: ["CSS", "Glitch", "Digital"], file: "demos/css-glitch-effects-demo.html", type: "css" },
+                { title: "Holographic Depth Layers", description: "Multi-dimensional depth visualization with parallax scrolling effects", tags: ["CSS", "Depth", "Layers"], file: "demos/holographic-depth-layers-demo.html", type: "css" },
+                { title: "VIB34D Adaptive Cards", description: "Dynamic responsive card system with intelligent layout adaptation", tags: ["CSS", "Adaptive", "Responsive"], file: "demos/vib34d-adaptive-cards-demo.html", type: "css" }
+            ],
+            // Set 3: Neural Awakening (50% chaos)
+            [
+                { title: "MVEP Moire Hypercube", description: "4D hypercube with interference patterns and mathematical precision", tags: ["WebGL", "4D", "Hypercube"], file: "effects/mvep-moire-hypercube.html", type: "webgl" },
+                { title: "Moire Hypercube Codex", description: "Advanced 4D mathematical visualization with interactive rotation controls", tags: ["WebGL", "Math", "4D"], file: "demos/moire-hypercube-codex-demo.html", type: "webgl" },
+                { title: "Hypercube Lattice Visualizer", description: "Geometric lattice structure system with crystalline formations", tags: ["WebGL", "Lattice", "Geometry"], file: "demos/hypercube-lattice-visualizer-demo.html", type: "webgl" },
+                { title: "Chaos Overlay Effects", description: "Digital interference and chaos patterns with algorithmic generation", tags: ["WebGL", "Chaos", "Interference"], file: "demos/chaos-overlay-effects-demo.html", type: "webgl" },
+                { title: "System Orchestration Engine", description: "Coordinated multi-system visualization with synchronized behaviors", tags: ["WebGL", "System", "Orchestra"], file: "demos/system-orchestration-engine-demo.html", type: "webgl" },
+                { title: "VIB3Code Reactive Core", description: "Reactive state management system with real-time data visualization", tags: ["WebGL", "Reactive", "Core"], file: "demos/vib3code-reactive-core-demo.html", type: "webgl" }
+            ],
+            // Set 4: Crystal Resonance (65% chaos)
+            [
+                { title: "VIB34D Complete System", description: "Revolutionary 4D framework with 8+ geometric systems and advanced rendering", tags: ["WebGL", "VIB34D", "Framework"], file: "effects/vib34d-complete-system.html", type: "webgl" },
+                { title: "Working 4D HyperAV", description: "Proven 4D audiovisual system with synchronized sound and visuals", tags: ["WebGL", "4D", "Audio"], file: "effects/working-4d-hyperav.html", type: "webgl" },
+                { title: "Hypercube Core Framework", description: "Core 4D mathematics framework with optimized projection algorithms", tags: ["WebGL", "Core", "Math"], file: "effects/hypercube-core-framework.html", type: "webgl" },
+                { title: "VIB34D Production Spectacular", description: "Production-ready VIB34D system with performance optimizations", tags: ["WebGL", "Production", "VIB34D"], file: "demos/vib34d-production-spectacular-demo.html", type: "webgl" },
+                { title: "VIB34D Editor Dashboard", description: "Interactive editor interface with real-time parameter adjustment", tags: ["WebGL", "Editor", "Dashboard"], file: "demos/vib34d-editor-dashboard-demo.html", type: "webgl" },
+                { title: "Polytopal Consciousness Shader", description: "N-dimensional consciousness visualization with abstract thought patterns", tags: ["WebGL", "Polytopal", "Consciousness"], file: "demos/polytopal-consciousness-shader-demo.html", type: "webgl" }
+            ],
+            // Set 5: Quantum Chaos (80% chaos)
+            [
+                { title: "Insane Hyperdimensional Matrix", description: "8D+ chaos visualization with fractal tessellations and infinite complexity", tags: ["WebGL", "8D", "Chaos"], file: "effects/insane-hyperdimensional-matrix.html", type: "webgl" },
+                { title: "Elegant 4D Flow Visualizer", description: "Organic 4D movements with graceful particle systems and fluid dynamics", tags: ["WebGL", "4D", "Flow"], file: "effects/elegant-4d-flow-visualizer.html", type: "webgl" },
+                { title: "VIB34D Card Bending System", description: "Advanced 3D CSS transform morphing with 6 unique bending behaviors", tags: ["CSS", "3D", "Morphing"], file: "effects/vib34d-advanced-card-bending-system.html", type: "css" },
+                { title: "Enhanced Color Shift System", description: "Extreme filter effects with contrast shifts and chromatic aberration", tags: ["CSS", "Color", "Filters"], file: "effects/enhanced-color-shift-contrast-system.html", type: "css" },
+                { title: "MillZ Maleficarum Codex", description: "Advanced magical interface system with spell-casting interactions", tags: ["WebGL", "Magic", "Interface"], file: "demos/millzmaleficarum-codex-demo.html", type: "webgl" },
+                { title: "VIB34D Morphing Blog", description: "Dynamic content morphing system with seamless transitions", tags: ["WebGL", "Morphing", "Blog"], file: "demos/vib34d-morphing-blog-demo.html", type: "webgl" }
+            ],
+            // Set 6: Fractal Storm (90% chaos)
+            [
+                { title: "Narrative Choreography Engine", description: "JSON-driven scroll transformations with story-based interactions", tags: ["WebGL", "Narrative", "Choreography"], file: "effects/narrative-choreography-engine.html", type: "webgl" },
+                { title: "Holographic Pulse System", description: "Multi-layer glow animations with synchronized breathing effects", tags: ["WebGL", "Pulse", "Glow"], file: "effects/holographic-pulse-system.html", type: "webgl" },
+                { title: "Multi-Canvas Visualizer", description: "Synchronized multi-canvas system with coordinated rendering", tags: ["WebGL", "Multi", "Canvas"], file: "effects/multi-canvas-visualizer-system.html", type: "webgl" },
+                { title: "Tabbed Visualizer System", description: "Advanced WebGL tab management with state preservation", tags: ["WebGL", "Tabs", "Management"], file: "effects/tabbed-visualizer-system.html", type: "webgl" },
+                { title: "Hypercube Core WebGL Framework", description: "High-performance shader framework with optimization algorithms", tags: ["WebGL", "Framework", "Performance"], file: "effects/hypercube-core-webgl-framework.html", type: "webgl" },
+                { title: "VIB3 Digital Magazine", description: "Interactive digital publication with immersive page transitions", tags: ["WebGL", "Magazine", "Interactive"], file: "demos/vib3code-digital-magazine-demo.html", type: "webgl" }
+            ],
+            // Set 7: Dimensional Collapse (100% chaos)
+            [
+                { title: "Active Holographic Systems", description: "125 WebGL visualizers in mega-demo with coordinated chaos", tags: ["WebGL", "Mega", "Active"], file: "demos/active-holographic-systems-mega-demo.html", type: "webgl", isHeavy: true },
+                { title: "Holographic Parallax Systems", description: "Advanced parallax visualization with infinite depth perception", tags: ["WebGL", "Parallax", "System"], file: "demos/holographic-parallax-systems-mega-demo.html", type: "webgl" },
+                { title: "Tech Layout Active Holographic", description: "Advanced layout with active systems and dynamic positioning", tags: ["WebGL", "Layout", "Tech"], file: "demos/tech-layout-active-holographic-demo.html", type: "webgl" },
+                { title: "VIB34D Production Spectacular", description: "Ultimate production system with all VIB34D features enabled", tags: ["WebGL", "Ultimate", "Production"], file: "demos/vib34d-production-spectacular-demo.html", type: "webgl" },
+                { title: "VIB3Code Digital Magazine", description: "Complete digital magazine system with all interactive features", tags: ["WebGL", "Complete", "Magazine"], file: "demos/vib3code-digital-magazine-demo.html", type: "webgl" },
+                { title: "MillZ Maleficarum Codex", description: "Full magical interface system with advanced spell combinations", tags: ["WebGL", "Full", "Magic"], file: "demos/millzmaleficarum-codex-demo.html", type: "webgl" }
+            ]
+        ];
+        
+        // BACKGROUND THEMES
+        const backgroundThemes = [
+            { name: 'Holographic Genesis', chaos: 0.15, label: 'Genesis Phase' },
+            { name: 'Plasma Emergence', chaos: 0.35, label: 'Emergence Phase' },
+            { name: 'Neural Awakening', chaos: 0.50, label: 'Awakening Phase' },
+            { name: 'Crystal Resonance', chaos: 0.65, label: 'Resonance Phase' },
+            { name: 'Quantum Chaos', chaos: 0.80, label: 'Chaos Phase' },
+            { name: 'Fractal Storm', chaos: 0.90, label: 'Storm Phase' },
+            { name: 'Dimensional Collapse', chaos: 1.0, label: 'Collapse Phase' }
+        ];
+        
+        // TREASURE HUNT EXPERIENCE MANAGER
+        class TreasureHuntExperienceManager {
+            constructor() {
+                this.currentSection = 0;
+                this.scrollMomentum = 0;
+                this.isTransitioning = false;
+                this.momentumThreshold = 25;
+                this.backgroundVisualizers = [];
+                this.treasureParticles = [];
+                
+                this.initialize();
+            }
+            
+            initialize() {
+                console.log('🏆 Initializing Treasure Hunt Experience...');
+                
+                this.createBackgroundVisualizers();
+                this.createTreasureCards();
+                this.setupTactileScrollPhysics();
+                this.updateContent();
+                this.createTreasureParticles();
+                
+                console.log('✅ Treasure Hunt ready - 6 epic floating treasures with auto-loading previews');
+            }
+            
+            createBackgroundVisualizers() {
+                const container = document.getElementById('backgroundContainer');
+                
+                backgroundThemes.forEach((theme, index) => {
+                    const visualizerDiv = document.createElement('div');
+                    visualizerDiv.className = 'background-visualizer';
+                    visualizerDiv.id = `bg-visualizer-${index}`;
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.id = `bg-canvas-${index}`;
+                    visualizerDiv.appendChild(canvas);
+                    
+                    container.appendChild(visualizerDiv);
+                    
+                    // Create visualizer with delay
+                    setTimeout(() => {
+                        const visualizer = new EpicBackgroundVisualizer(canvas, theme, index);
+                        this.backgroundVisualizers.push(visualizer);
+                    }, index * 100);
+                });
+            }
+            
+            createTreasureCards() {
+                const container = document.getElementById('treasureContainer');
+                
+                for (let i = 0; i < 6; i++) {
+                    const card = document.createElement('div');
+                    card.className = 'treasure-card';
+                    card.id = `treasure-card-${i}`;
+                    
+                    card.innerHTML = `
+                        <div class="treasure-particles" id="particles-${i}"></div>
+                        <div class="card-header">
+                            <div class="card-title" id="title-${i}">Discovering Treasure...</div>
+                        </div>
+                        <div class="card-description" id="description-${i}">Ancient secrets await your discovery...</div>
+                        <div class="card-preview" id="preview-${i}">
+                            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--electric-blue); font-size: 1.0em;">
+                                ✨ Loading magical preview...
+                            </div>
+                        </div>
+                        <div class="card-tags" id="tags-${i}">
+                            <!-- Tags will be populated dynamically -->
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                    this.createCardParticles(i);
+                }
+            }
+            
+            createCardParticles(cardIndex) {
+                const particleContainer = document.getElementById(`particles-${cardIndex}`);
+                
+                for (let i = 0; i < 15; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.top = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 2 + 's';
+                    particle.style.animationDuration = (1.5 + Math.random() * 1) + 's';
+                    
+                    particleContainer.appendChild(particle);
+                }
+            }
+            
+            createTreasureParticles() {
+                // Global treasure particles for transitions
+                this.treasureParticles = [];
+                for (let i = 0; i < 50; i++) {
+                    this.treasureParticles.push({
+                        x: Math.random() * window.innerWidth,
+                        y: Math.random() * window.innerHeight,
+                        vx: (Math.random() - 0.5) * 4,
+                        vy: (Math.random() - 0.5) * 4,
+                        life: Math.random(),
+                        size: Math.random() * 3 + 1
+                    });
+                }
+            }
+            
+            setupTactileScrollPhysics() {
+                let momentumDecay;
+                
+                window.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    
+                    if (this.isTransitioning) return;
+                    
+                    // Build momentum
+                    const delta = Math.abs(e.deltaY);
+                    this.scrollMomentum += delta * 0.4;
+                    this.scrollMomentum = Math.min(this.scrollMomentum, 100);
+                    
+                    // Show momentum indicator
+                    this.showMomentumIndicator();
+                    
+                    // Clear previous decay
+                    clearTimeout(momentumDecay);
+                    
+                    // Check for treasure discovery threshold
+                    if (this.scrollMomentum >= this.momentumThreshold) {
+                        this.triggerTreasureDiscovery(e.deltaY > 0 ? 1 : -1);
+                    } else {
+                        // Set momentum decay
+                        momentumDecay = setTimeout(() => {
+                            this.decayMomentum();
+                        }, 150);
+                    }
+                }, { passive: false });
+                
+                // Touch support
+                let touchStartY = 0;
+                let touchMomentum = 0;
+                
+                window.addEventListener('touchstart', (e) => {
+                    touchStartY = e.touches[0].clientY;
+                    touchMomentum = 0;
+                });
+                
+                window.addEventListener('touchmove', (e) => {
+                    if (this.isTransitioning) return;
+                    
+                    const touchY = e.touches[0].clientY;
+                    const deltaY = touchStartY - touchY;
+                    
+                    touchMomentum += Math.abs(deltaY) * 0.6;
+                    touchMomentum = Math.min(touchMomentum, 100);
+                    
+                    this.scrollMomentum = touchMomentum;
+                    this.showMomentumIndicator();
+                    
+                    if (this.scrollMomentum >= this.momentumThreshold) {
+                        this.triggerTreasureDiscovery(deltaY > 0 ? 1 : -1);
+                    }
+                });
+                
+                window.addEventListener('touchend', () => {
+                    setTimeout(() => {
+                        this.decayMomentum();
+                    }, 150);
+                });
+            }
+            
+            triggerTreasureDiscovery(direction) {
+                if (this.isTransitioning) return;
+                
+                const newSection = this.currentSection + direction;
+                
+                // Boundary check with wraparound
+                let targetSection;
+                if (newSection < 0) {
+                    targetSection = 6; // Wrap to last section
+                } else if (newSection > 6) {
+                    targetSection = 0; // Wrap to first section
+                } else {
+                    targetSection = newSection;
+                }
+                
+                console.log(`🏆 Treasure Discovery: ${this.currentSection} → ${targetSection} (power: ${this.scrollMomentum.toFixed(1)})`);
+                
+                this.isTransitioning = true;
+                this.scrollMomentum = 0;
+                this.hideMomentumIndicator();
+                
+                // Epic treasure transition
+                this.performTreasureTransition(targetSection);
+                
+                setTimeout(() => {
+                    this.isTransitioning = false;
+                }, 1200);
+            }
+            
+            performTreasureTransition(targetSection) {
+                this.currentSection = targetSection;
+                
+                // Update background
+                this.updateBackgroundVisibility();
+                
+                // Treasure breaking and reforming sequence
+                this.treasureBreakingSequence();
+                
+                // Update UI
+                setTimeout(() => {
+                    this.updateUI();
+                }, 200);
+            }
+            
+            treasureBreakingSequence() {
+                const cards = document.querySelectorAll('.treasure-card');
+                
+                // Phase 1: Breaking animation
+                cards.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.classList.add('breaking');
+                        
+                        // Remove breaking class and add reforming
+                        setTimeout(() => {
+                            card.classList.remove('breaking');
+                            card.classList.add('reforming');
+                            
+                            // Update content during reform
+                            setTimeout(() => {
+                                this.updateCardContent(index);
+                            }, 200);
+                            
+                            // Remove reforming class
+                            setTimeout(() => {
+                                card.classList.remove('reforming');
+                            }, 1000);
+                            
+                        }, 800);
+                    }, index * 100);
+                });
+            }
+            
+            updateCardContent(cardIndex) {
+                const currentSet = contentSets[this.currentSection];
+                const content = currentSet[cardIndex];
+                
+                document.getElementById(`title-${cardIndex}`).textContent = content.title;
+                document.getElementById(`description-${cardIndex}`).textContent = content.description;
+                
+                // Update tags
+                const tagsContainer = document.getElementById(`tags-${cardIndex}`);
+                tagsContainer.innerHTML = content.tags.map(tag => 
+                    `<span class="card-tag">${tag}</span>`
+                ).join('');
+                
+                // Auto-load preview (no click needed)
+                this.autoLoadPreview(cardIndex, content);
+            }
+            
+            updateContent() {
+                const currentSet = contentSets[this.currentSection];
+                
+                for (let i = 0; i < 6; i++) {
+                    this.updateCardContent(i);
+                }
+            }
+            
+            autoLoadPreview(cardIndex, content) {
+                const preview = document.getElementById(`preview-${cardIndex}`);
+                
+                if (content.isHeavy) {
+                    preview.innerHTML = `
+                        <div style="padding: 25px; text-align: center;">
+                            <div style="color: var(--treasure-gold); margin-bottom: 15px; font-size: 1.2em;">⚡ LEGENDARY SYSTEM</div>
+                            <div style="font-size: 0.9em; line-height: 1.6; color: var(--neon-cyan);">
+                                125 WebGL visualizers await<br>
+                                <button onclick="window.open('${content.file}', '_blank')" 
+                                        style="margin-top: 12px; padding: 10px 20px; background: linear-gradient(45deg, var(--treasure-gold), var(--hot-pink)); 
+                                               border: 2px solid var(--treasure-gold); color: #000; 
+                                               border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em;">
+                                    🚀 Launch Epic Demo
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Auto-load with epic entrance
+                    setTimeout(() => {
+                        preview.innerHTML = `
+                            <iframe src="${content.file}" 
+                                    width="100%" 
+                                    height="100%" 
+                                    frameborder="0"
+                                    loading="lazy"
+                                    style="opacity: 0; transition: opacity 0.8s ease;">
+                            </iframe>
+                        `;
+                        
+                        const iframe = preview.querySelector('iframe');
+                        iframe.onload = () => {
+                            iframe.style.opacity = '1';
+                        };
+                    }, cardIndex * 200 + 300); // Staggered loading for epic effect
+                }
+            }
+            
+            updateBackgroundVisibility() {
+                const backgrounds = document.querySelectorAll('.background-visualizer');
+                backgrounds.forEach((bg, index) => {
+                    bg.classList.toggle('active', index === this.currentSection);
+                });
+            }
+            
+            showMomentumIndicator() {
+                const indicator = document.getElementById('momentumIndicator');
+                const fill = document.getElementById('momentumFill');
+                
+                indicator.classList.add('active');
+                fill.style.width = `${this.scrollMomentum}%`;
+            }
+            
+            hideMomentumIndicator() {
+                const indicator = document.getElementById('momentumIndicator');
+                indicator.classList.remove('active');
+            }
+            
+            decayMomentum() {
+                const decayInterval = setInterval(() => {
+                    this.scrollMomentum -= 3;
+                    
+                    if (this.scrollMomentum <= 0) {
+                        this.scrollMomentum = 0;
+                        this.hideMomentumIndicator();
+                        clearInterval(decayInterval);
+                    } else {
+                        this.showMomentumIndicator();
+                    }
+                }, 50);
+            }
+            
+            updateUI() {
+                const theme = backgroundThemes[this.currentSection];
+                
+                // Update section info
+                document.getElementById('sectionTitle').textContent = theme.name;
+                document.getElementById('sectionSubtitle').textContent = `Treasure Hunt • Visual Codex Gallery`;
+                
+                // Update chaos meter
+                const chaosPercentage = (theme.chaos * 100).toFixed(0);
+                const chaosFill = document.getElementById('chaosFill');
+                const chaosLabel = document.getElementById('chaosLabel');
+                
+                chaosFill.style.width = `${chaosPercentage}%`;
+                chaosLabel.textContent = `${chaosPercentage}% • ${theme.label}`;
+            }
+            
+            startRenderLoop() {
+                const render = () => {
+                    this.backgroundVisualizers.forEach(viz => {
+                        if (viz) viz.render();
+                    });
+                    requestAnimationFrame(render);
+                };
+                
+                render();
+                console.log('🎬 Epic treasure render loop started');
+            }
+        }
+        
+        // EPIC BACKGROUND VISUALIZER
+        class EpicBackgroundVisualizer {
+            constructor(canvas, theme, sectionIndex) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.theme = theme;
+                this.sectionIndex = sectionIndex;
+                this.chaosLevel = theme.chaos;
+                
+                this.particles = [];
+                this.geometries = [];
+                this.startTime = Date.now();
+                
+                this.resize();
+                this.initializeParticles();
+                
+                console.log(`🏆 Epic Background ${sectionIndex}: ${theme.name} (${(theme.chaos * 100).toFixed(0)}% chaos)`);
+            }
+            
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+            
+            initializeParticles() {
+                this.particles = [];
+                const particleCount = Math.floor(100 + this.chaosLevel * 300);
+                
+                for (let i = 0; i < particleCount; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * (2 + this.chaosLevel * 6),
+                        vy: (Math.random() - 0.5) * (2 + this.chaosLevel * 6),
+                        size: Math.random() * (3 + this.chaosLevel * 6),
+                        hue: (this.sectionIndex * 50 + Math.random() * 100) % 360,
+                        life: Math.random(),
+                        decay: Math.random() * 0.008 + 0.002,
+                        rotation: Math.random() * Math.PI * 2,
+                        rotationSpeed: (Math.random() - 0.5) * 0.1
+                    });
+                }
+            }
+            
+            render() {
+                this.resize();
+                
+                // Epic background clear with chaos intensity
+                this.ctx.fillStyle = `rgba(0, 0, 0, ${0.15 - this.chaosLevel * 0.08})`;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                const time = (Date.now() - this.startTime) * 0.001;
+                
+                // Draw epic geometry
+                this.drawEpicGeometry(time);
+                
+                // Draw treasure particles
+                this.drawTreasureParticles(time);
+                
+                // Draw chaos overlays
+                if (this.chaosLevel > 0.5) {
+                    this.drawChaosOverlays(time);
+                }
+            }
+            
+            drawEpicGeometry(time) {
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                const gridSize = 80 - this.chaosLevel * 40;
+                
+                // Multi-layer geometric patterns
+                for (let layer = 0; layer < 3; layer++) {
+                    const layerOffset = layer * 0.3;
+                    const layerSize = gridSize * (1 + layer * 0.2);
+                    
+                    this.ctx.strokeStyle = `hsla(${this.sectionIndex * 60 + layer * 30}, 90%, 70%, ${0.1 + this.chaosLevel * 0.3})`;
+                    this.ctx.lineWidth = 1 + this.chaosLevel * 3 + layer;
+                    
+                    // Epic grid with chaos distortion
+                    for (let x = -layerSize; x < this.canvas.width + layerSize; x += layerSize) {
+                        for (let y = -layerSize; y < this.canvas.height + layerSize; y += layerSize) {
+                            const distortX = Math.sin(time * 0.5 + x * 0.01 + layerOffset) * this.chaosLevel * 30;
+                            const distortY = Math.cos(time * 0.7 + y * 0.01 + layerOffset) * this.chaosLevel * 30;
+                            const rotation = time * 0.2 + this.chaosLevel * 2;
+                            
+                            this.ctx.save();
+                            this.ctx.translate(x + distortX, y + distortY);
+                            this.ctx.rotate(rotation);
+                            
+                            this.ctx.beginPath();
+                            this.ctx.rect(-layerSize * 0.4, -layerSize * 0.4, layerSize * 0.8, layerSize * 0.8);
+                            this.ctx.stroke();
+                            
+                            // Add connecting lines for treasure feel
+                            if (layer === 0) {
+                                this.ctx.beginPath();
+                                this.ctx.moveTo(0, 0);
+                                this.ctx.lineTo(layerSize * 0.6, 0);
+                                this.ctx.moveTo(0, 0);
+                                this.ctx.lineTo(0, layerSize * 0.6);
+                                this.ctx.stroke();
+                            }
+                            
+                            this.ctx.restore();
+                        }
+                    }
+                }
+            }
+            
+            drawTreasureParticles(time) {
+                this.particles.forEach(particle => {
+                    // Update particle
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.life -= particle.decay;
+                    particle.rotation += particle.rotationSpeed;
+                    
+                    // Reset if dead
+                    if (particle.life <= 0) {
+                        particle.x = Math.random() * this.canvas.width;
+                        particle.y = Math.random() * this.canvas.height;
+                        particle.life = 1;
+                        particle.hue = (this.sectionIndex * 50 + Math.random() * 100) % 360;
+                    }
+                    
+                    // Wrap around
+                    if (particle.x < 0) particle.x = this.canvas.width;
+                    if (particle.x > this.canvas.width) particle.x = 0;
+                    if (particle.y < 0) particle.y = this.canvas.height;
+                    if (particle.y > this.canvas.height) particle.y = 0;
+                    
+                    // Draw epic particle with treasure glow
+                    const alpha = particle.life * (0.4 + this.chaosLevel * 0.6);
+                    const brightness = 60 + this.chaosLevel * 30;
+                    
+                    this.ctx.save();
+                    this.ctx.translate(particle.x, particle.y);
+                    this.ctx.rotate(particle.rotation);
+                    
+                    // Main particle
+                    this.ctx.fillStyle = `hsla(${particle.hue}, 100%, ${brightness}%, ${alpha})`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Treasure glow effect
+                    this.ctx.fillStyle = `hsla(${particle.hue + 60}, 100%, 80%, ${alpha * 0.3})`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(0, 0, particle.size * 2, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    this.ctx.restore();
+                });
+            }
+            
+            drawChaosOverlays(time) {
+                // High chaos level overlay effects
+                const overlayIntensity = (this.chaosLevel - 0.5) * 2; // 0 to 1 for chaos > 50%
+                
+                // Chaotic interference patterns
+                this.ctx.strokeStyle = `hsla(${this.sectionIndex * 60}, 100%, 60%, ${overlayIntensity * 0.2})`;
+                this.ctx.lineWidth = overlayIntensity * 4;
+                
+                for (let i = 0; i < overlayIntensity * 20; i++) {
+                    const x1 = Math.random() * this.canvas.width;
+                    const y1 = Math.random() * this.canvas.height;
+                    const x2 = x1 + (Math.random() - 0.5) * 200 * overlayIntensity;
+                    const y2 = y1 + (Math.random() - 0.5) * 200 * overlayIntensity;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x1, y1);
+                    this.ctx.lineTo(x2, y2);
+                    this.ctx.stroke();
+                }
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            console.log('🏆 Starting Visual Codex Treasure Hunt Experience...');
+            const manager = new TreasureHuntExperienceManager();
+            manager.startRenderLoop();
+            window.treasureManager = manager;
+        });
+        
+    </script>
+</body>
+</html>

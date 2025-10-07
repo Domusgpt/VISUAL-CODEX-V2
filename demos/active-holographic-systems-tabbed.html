@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Holographic Systems - Tabbed Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: white;
+            font-family: 'Orbitron', 'Courier New', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+        
+        .demo-header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 2000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid #00ffff;
+            backdrop-filter: blur(10px);
+        }
+        
+        .demo-title {
+            color: #00ffff;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        
+        .demo-counter {
+            color: #ff00ff;
+            font-size: 0.8rem;
+        }
+        
+        /* TAB NAVIGATION */
+        .tab-navigation {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1500;
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #00ffff;
+            backdrop-filter: blur(10px);
+            flex-wrap: wrap;
+            max-width: 90vw;
+            justify-content: center;
+        }
+        
+        .tab-button {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.8rem;
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        .tab-button:hover {
+            background: rgba(0, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .tab-button.active {
+            background: rgba(0, 255, 255, 0.3);
+            border-width: 2px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        
+        /* PAGE INDICATOR */
+        .page-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1500;
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid #00ffff;
+            backdrop-filter: blur(10px);
+        }
+        
+        .page-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(0, 255, 255, 0.3);
+            border: 1px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .page-dot:hover {
+            transform: scale(1.2);
+        }
+        
+        .page-dot.active {
+            background: #00ffff;
+            box-shadow: 0 0 10px #00ffff;
+        }
+        
+        /* ACTIVE HOLOGRAPHIC GRID - 3 ITEMS */
+        .holographic-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            width: 90vw;
+            max-width: 1400px;
+            margin: 200px auto 100px;
+            padding: 20px;
+        }
+        
+        /* BASE ACTIVE HOLOGRAPHIC CONTAINER */
+        .active-holographic-container {
+            position: relative;
+            background: #000;
+            border: 2px solid rgba(0, 255, 255, 0.4);
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            height: 350px;
+        }
+        
+        .active-holographic-container:hover {
+            border-color: rgba(0, 255, 255, 0.8);
+            transform: scale(1.05) rotateX(2deg) rotateY(2deg);
+            box-shadow: 0 20px 50px rgba(0, 255, 255, 0.6);
+        }
+        
+        /* MULTI-LAYER CANVAS SYSTEM */
+        .holographic-depth-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            perspective: 800px;
+            transform-style: preserve-3d;
+        }
+        
+        .depth-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+        }
+        
+        .depth-layer.background {
+            z-index: 1;
+            transform: translateZ(-50px);
+        }
+        
+        .depth-layer.shadow {
+            z-index: 2;
+            transform: translateZ(-25px);
+        }
+        
+        .depth-layer.content {
+            z-index: 3;
+            transform: translateZ(0px);
+        }
+        
+        .depth-layer.highlight {
+            z-index: 4;
+            transform: translateZ(25px);
+        }
+        
+        .depth-layer.accent {
+            z-index: 5;
+            transform: translateZ(50px);
+        }
+        
+        /* VISUALIZER CANVAS STYLING */
+        .visualizer-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* VARIANT TITLES */
+        .variant-title {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            font-size: 1rem;
+            color: #00ffff;
+            text-align: center;
+            text-shadow: 0 0 10px #00ffff;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px;
+            border-radius: 5px;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        /* NAVIGATION ARROWS */
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #00ffff;
+            transition: all 0.3s ease;
+            z-index: 1400;
+        }
+        
+        .nav-arrow:hover {
+            background: rgba(0, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .nav-arrow.prev {
+            left: 20px;
+        }
+        
+        .nav-arrow.next {
+            right: 20px;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .holographic-grid {
+                grid-template-columns: 1fr;
+                margin-top: 160px;
+            }
+            
+            .tab-navigation {
+                top: 80px;
+                max-width: 95vw;
+            }
+            
+            .tab-button {
+                font-size: 0.7rem;
+                padding: 8px 12px;
+                min-width: 80px;
+            }
+            
+            .active-holographic-container {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-header">
+        <div class="demo-title">ACTIVE HOLOGRAPHIC SYSTEMS</div>
+        <div class="demo-counter">3 Active Canvases × 10 Pages = 30 Variations</div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation" id="tabNavigation">
+        <!-- Tabs will be generated here -->
+    </div>
+
+    <!-- Main Grid (3 visualizers) -->
+    <div class="holographic-grid" id="holographicGrid">
+        <!-- 3 Active Holographic Containers will be displayed at a time -->
+    </div>
+
+    <!-- Navigation Arrows -->
+    <div class="nav-arrow prev" onclick="navigatePage(-1)">←</div>
+    <div class="nav-arrow next" onclick="navigatePage(1)">→</div>
+
+    <!-- Page Indicator -->
+    <div class="page-indicator" id="pageIndicator">
+        <!-- Page dots will be generated here -->
+    </div>
+
+    <script>
+        console.log('🌌 Active Holographic Systems - Tabbed Edition');
+        
+        // Copy the ActiveHolographicVisualizer class from the original
+        class ActiveHolographicVisualizer {
+            // ... (same implementation as original)
+            constructor(canvasId, role = 'content', geometry = 'hypercube', reactivity = 1.0) {
+                this.canvas = document.getElementById(canvasId);
+                this.role = role;
+                this.geometry = geometry;
+                this.reactivity = reactivity;
+                this.gl = this.canvas.getContext('webgl');
+                
+                if (!this.gl) {
+                    console.error(`WebGL not supported for ${canvasId}`);
+                    return;
+                }
+                
+                this.startTime = Date.now();
+                this.initShaders();
+                this.initBuffers();
+                this.resize();
+                
+                console.log(`✅ Active Holographic Visualizer (${role}/${geometry})`);
+            }
+            
+            initShaders() {
+                // Simplified shader implementation
+                const vertexShaderSource = `
+                    attribute vec2 a_position;
+                    void main() {
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                    }
+                `;
+                
+                const fragmentShaderSource = `
+                    precision highp float;
+                    uniform vec2 u_resolution;
+                    uniform float u_time;
+                    uniform vec2 u_mouse;
+                    
+                    void main() {
+                        vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+                        float time = u_time * 0.001;
+                        
+                        // Create holographic pattern
+                        vec3 color = vec3(
+                            sin(uv.x * 10.0 + time) * 0.5 + 0.5,
+                            sin(uv.y * 10.0 + time * 1.3) * 0.5 + 0.5,
+                            sin((uv.x + uv.y) * 10.0 + time * 0.7) * 0.5 + 0.5
+                        );
+                        
+                        gl_FragColor = vec4(color, 1.0);
+                    }
+                `;
+                
+                this.program = this.createProgram(vertexShaderSource, fragmentShaderSource);
+                this.uniforms = {
+                    resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
+                    time: this.gl.getUniformLocation(this.program, 'u_time'),
+                    mouse: this.gl.getUniformLocation(this.program, 'u_mouse')
+                };
+            }
+            
+            createProgram(vertexSource, fragmentSource) {
+                const vertexShader = this.createShader(this.gl.VERTEX_SHADER, vertexSource);
+                const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, fragmentSource);
+                
+                const program = this.gl.createProgram();
+                this.gl.attachShader(program, vertexShader);
+                this.gl.attachShader(program, fragmentShader);
+                this.gl.linkProgram(program);
+                
+                if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+                    console.error('Program linking failed');
+                    return null;
+                }
+                
+                return program;
+            }
+            
+            createShader(type, source) {
+                const shader = this.gl.createShader(type);
+                this.gl.shaderSource(shader, source);
+                this.gl.compileShader(shader);
+                
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+                    console.error('Shader compilation failed');
+                    return null;
+                }
+                
+                return shader;
+            }
+            
+            initBuffers() {
+                const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+                
+                this.buffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, positions, this.gl.STATIC_DRAW);
+                
+                const positionLocation = this.gl.getAttribLocation(this.program, 'a_position');
+                this.gl.enableVertexAttribArray(positionLocation);
+                this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+            }
+            
+            resize() {
+                this.canvas.width = this.canvas.clientWidth;
+                this.canvas.height = this.canvas.clientHeight;
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            }
+            
+            render() {
+                if (!this.program) return;
+                
+                this.resize();
+                this.gl.useProgram(this.program);
+                
+                const time = Date.now() - this.startTime;
+                
+                this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
+                this.gl.uniform1f(this.uniforms.time, time);
+                this.gl.uniform2f(this.uniforms.mouse, 0.5, 0.5);
+                
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+        }
+        
+        // TABBED SYSTEM MANAGER
+        class TabbedHolographicSystemManager {
+            constructor() {
+                this.currentPage = 0;
+                this.totalPages = 10;
+                this.visualizersPerPage = 3;
+                this.activeVisualizers = [];
+                
+                this.geometryTypes = [
+                    'hypercube', 'tetrahedron', 'sphere', 'torus', 'wave', 
+                    'crystal', 'spiral', 'fractal', 'neural', 'quantum',
+                    'mobius', 'klein', 'polytope', 'tesseract', 'manifold',
+                    'vortex', 'plasma', 'matrix', 'lattice', 'field',
+                    'chaos', 'attractor', 'oscillator', 'resonance', 'harmonic',
+                    'prism', 'dodecahedron', 'icosahedron', 'octahedron', 'stellated'
+                ];
+                
+                this.initialize();
+            }
+            
+            initialize() {
+                console.log('🎨 Initializing Tabbed Holographic System...');
+                
+                this.createTabNavigation();
+                this.createPageIndicator();
+                this.showPage(0);
+                this.setupKeyboardNavigation();
+                this.startRenderLoop();
+                
+                console.log('✅ Tabbed system ready - 3 active canvases at a time');
+            }
+            
+            createTabNavigation() {
+                const navContainer = document.getElementById('tabNavigation');
+                
+                for (let i = 0; i < this.totalPages; i++) {
+                    const button = document.createElement('button');
+                    button.className = 'tab-button';
+                    button.textContent = `Page ${i + 1}`;
+                    button.onclick = () => this.showPage(i);
+                    navContainer.appendChild(button);
+                }
+            }
+            
+            createPageIndicator() {
+                const indicator = document.getElementById('pageIndicator');
+                
+                for (let i = 0; i < this.totalPages; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'page-dot';
+                    dot.onclick = () => this.showPage(i);
+                    indicator.appendChild(dot);
+                }
+            }
+            
+            showPage(pageIndex) {
+                if (pageIndex < 0 || pageIndex >= this.totalPages) return;
+                
+                // Clean up existing visualizers
+                this.cleanupVisualizers();
+                
+                this.currentPage = pageIndex;
+                
+                // Update UI
+                this.updateTabButtons();
+                this.updatePageDots();
+                
+                // Create new visualizers for this page
+                this.createPageVisualizers(pageIndex);
+                
+                console.log(`📄 Showing page ${pageIndex + 1}/${this.totalPages}`);
+            }
+            
+            cleanupVisualizers() {
+                // Clear the grid
+                const grid = document.getElementById('holographicGrid');
+                grid.innerHTML = '';
+                
+                // Clear visualizer array
+                this.activeVisualizers = [];
+            }
+            
+            createPageVisualizers(pageIndex) {
+                const grid = document.getElementById('holographicGrid');
+                const startIndex = pageIndex * this.visualizersPerPage;
+                
+                for (let i = 0; i < this.visualizersPerPage; i++) {
+                    const geoIndex = startIndex + i;
+                    if (geoIndex >= this.geometryTypes.length) break;
+                    
+                    const container = document.createElement('div');
+                    container.className = 'active-holographic-container';
+                    container.setAttribute('data-variant', this.geometryTypes[geoIndex]);
+                    
+                    // Create holographic depth container
+                    const depthContainer = document.createElement('div');
+                    depthContainer.className = 'holographic-depth-container';
+                    
+                    // Create 5 depth layers with canvases
+                    const layers = ['background', 'shadow', 'content', 'highlight', 'accent'];
+                    
+                    layers.forEach((layerType, layerIndex) => {
+                        const layer = document.createElement('div');
+                        layer.className = `depth-layer ${layerType}`;
+                        
+                        const canvas = document.createElement('canvas');
+                        canvas.className = `visualizer-canvas ${layerType}-visualizer`;
+                        canvas.id = `canvas-${geoIndex}-${layerType}`;
+                        
+                        layer.appendChild(canvas);
+                        depthContainer.appendChild(layer);
+                        
+                        // Create visualizer for main content layer only (to save resources)
+                        if (layerType === 'content') {
+                            setTimeout(() => {
+                                const visualizer = new ActiveHolographicVisualizer(
+                                    canvas.id,
+                                    layerType,
+                                    this.geometryTypes[geoIndex],
+                                    1.0
+                                );
+                                this.activeVisualizers.push(visualizer);
+                            }, i * 100);
+                        }
+                    });
+                    
+                    // Add variant title
+                    const title = document.createElement('div');
+                    title.className = 'variant-title';
+                    title.textContent = this.geometryTypes[geoIndex].toUpperCase();
+                    
+                    container.appendChild(depthContainer);
+                    container.appendChild(title);
+                    grid.appendChild(container);
+                }
+            }
+            
+            updateTabButtons() {
+                const buttons = document.querySelectorAll('.tab-button');
+                buttons.forEach((button, index) => {
+                    button.classList.toggle('active', index === this.currentPage);
+                });
+            }
+            
+            updatePageDots() {
+                const dots = document.querySelectorAll('.page-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentPage);
+                });
+            }
+            
+            navigatePage(direction) {
+                const newPage = this.currentPage + direction;
+                if (newPage >= 0 && newPage < this.totalPages) {
+                    this.showPage(newPage);
+                }
+            }
+            
+            setupKeyboardNavigation() {
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key) {
+                        case 'ArrowLeft':
+                            this.navigatePage(-1);
+                            break;
+                        case 'ArrowRight':
+                            this.navigatePage(1);
+                            break;
+                        case 'Home':
+                            this.showPage(0);
+                            break;
+                        case 'End':
+                            this.showPage(this.totalPages - 1);
+                            break;
+                    }
+                });
+            }
+            
+            startRenderLoop() {
+                const render = () => {
+                    this.activeVisualizers.forEach(viz => {
+                        if (viz && viz.render) {
+                            viz.render();
+                        }
+                    });
+                    requestAnimationFrame(render);
+                };
+                
+                render();
+                console.log('🎬 Render loop started for active visualizers');
+            }
+        }
+        
+        // Global navigation function
+        function navigatePage(direction) {
+            if (window.tabbedManager) {
+                window.tabbedManager.navigatePage(direction);
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            console.log('🚀 Initializing Tabbed Active Holographic Systems...');
+            const manager = new TabbedHolographicSystemManager();
+            window.tabbedManager = manager;
+        });
+    </script>
+    
+    <!-- Add collapsible menu system -->
+    <script>
+        window.COLLAPSIBLE_MENU_CONFIG = {
+            startCollapsed: true,
+            position: 'top-right',
+            theme: 'dark'
+        };
+    </script>
+    <script src="../js/inject-collapsible-menu.js"></script>
+</body>
+</html>

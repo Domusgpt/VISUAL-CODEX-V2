@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holographic Depth Layers Demo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: radial-gradient(ellipse at center, #1a0033 0%, #000000 70%);
+            color: white;
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+            cursor: crosshair;
+        }
+        
+        /* HOLOGRAPHIC DEPTH SYSTEM */
+        .holographic-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            perspective: 1200px;
+            transform-style: preserve-3d;
+        }
+        
+        /* DEPTH LAYERS */
+        .depth-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease-out;
+        }
+        
+        .depth-layer.background {
+            z-index: 1;
+            transform: translateZ(-100px);
+        }
+        
+        .depth-layer.midground {
+            z-index: 5;
+            transform: translateZ(0px);
+        }
+        
+        .depth-layer.foreground {
+            z-index: 10;
+            transform: translateZ(50px);
+        }
+        
+        .depth-layer.accent {
+            z-index: 15;
+            transform: translateZ(100px);
+        }
+        
+        /* Layer Content Styling */
+        .layer-element {
+            position: absolute;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+        
+        .layer-element:hover {
+            background: rgba(0, 255, 255, 0.2);
+            border-color: rgba(0, 255, 255, 0.6);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.4),
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+        
+        /* Background Layer Elements */
+        .background .layer-element {
+            background: rgba(255, 0, 255, 0.05);
+            border-color: rgba(255, 0, 255, 0.2);
+            filter: blur(1px);
+            opacity: 0.6;
+        }
+        
+        .background .element-1 {
+            top: 10%; left: 10%;
+            width: 200px; height: 150px;
+        }
+        
+        .background .element-2 {
+            top: 60%; right: 15%;
+            width: 180px; height: 120px;
+        }
+        
+        .background .element-3 {
+            bottom: 20%; left: 30%;
+            width: 160px; height: 100px;
+        }
+        
+        /* Midground Layer Elements */
+        .midground .layer-element {
+            background: rgba(0, 255, 255, 0.08);
+            border-color: rgba(0, 255, 255, 0.3);
+            opacity: 0.8;
+        }
+        
+        .midground .element-1 {
+            top: 20%; left: 40%;
+            width: 220px; height: 160px;
+        }
+        
+        .midground .element-2 {
+            bottom: 30%; right: 25%;
+            width: 190px; height: 140px;
+        }
+        
+        .midground .element-3 {
+            top: 50%; left: 15%;
+            width: 170px; height: 110px;
+        }
+        
+        /* Foreground Layer Elements */
+        .foreground .layer-element {
+            background: rgba(255, 255, 0, 0.1);
+            border-color: rgba(255, 255, 0, 0.4);
+            opacity: 0.9;
+        }
+        
+        .foreground .element-1 {
+            top: 15%; right: 20%;
+            width: 250px; height: 180px;
+        }
+        
+        .foreground .element-2 {
+            bottom: 25%; left: 20%;
+            width: 200px; height: 150px;
+        }
+        
+        /* Accent Layer Elements */
+        .accent .layer-element {
+            background: rgba(255, 0, 255, 0.15);
+            border-color: rgba(255, 0, 255, 0.5);
+            opacity: 1.0;
+            filter: drop-shadow(0 0 15px rgba(255, 0, 255, 0.6));
+        }
+        
+        .accent .element-1 {
+            top: 35%; left: 45%;
+            width: 180px; height: 120px;
+        }
+        
+        .accent .element-2 {
+            bottom: 40%; right: 30%;
+            width: 160px; height: 100px;
+        }
+        
+        /* Element Content */
+        .element-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px currentColor;
+            letter-spacing: 1px;
+        }
+        
+        .element-desc {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+        
+        .element-depth {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 0.6rem;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 2px 6px;
+            border-radius: 8px;
+            color: #00ffff;
+        }
+        
+        /* Controls */
+        .depth-controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            z-index: 1000;
+            backdrop-filter: blur(15px);
+        }
+        
+        .control-title {
+            color: #00ffff;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-label {
+            display: block;
+            color: #ffffff;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .control-slider {
+            width: 200px;
+            margin-bottom: 10px;
+        }
+        
+        .control-button {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: inherit;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+        }
+        
+        .control-button:hover {
+            background: rgba(0, 255, 255, 0.4);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+        
+        .control-button.active {
+            background: rgba(255, 255, 0, 0.3);
+            border-color: #ffff00;
+            color: #ffff00;
+        }
+        
+        /* Status Display */
+        .status-display {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #ff00ff;
+            border-radius: 15px;
+            padding: 15px;
+            z-index: 1000;
+            backdrop-filter: blur(15px);
+            color: #ff00ff;
+        }
+        
+        .status-item {
+            font-size: 0.8rem;
+            margin: 5px 0;
+        }
+        
+        .status-value {
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        /* Grid Overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0.1;
+            transition: opacity 0.3s ease;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 20px,
+                    rgba(0, 255, 255, 0.1) 20px,
+                    rgba(0, 255, 255, 0.1) 21px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 20px,
+                    rgba(0, 255, 255, 0.1) 20px,
+                    rgba(0, 255, 255, 0.1) 21px
+                );
+        }
+        
+        .grid-overlay.active {
+            opacity: 0.3;
+            animation: gridPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.4; }
+        }
+        
+        @media (max-width: 768px) {
+            .depth-controls {
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                padding: 15px;
+            }
+            
+            .control-slider {
+                width: 150px;
+            }
+            
+            .layer-element {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-overlay" id="gridOverlay"></div>
+    
+    <div class="depth-controls">
+        <div class="control-title">DEPTH SYSTEM</div>
+        
+        <div class="control-group">
+            <label class="control-label">Perspective Distance</label>
+            <input type="range" class="control-slider" id="perspectiveSlider" min="800" max="2000" value="1200">
+            <span class="status-value" id="perspectiveValue">1200px</span>
+        </div>
+        
+        <div class="control-group">
+            <label class="control-label">Layer Separation</label>
+            <input type="range" class="control-slider" id="separationSlider" min="50" max="200" value="100">
+            <span class="status-value" id="separationValue">100px</span>
+        </div>
+        
+        <div class="control-group">
+            <button class="control-button active" onclick="setLayerMode('static')">Static Layers</button>
+            <button class="control-button" onclick="setLayerMode('rotating')">Rotating Mode</button>
+            <button class="control-button" onclick="setLayerMode('floating')">Floating Mode</button>
+        </div>
+        
+        <div class="control-group">
+            <button class="control-button" onclick="toggleGrid()">Toggle Grid</button>
+            <button class="control-button" onclick="resetLayers()">Reset Layers</button>
+        </div>
+    </div>
+    
+    <div class="status-display">
+        <div class="status-item">Mode: <span class="status-value" id="currentMode">Static Layers</span></div>
+        <div class="status-item">Active Layer: <span class="status-value" id="activeLayer">None</span></div>
+        <div class="status-item">Mouse: <span class="status-value" id="mousePos">0, 0</span></div>
+        <div class="status-item">Depth: <span class="status-value" id="depthLevel">4 Layers</span></div>
+    </div>
+    
+    <div class="holographic-container" id="holoContainer">
+        <!-- BACKGROUND DEPTH LAYER -->
+        <div class="depth-layer background" data-layer="background">
+            <div class="layer-element element-1">
+                <div class="element-depth">-100px</div>
+                <div class="element-title">BACKGROUND NEXUS</div>
+                <div class="element-desc">Deep layer with blur effects and reduced opacity for atmospheric depth</div>
+            </div>
+            <div class="layer-element element-2">
+                <div class="element-depth">-100px</div>
+                <div class="element-title">DISTANT MATRIX</div>
+                <div class="element-desc">Furthest visual layer with subtle purple hues</div>
+            </div>
+            <div class="layer-element element-3">
+                <div class="element-depth">-100px</div>
+                <div class="element-title">REAR CONSOLE</div>
+                <div class="element-desc">Background control interface</div>
+            </div>
+        </div>
+        
+        <!-- MIDGROUND DEPTH LAYER -->
+        <div class="depth-layer midground" data-layer="midground">
+            <div class="layer-element element-1">
+                <div class="element-depth">0px</div>
+                <div class="element-title">MIDGROUND HUB</div>
+                <div class="element-desc">Central processing layer with balanced visibility and cyan accents</div>
+            </div>
+            <div class="layer-element element-2">
+                <div class="element-depth">0px</div>
+                <div class="element-title">DATA STREAM</div>
+                <div class="element-desc">Information flow visualization</div>
+            </div>
+            <div class="layer-element element-3">
+                <div class="element-depth">0px</div>
+                <div class="element-title">NEURAL LINK</div>
+                <div class="element-desc">Connection interface layer</div>
+            </div>
+        </div>
+        
+        <!-- FOREGROUND DEPTH LAYER -->
+        <div class="depth-layer foreground" data-layer="foreground">
+            <div class="layer-element element-1">
+                <div class="element-depth">+50px</div>
+                <div class="element-title">FOREGROUND CONTROL</div>
+                <div class="element-desc">Primary interaction layer with yellow highlights and enhanced presence</div>
+            </div>
+            <div class="layer-element element-2">
+                <div class="element-depth">+50px</div>
+                <div class="element-title">ACTION PANEL</div>
+                <div class="element-desc">Main user interface elements</div>
+            </div>
+        </div>
+        
+        <!-- ACCENT DEPTH LAYER -->
+        <div class="depth-layer accent" data-layer="accent">
+            <div class="layer-element element-1">
+                <div class="element-depth">+100px</div>
+                <div class="element-title">ACCENT FOCUS</div>
+                <div class="element-desc">Topmost layer with maximum visibility and magenta glow effects</div>
+            </div>
+            <div class="layer-element element-2">
+                <div class="element-depth">+100px</div>
+                <div class="element-title">PRIORITY ALERT</div>
+                <div class="element-desc">Critical information display</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentMode = 'static';
+        let isRotating = false;
+        let isFloating = false;
+        
+        // Layer management
+        const container = document.getElementById('holoContainer');
+        const layers = document.querySelectorAll('.depth-layer');
+        const elements = document.querySelectorAll('.layer-element');
+        
+        // Control elements
+        const perspectiveSlider = document.getElementById('perspectiveSlider');
+        const separationSlider = document.getElementById('separationSlider');
+        const perspectiveValue = document.getElementById('perspectiveValue');
+        const separationValue = document.getElementById('separationValue');
+        
+        // Status elements
+        const currentModeDisplay = document.getElementById('currentMode');
+        const activeLayerDisplay = document.getElementById('activeLayer');
+        const mousePosDisplay = document.getElementById('mousePos');
+        
+        // Initialize
+        function init() {
+            setupEventListeners();
+            updatePerspective();
+            updateLayerSeparation();
+            console.log('🌌 Holographic Depth System initialized - 4 layers with 3D transforms');
+        }
+        
+        function setupEventListeners() {
+            // Perspective control
+            perspectiveSlider.addEventListener('input', updatePerspective);
+            separationSlider.addEventListener('input', updateLayerSeparation);
+            
+            // Mouse tracking
+            document.addEventListener('mousemove', handleMouseMove);
+            
+            // Element interactions
+            elements.forEach(element => {
+                element.addEventListener('mouseenter', function() {
+                    const layer = this.closest('.depth-layer').dataset.layer;
+                    activeLayerDisplay.textContent = layer.charAt(0).toUpperCase() + layer.slice(1);
+                    this.style.transform = this.style.transform + ' scale(1.1)';
+                });
+                
+                element.addEventListener('mouseleave', function() {
+                    activeLayerDisplay.textContent = 'None';
+                    this.style.transform = this.style.transform.replace(' scale(1.1)', '');
+                });
+                
+                element.addEventListener('click', function() {
+                    console.log('Layer element clicked:', this.querySelector('.element-title').textContent);
+                });
+            });
+        }
+        
+        function updatePerspective() {
+            const value = perspectiveSlider.value;
+            container.style.perspective = value + 'px';
+            perspectiveValue.textContent = value + 'px';
+        }
+        
+        function updateLayerSeparation() {
+            const separation = parseInt(separationSlider.value);
+            separationValue.textContent = separation + 'px';
+            
+            // Update layer positions
+            document.querySelector('.background').style.transform = `translateZ(-${separation}px)`;
+            document.querySelector('.midground').style.transform = 'translateZ(0px)';
+            document.querySelector('.foreground').style.transform = `translateZ(${separation/2}px)`;
+            document.querySelector('.accent').style.transform = `translateZ(${separation}px)`;
+            
+            // Update depth indicators
+            document.querySelector('.background .element-depth').textContent = `-${separation}px`;
+            document.querySelector('.foreground .element-depth').textContent = `+${separation/2}px`;
+            document.querySelector('.accent .element-depth').textContent = `+${separation}px`;
+        }
+        
+        function handleMouseMove(e) {
+            const x = Math.round(e.clientX);
+            const y = Math.round(e.clientY);
+            mousePosDisplay.textContent = `${x}, ${y}`;
+            
+            if (currentMode === 'rotating') {
+                const rotateY = (e.clientX / window.innerWidth - 0.5) * 20;
+                const rotateX = (e.clientY / window.innerHeight - 0.5) * -20;
+                container.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            }
+        }
+        
+        function setLayerMode(mode) {
+            currentMode = mode;
+            currentModeDisplay.textContent = mode.charAt(0).toUpperCase() + mode.slice(1) + ' Mode';
+            
+            // Update button states
+            document.querySelectorAll('.control-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            switch(mode) {
+                case 'static':
+                    isRotating = false;
+                    isFloating = false;
+                    container.style.transform = '';
+                    layers.forEach(layer => {
+                        layer.style.animation = '';
+                    });
+                    break;
+                    
+                case 'rotating':
+                    isRotating = true;
+                    isFloating = false;
+                    layers.forEach(layer => {
+                        layer.style.animation = 'layerRotate 20s linear infinite';
+                    });
+                    break;
+                    
+                case 'floating':
+                    isRotating = false;
+                    isFloating = true;
+                    container.style.transform = '';
+                    layers.forEach((layer, index) => {
+                        layer.style.animation = `layerFloat 4s ease-in-out infinite ${index * 0.5}s`;
+                    });
+                    break;
+            }
+        }
+        
+        function toggleGrid() {
+            const grid = document.getElementById('gridOverlay');
+            grid.classList.toggle('active');
+        }
+        
+        function resetLayers() {
+            container.style.transform = '';
+            layers.forEach(layer => {
+                layer.style.animation = '';
+            });
+            setLayerMode('static');
+            perspectiveSlider.value = 1200;
+            separationSlider.value = 100;
+            updatePerspective();
+            updateLayerSeparation();
+        }
+        
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes layerRotate {
+                from { transform: rotateY(0deg); }
+                to { transform: rotateY(360deg); }
+            }
+            
+            @keyframes layerFloat {
+                0%, 100% { transform: translateY(0) rotateX(0deg); }
+                25% { transform: translateY(-10px) rotateX(2deg); }
+                50% { transform: translateY(0) rotateX(0deg); }
+                75% { transform: translateY(10px) rotateX(-2deg); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Initialize when page loads
+        window.addEventListener('load', init);
+        
+        console.log('🎨 Holographic Depth Layers Demo loaded');
+    </script>
+</body>
+</html>

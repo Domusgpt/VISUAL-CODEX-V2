@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Narrative Choreography Engine</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2f 50%, #2f1a1a 100%);
+            overflow-x: hidden;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 300;
+            color: #e0e8ff;
+            line-height: 1.6;
+        }
+
+        .narrative-container {
+            position: relative;
+            min-height: 500vh; /* Long scroll for demonstrating transformations */
+            width: 100%;
+        }
+
+        .story-section {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .narrative-card {
+            background: rgba(16, 16, 32, 0.9);
+            backdrop-filter: blur(16px) saturate(1.4);
+            border: 1px solid rgba(144, 202, 249, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(144, 202, 249, 0.1);
+            transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .narrative-card.splitting {
+            transform: scale(0.8);
+            opacity: 0.7;
+        }
+
+        .narrative-card.merging {
+            transform: scale(1.1);
+            opacity: 0.9;
+        }
+
+        .narrative-card.particle-dissolution {
+            filter: blur(2px);
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        .narrative-card.coordinated-fracture {
+            filter: blur(1px);
+            opacity: 0;
+            transform: rotateY(15deg);
+        }
+
+        .card-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #9c27b0;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .card-subtitle {
+            font-size: 16px;
+            color: #90caf9;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+
+        .card-description {
+            font-size: 15px;
+            color: rgba(224, 232, 255, 0.9);
+            line-height: 1.7;
+        }
+
+        .split-card {
+            position: absolute;
+            width: 280px;
+            height: 200px;
+            background: rgba(16, 16, 32, 0.9);
+            backdrop-filter: blur(16px) saturate(1.4);
+            border: 1px solid rgba(144, 202, 249, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(144, 202, 249, 0.1);
+            transform: scale(0);
+            opacity: 0;
+            transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .split-card.visible {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .rapid-sequence-card {
+            position: absolute;
+            width: 200px;
+            height: 120px;
+            background: rgba(156, 39, 176, 0.1);
+            border: 1px solid rgba(156, 39, 176, 0.3);
+            border-radius: 6px;
+            padding: 15px;
+            font-size: 13px;
+            transform: translateY(50px) scale(0.8);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .rapid-sequence-card.visible {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .hemisphere-left {
+            transform: translateX(-100px);
+            opacity: 0.7;
+        }
+
+        .hemisphere-right {
+            transform: translateX(100px);
+            opacity: 0.7;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(16, 16, 32, 0.9);
+            backdrop-filter: blur(16px) saturate(1.4);
+            padding: 20px;
+            border: 1px solid rgba(144, 202, 249, 0.2);
+            border-radius: 12px;
+            color: #90caf9;
+            z-index: 1000;
+            width: 300px;
+            box-shadow: 0 8px 32px rgba(144, 202, 249, 0.1);
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-button {
+            background: linear-gradient(135deg, rgba(144, 202, 249, 0.1), rgba(156, 39, 176, 0.1));
+            border: 1px solid rgba(144, 202, 249, 0.3);
+            color: #90caf9;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            margin: 4px;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            backdrop-filter: blur(8px);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .control-button:hover {
+            background: linear-gradient(135deg, rgba(144, 202, 249, 0.2), rgba(156, 39, 176, 0.2));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(144, 202, 249, 0.2);
+        }
+
+        .progress-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(144, 202, 249, 0.1);
+            z-index: 999;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #90caf9, #9c27b0);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .scroll-instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(16, 16, 32, 0.9);
+            backdrop-filter: blur(16px) saturate(1.4);
+            padding: 15px;
+            border: 1px solid rgba(144, 202, 249, 0.2);
+            border-radius: 8px;
+            color: #90caf9;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        .transformation-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(156, 39, 176, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+
+        .transformation-indicator.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .split-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rapid-sequence-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 20px;
+            padding: 40px;
+        }
+
+        /* Animation keyframes */
+        @keyframes particleDissolve {
+            0% { opacity: 1; filter: blur(0px); }
+            50% { opacity: 0.7; filter: blur(1px); }
+            100% { opacity: 0; filter: blur(3px); transform: scale(0.8); }
+        }
+
+        @keyframes coordinatedFracture {
+            0% { transform: rotateY(0deg); filter: blur(0px); }
+            50% { transform: rotateY(10deg); filter: blur(1px); }
+            100% { transform: rotateY(20deg); filter: blur(2px); opacity: 0; }
+        }
+
+        @keyframes emergenceFlow {
+            0% { opacity: 0; transform: scale(0.7) translateY(30px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .intention-explore {
+            animation: emergenceFlow 1s ease-out;
+        }
+
+        .intention-reveal {
+            animation: emergenceFlow 1.2s ease-out;
+        }
+
+        .intention-synthesize {
+            animation: emergenceFlow 1.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-indicator">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="narrative-container" id="narrativeContainer">
+        <!-- Story Section 1: Introduction -->
+        <div class="story-section" id="section1">
+            <div class="narrative-card" id="introCard">
+                <div class="transformation-indicator" id="indicator1">Magnitude Reveal</div>
+                <div class="card-title">The Narrative Architecture</div>
+                <div class="card-subtitle">JSON-Driven Story Transformation System</div>
+                <div class="card-description">
+                    Scroll to witness how cards split, merge, and transform based on narrative choreography. 
+                    Each transformation is precisely timed to create seamless story flow with visual impact.
+                    The system orchestrates complex card behaviors through declarative JSON configurations.
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Section 2: Split Demonstration -->
+        <div class="story-section" id="section2">
+            <div class="narrative-card" id="conceptCard">
+                <div class="transformation-indicator" id="indicator2">Concept Split</div>
+                <div class="card-title">Single Concept</div>
+                <div class="card-subtitle">About to Split into Multiple Perspectives</div>
+                <div class="card-description">
+                    This card will dissolve and transform into three distinct perspectives, 
+                    each exploring a different facet of the same core concept.
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Section 3: Split Result -->
+        <div class="story-section" id="section3">
+            <div class="split-container" id="splitContainer">
+                <div class="split-card" id="splitCard1">
+                    <div class="card-title">Technical Perspective</div>
+                    <div class="card-description">JSON configuration drives the transformation logic</div>
+                </div>
+                <div class="split-card" id="splitCard2">
+                    <div class="card-title">Visual Perspective</div>
+                    <div class="card-description">WebGL shaders create seamless animations</div>
+                </div>
+                <div class="split-card" id="splitCard3">
+                    <div class="card-title">Narrative Perspective</div>
+                    <div class="card-description">Story flow guides the transformation timing</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Section 4: Rapid Sequence -->
+        <div class="story-section" id="section4">
+            <div class="rapid-sequence-container" id="rapidContainer">
+                <div class="rapid-sequence-card" id="rapid1">
+                    <div class="card-title">Point 1</div>
+                    <div class="card-description">Orchestrated emergence</div>
+                </div>
+                <div class="rapid-sequence-card" id="rapid2">
+                    <div class="card-title">Point 2</div>
+                    <div class="card-description">Timed choreography</div>
+                </div>
+                <div class="rapid-sequence-card" id="rapid3">
+                    <div class="card-title">Point 3</div>
+                    <div class="card-description">Visual symphony</div>
+                </div>
+                <div class="rapid-sequence-card" id="rapid4">
+                    <div class="card-title">Point 4</div>
+                    <div class="card-description">Narrative flow</div>
+                </div>
+                <div class="rapid-sequence-card" id="rapid5">
+                    <div class="card-title">Point 5</div>
+                    <div class="card-description">System integration</div>
+                </div>
+                <div class="rapid-sequence-card" id="rapid6">
+                    <div class="card-title">Point 6</div>
+                    <div class="card-description">Perfect timing</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Section 5: Merge Demonstration -->
+        <div class="story-section" id="section5">
+            <div class="narrative-card" id="mergeCard">
+                <div class="transformation-indicator" id="indicator5">Concept Merge</div>
+                <div class="card-title">Unified Understanding</div>
+                <div class="card-subtitle">Multiple Concepts Converging</div>
+                <div class="card-description">
+                    All the separated perspectives and rapid points now converge into a single, 
+                    comprehensive understanding. The narrative choreography creates seamless 
+                    transitions that feel natural and purposeful.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <h3 style="margin-top: 0; color: #9c27b0;">Narrative Choreography Engine</h3>
+        <div class="control-group">
+            <button class="control-button" onclick="triggerMagnitudeReveal()">Trigger Magnitude Reveal</button>
+        </div>
+        <div class="control-group">
+            <button class="control-button" onclick="triggerConceptSplit()">Trigger Concept Split</button>
+        </div>
+        <div class="control-group">
+            <button class="control-button" onclick="triggerRapidSequence()">Trigger Rapid Sequence</button>
+        </div>
+        <div class="control-group">
+            <button class="control-button" onclick="triggerConceptMerge()">Trigger Concept Merge</button>
+        </div>
+        <div class="control-group">
+            <button class="control-button" onclick="resetNarrative()">Reset Narrative</button>
+        </div>
+        <div class="control-group">
+            <div style="font-size: 12px; color: rgba(144, 202, 249, 0.7); margin-top: 15px;">
+                <div>Scroll Progress: <span id="scrollProgress">0%</span></div>
+                <div>Active Transformations: <span id="activeTransformations">0</span></div>
+                <div>Current Section: <span id="currentSection">1</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add collapsible menu system -->
+    <script>
+        window.COLLAPSIBLE_MENU_CONFIG = {
+            startCollapsed: true,
+            position: 'top-right',
+            theme: 'dark'
+        };
+    </script>
+    <script src="../js/inject-collapsible-menu.js"></script>
+
+    <div class="scroll-instructions">
+        <div><strong>Scroll Controls:</strong></div>
+        <div>↓ Scroll down to trigger transformations</div>
+        <div>↑ Scroll up to reverse (if supported)</div>
+        <div>🎭 Watch cards split, merge, and flow</div>
+        <div>⚡ Experience choreographed narratives</div>
+    </div>
+
+    <script>
+        class NarrativeChoreographyEngine {
+            constructor() {
+                this.scrollPosition = 0;
+                this.transformations = {
+                    magnitudeReveal: { triggered: false, position: 0.15 },
+                    conceptSplit: { triggered: false, position: 0.35 },
+                    rapidSequence: { triggered: false, position: 0.55 },
+                    conceptMerge: { triggered: false, position: 0.75 }
+                };
+                this.activeTransformationCount = 0;
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupScrollListeners();
+                this.updateProgress();
+            }
+            
+            setupScrollListeners() {
+                let ticking = false;
+                
+                const handleScroll = () => {
+                    if (!ticking) {
+                        requestAnimationFrame(() => {
+                            this.processScrollPosition();
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
+                };
+                
+                window.addEventListener('scroll', handleScroll, { passive: true });
+            }
+            
+            processScrollPosition() {
+                const scrollY = window.scrollY;
+                const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                this.scrollPosition = Math.max(0, Math.min(1, scrollY / maxScroll));
+                
+                this.updateProgress();
+                this.checkTransformationTriggers();
+            }
+            
+            updateProgress() {
+                const progressBar = document.getElementById('progressBar');
+                const scrollProgress = document.getElementById('scrollProgress');
+                const currentSection = document.getElementById('currentSection');
+                
+                progressBar.style.width = (this.scrollPosition * 100) + '%';
+                scrollProgress.textContent = Math.round(this.scrollPosition * 100) + '%';
+                
+                // Determine current section
+                const sectionProgress = this.scrollPosition * 5; // 5 sections
+                currentSection.textContent = Math.min(5, Math.floor(sectionProgress) + 1);
+            }
+            
+            checkTransformationTriggers() {
+                Object.entries(this.transformations).forEach(([key, config]) => {
+                    if (!config.triggered && this.scrollPosition >= config.position) {
+                        this.triggerTransformation(key);
+                        config.triggered = true;
+                    }
+                });
+            }
+            
+            triggerTransformation(type) {
+                switch (type) {
+                    case 'magnitudeReveal':
+                        this.executeMagnitudeReveal();
+                        break;
+                    case 'conceptSplit':
+                        this.executeConceptSplit();
+                        break;
+                    case 'rapidSequence':
+                        this.executeRapidSequence();
+                        break;
+                    case 'conceptMerge':
+                        this.executeConceptMerge();
+                        break;
+                }
+                
+                this.updateActiveTransformations();
+            }
+            
+            executeMagnitudeReveal() {
+                const indicator = document.getElementById('indicator1');
+                const card = document.getElementById('introCard');
+                
+                this.showTransformationIndicator(indicator);
+                
+                // Apply magnitude reveal effect
+                card.style.transform = 'scale(1.05)';
+                card.style.boxShadow = '0 12px 48px rgba(156, 39, 176, 0.3)';
+                
+                setTimeout(() => {
+                    card.style.transform = 'scale(1)';
+                    card.style.boxShadow = '0 8px 32px rgba(144, 202, 249, 0.1)';
+                }, 1000);
+                
+                console.log('🎭 Magnitude Reveal executed');
+            }
+            
+            executeConceptSplit() {
+                const indicator = document.getElementById('indicator2');
+                const conceptCard = document.getElementById('conceptCard');
+                
+                this.showTransformationIndicator(indicator);
+                
+                // Exit animation - particle dissolution
+                conceptCard.classList.add('particle-dissolution');
+                
+                setTimeout(() => {
+                    conceptCard.style.display = 'none';
+                    
+                    // Show split cards with staggered timing
+                    setTimeout(() => this.showSplitCard('splitCard1'), 200);
+                    setTimeout(() => this.showSplitCard('splitCard2'), 400);
+                    setTimeout(() => this.showSplitCard('splitCard3'), 600);
+                    
+                }, 1000);
+                
+                console.log('🎭 Concept Split executed');
+            }
+            
+            showSplitCard(cardId) {
+                const card = document.getElementById(cardId);
+                card.classList.add('visible');
+            }
+            
+            executeRapidSequence() {
+                console.log('🎭 Rapid Sequence executed');
+                
+                // First ensure all cards are hidden
+                for (let i = 1; i <= 6; i++) {
+                    const card = document.getElementById(`rapid${i}`);
+                    card.classList.remove('visible');
+                }
+                
+                // Show rapid sequence cards in choreographed timing
+                const delays = [100, 250, 400, 600, 800, 1000];
+                
+                delays.forEach((delay, index) => {
+                    setTimeout(() => {
+                        const card = document.getElementById(`rapid${index + 1}`);
+                        if (card) {
+                            card.classList.add('visible');
+                        }
+                    }, delay);
+                });
+            }
+            
+            executeConceptMerge() {
+                const indicator = document.getElementById('indicator5');
+                const mergeCard = document.getElementById('mergeCard');
+                
+                this.showTransformationIndicator(indicator);
+                
+                // Apply merge effect
+                mergeCard.classList.add('merging');
+                mergeCard.style.background = 'linear-gradient(135deg, rgba(156, 39, 176, 0.1), rgba(144, 202, 249, 0.1))';
+                
+                setTimeout(() => {
+                    mergeCard.classList.remove('merging');
+                    mergeCard.style.background = 'rgba(16, 16, 32, 0.9)';
+                }, 1500);
+                
+                console.log('🎭 Concept Merge executed');
+            }
+            
+            showTransformationIndicator(indicator) {
+                indicator.classList.add('active');
+                setTimeout(() => {
+                    indicator.classList.remove('active');
+                }, 2000);
+            }
+            
+            updateActiveTransformations() {
+                this.activeTransformationCount = Object.values(this.transformations)
+                    .filter(t => t.triggered).length;
+                
+                document.getElementById('activeTransformations').textContent = this.activeTransformationCount;
+            }
+            
+            // Manual trigger functions for controls
+            triggerMagnitudeReveal() {
+                if (!this.transformations.magnitudeReveal.triggered) {
+                    this.triggerTransformation('magnitudeReveal');
+                    this.transformations.magnitudeReveal.triggered = true;
+                }
+            }
+            
+            triggerConceptSplit() {
+                if (!this.transformations.conceptSplit.triggered) {
+                    this.triggerTransformation('conceptSplit');
+                    this.transformations.conceptSplit.triggered = true;
+                }
+            }
+            
+            triggerRapidSequence() {
+                if (!this.transformations.rapidSequence.triggered) {
+                    this.triggerTransformation('rapidSequence');
+                    this.transformations.rapidSequence.triggered = true;
+                }
+            }
+            
+            triggerConceptMerge() {
+                if (!this.transformations.conceptMerge.triggered) {
+                    this.triggerTransformation('conceptMerge');
+                    this.transformations.conceptMerge.triggered = true;
+                }
+            }
+            
+            resetNarrative() {
+                // Reset all transformations
+                Object.keys(this.transformations).forEach(key => {
+                    this.transformations[key].triggered = false;
+                });
+                
+                // Reset card states
+                document.getElementById('introCard').style.transform = 'scale(1)';
+                document.getElementById('introCard').style.boxShadow = '0 8px 32px rgba(144, 202, 249, 0.1)';
+                
+                document.getElementById('conceptCard').style.display = 'flex';
+                document.getElementById('conceptCard').classList.remove('particle-dissolution');
+                
+                document.getElementById('mergeCard').classList.remove('merging');
+                document.getElementById('mergeCard').style.background = 'rgba(16, 16, 32, 0.9)';
+                
+                // Hide split cards
+                ['splitCard1', 'splitCard2', 'splitCard3'].forEach(id => {
+                    document.getElementById(id).classList.remove('visible');
+                });
+                
+                // Hide rapid sequence cards
+                for (let i = 1; i <= 6; i++) {
+                    document.getElementById(`rapid${i}`).classList.remove('visible');
+                }
+                
+                // Reset active transformation count
+                this.activeTransformationCount = 0;
+                this.updateActiveTransformations();
+                
+                console.log('🔄 Narrative reset complete');
+            }
+        }
+        
+        // Global functions for manual controls
+        let narrativeEngine;
+        
+        function triggerMagnitudeReveal() {
+            narrativeEngine.triggerMagnitudeReveal();
+        }
+        
+        function triggerConceptSplit() {
+            narrativeEngine.triggerConceptSplit();
+        }
+        
+        function triggerRapidSequence() {
+            narrativeEngine.triggerRapidSequence();
+        }
+        
+        function triggerConceptMerge() {
+            narrativeEngine.triggerConceptMerge();
+        }
+        
+        function resetNarrative() {
+            narrativeEngine.resetNarrative();
+        }
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            narrativeEngine = new NarrativeChoreographyEngine();
+            console.log('🎭 Narrative Choreography Engine Demo Initialized!');
+        });
+    </script>
+</body>
+</html>

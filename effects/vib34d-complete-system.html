@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIB34D Complete System</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow-x: hidden;
+            height: 300vh; /* Make it scrollable */
+            font-family: 'Courier New', monospace;
+        }
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00ffff;
+            font-size: 12px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border: 1px solid #00ffff;
+            z-index: 100;
+            width: 250px;
+        }
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            z-index: 100;
+            width: 200px;
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .value-display {
+            color: #ff00ff;
+            font-weight: bold;
+        }
+        .geometry-btn {
+            background: rgba(0,255,255,0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 5px 10px;
+            margin: 2px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        .geometry-btn:hover, .geometry-btn.active {
+            background: rgba(0,255,255,0.4);
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-casual { background: #00ff00; }
+        .status-rhythmic { background: #ffff00; }
+        .status-intense { background: #ff8800; }
+        .status-precise { background: #ff00ff; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="hud">
+        <h3 style="margin: 0 0 10px 0; color: #ff00ff;">VIB34D INTERACTION ANALYSIS</h3>
+        <div>Pattern: <span class="status-indicator" id="patternIndicator"></span><span id="patternType">CASUAL</span></div>
+        <div>Scroll: <span id="scrollIntensity">0.0</span></div>
+        <div>Click: <span id="clickIntensity">0.0</span></div>
+        <div>Mouse: <span id="mouseIntensity">0.0</span></div>
+        <div>Energy: <span id="energy">0.0</span></div>
+        <div>Focus: <span id="focus">0.0</span></div>
+        <div>Exploration: <span id="exploration">0.0</span></div>
+        <div style="margin-top: 10px; font-size: 10px; color: #888;">
+            Interact with mouse, scroll, click to drive the visualization
+        </div>
+    </div>
+    
+    <div class="controls">
+        <div class="control-group">
+            <label>Geometry:</label>
+            <div>
+                <button class="geometry-btn active" data-geometry="hypercube">CUBE</button>
+                <button class="geometry-btn" data-geometry="tetrahedron">TETRA</button>
+                <button class="geometry-btn" data-geometry="sphere">SPHERE</button>
+                <button class="geometry-btn" data-geometry="torus">TORUS</button>
+                <button class="geometry-btn" data-geometry="klein">KLEIN</button>
+                <button class="geometry-btn" data-geometry="fractal">FRACTAL</button>
+                <button class="geometry-btn" data-geometry="wave">WAVE</button>
+                <button class="geometry-btn" data-geometry="crystal">CRYSTAL</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Dimension: <span class="value-display" id="dimensionValue">4.0</span></label>
+            <input type="range" id="dimension" min="3.0" max="5.0" step="0.1" value="4.0">
+        </div>
+        <div class="control-group">
+            <label>Morph Factor: <span class="value-display" id="morphValue">0.5</span></label>
+            <input type="range" id="morphFactor" min="0.0" max="2.0" step="0.1" value="0.5">
+        </div>
+        <div class="control-group">
+            <label>Grid Density: <span class="value-display" id="gridValue">8.0</span></label>
+            <input type="range" id="gridDensity" min="3.0" max="20.0" step="0.5" value="8.0">
+        </div>
+        <div class="control-group">
+            <label>Rotation Speed: <span class="value-display" id="rotationValue">1.0</span></label>
+            <input type="range" id="rotationSpeed" min="0.0" max="3.0" step="0.1" value="1.0">
+        </div>
+    </div>
+
+    <script>
+        // VIB34D Interaction Analysis Engine
+        class VIB34DInteractionEngine {
+            constructor() {
+                this.interactionData = {
+                    scroll: { intensity: 0, velocity: 0, direction: 0, smoothed: 0 },
+                    click: { intensity: 0, duration: 0, pattern: 'single', smoothed: 0 },
+                    mouse: { intensity: 0, velocity: 0, position: [0.5, 0.5], smoothed: 0 },
+                    
+                    pattern: {
+                        type: 'casual',
+                        frequency: 0,
+                        consistency: 0,
+                        complexity: 0
+                    },
+                    
+                    energy: 0,
+                    focus: 0,
+                    exploration: 0
+                };
+                
+                this.smoothingFactors = {
+                    scroll: 0.15,
+                    click: 0.2,
+                    mouse: 0.1
+                };
+                
+                this.setupInteractionTracking();
+            }
+            
+            setupInteractionTracking() {
+                let lastScrollY = window.scrollY;
+                let lastScrollTime = performance.now();
+                
+                window.addEventListener('scroll', (e) => {
+                    const currentTime = performance.now();
+                    const currentScrollY = window.scrollY;
+                    const deltaTime = currentTime - lastScrollTime;
+                    const deltaScroll = currentScrollY - lastScrollY;
+                    
+                    if (deltaTime > 0) {
+                        const velocity = Math.abs(deltaScroll) / deltaTime;
+                        const direction = Math.sign(deltaScroll);
+                        
+                        this.interactionData.scroll.velocity = velocity;
+                        this.interactionData.scroll.direction = direction;
+                        this.interactionData.scroll.intensity = Math.min(1.0, velocity / 5.0);
+                    }
+                    
+                    lastScrollY = currentScrollY;
+                    lastScrollTime = currentTime;
+                }, { passive: true });
+                
+                let clickStartTime = 0;
+                let clickCount = 0;
+                let clickPattern = [];
+                
+                document.addEventListener('mousedown', (e) => {
+                    clickStartTime = performance.now();
+                    clickCount++;
+                });
+                
+                document.addEventListener('mouseup', (e) => {
+                    const holdDuration = performance.now() - clickStartTime;
+                    const intensity = Math.min(1.0, holdDuration / 1000.0);
+                    
+                    this.interactionData.click.duration = holdDuration;
+                    this.interactionData.click.intensity = intensity;
+                    
+                    clickPattern.push(holdDuration);
+                    if (clickPattern.length > 5) clickPattern.shift();
+                    
+                    this.analyzeClickPattern(clickPattern);
+                });
+                
+                let lastMousePos = [0, 0];
+                let lastMouseTime = performance.now();
+                
+                document.addEventListener('mousemove', (e) => {
+                    const currentTime = performance.now();
+                    const currentPos = [e.clientX / window.innerWidth, e.clientY / window.innerHeight];
+                    const deltaTime = currentTime - lastMouseTime;
+                    
+                    if (deltaTime > 0) {
+                        const deltaX = currentPos[0] - lastMousePos[0];
+                        const deltaY = currentPos[1] - lastMousePos[1];
+                        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                        const velocity = distance / deltaTime * 1000;
+                        
+                        this.interactionData.mouse.velocity = velocity;
+                        this.interactionData.mouse.position = currentPos;
+                        this.interactionData.mouse.intensity = Math.min(1.0, velocity / 1000.0);
+                    }
+                    
+                    lastMousePos = currentPos;
+                    lastMouseTime = currentTime;
+                });
+
+                // Touch interactions
+                document.addEventListener('touchstart', (e) => {
+                    const touch = e.touches[0];
+                    this.interactionData.mouse.position = [touch.clientX / window.innerWidth, touch.clientY / window.innerHeight];
+                    this.interactionData.click.intensity = 1.0;
+                }, { passive: true });
+
+                document.addEventListener('touchmove', (e) => {
+                    const touch = e.touches[0];
+                    this.interactionData.mouse.position = [touch.clientX / window.innerWidth, touch.clientY / window.innerHeight];
+                    this.interactionData.mouse.intensity = 1.0;
+                }, { passive: true });
+
+                document.addEventListener('touchend', (e) => {
+                    this.interactionData.click.intensity = 0.0;
+                    this.interactionData.mouse.intensity = 0.0;
+                });
+            }
+            
+            analyzeClickPattern(pattern) {
+                if (pattern.length < 2) return;
+                
+                const intervals = [];
+                for (let i = 1; i < pattern.length; i++) {
+                    intervals.push(pattern[i] - pattern[i-1]);
+                }
+                
+                const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+                const variance = intervals.reduce((acc, val) => acc + Math.pow(val - avgInterval, 2), 0) / intervals.length;
+                const consistency = 1.0 - Math.min(1.0, variance / 1000000);
+                
+                this.interactionData.pattern.frequency = 1000 / avgInterval;
+                this.interactionData.pattern.consistency = consistency;
+                
+                if (consistency > 0.8 && this.interactionData.pattern.frequency > 2) {
+                    this.interactionData.pattern.type = 'rhythmic';
+                } else if (this.interactionData.pattern.frequency > 4) {
+                    this.interactionData.pattern.type = 'intense';
+                } else if (consistency > 0.9) {
+                    this.interactionData.pattern.type = 'precise';
+                } else {
+                    this.interactionData.pattern.type = 'casual';
+                }
+            }
+            
+            update() {
+                const smooth = (current, target, factor) => current * (1 - factor) + target * factor;
+                
+                this.interactionData.scroll.smoothed = smooth(
+                    this.interactionData.scroll.smoothed, 
+                    this.interactionData.scroll.intensity, 
+                    this.smoothingFactors.scroll
+                );
+                
+                this.interactionData.click.smoothed = smooth(
+                    this.interactionData.click.smoothed,
+                    this.interactionData.click.intensity,
+                    this.smoothingFactors.click
+                );
+                
+                this.interactionData.mouse.smoothed = smooth(
+                    this.interactionData.mouse.smoothed,
+                    this.interactionData.mouse.intensity,
+                    this.smoothingFactors.mouse
+                );
+                
+                this.interactionData.energy = (
+                    this.interactionData.scroll.smoothed * 0.4 +
+                    this.interactionData.click.smoothed * 0.3 +
+                    this.interactionData.mouse.smoothed * 0.3
+                );
+                
+                this.interactionData.focus = this.interactionData.click.smoothed;
+                this.interactionData.exploration = this.interactionData.mouse.smoothed;
+            }
+            
+            getInteractionData() {
+                return this.interactionData;
+            }
+        }
+
+        // VIB34D Complete Visualizer
+        class VIB34DCompleteSystem {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
+                
+                this.interactionEngine = new VIB34DInteractionEngine();
+                this.time = 0;
+                this.startTime = Date.now();
+                
+                this.currentGeometry = 'hypercube';
+                this.params = {
+                    dimension: 4.0,
+                    morphFactor: 0.5,
+                    gridDensity: 8.0,
+                    rotationSpeed: 1.0
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                if (!this.gl) {
+                    alert('WebGL not supported');
+                    return;
+                }
+                
+                this.setupCanvas();
+                this.createShaders();
+                this.createGeometry();
+                this.bindEvents();
+                this.animate();
+            }
+            
+            setupCanvas() {
+                const resize = () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                    this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+                };
+                resize();
+                window.addEventListener('resize', resize);
+            }
+            
+            createShaders() {
+                const vertexShaderSource = `
+                    attribute vec2 a_position;
+                    varying vec2 v_uv;
+                    
+                    void main() {
+                        v_uv = a_position * 0.5 + 0.5;
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                    }
+                `;
+                
+                const fragmentShaderSource = `
+                    precision highp float;
+                    
+                    varying vec2 v_uv;
+                    
+                    uniform float u_time;
+                    uniform float u_dimension;
+                    uniform float u_morphFactor;
+                    uniform float u_gridDensity;
+                    uniform float u_rotationSpeed;
+                    uniform vec2 u_resolution;
+                    uniform vec2 u_mouse;
+                    uniform int u_geometry;
+                    
+                    // Interaction uniforms (replacing audio)
+                    uniform float u_scrollIntensity;
+                    uniform float u_clickIntensity;
+                    uniform float u_mouseIntensity;
+                    uniform float u_energy;
+                    uniform float u_focus;
+                    uniform float u_exploration;
+                    
+                    // 4D Rotation matrices
+                    mat4 rotateXW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(c, 0.0, 0.0, -s, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, s, 0.0, 0.0, c);
+                    }
+                    
+                    mat4 rotateYW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(1.0, 0.0, 0.0, 0.0, 0.0, c, 0.0, -s, 0.0, 0.0, 1.0, 0.0, 0.0, s, 0.0, c);
+                    }
+                    
+                    mat4 rotateZW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, c, -s, 0.0, 0.0, s, c);
+                    }
+                    
+                    // Multiple geometry types
+                    float hypercubeGeometry(vec3 p, float morph, float density) {
+                        vec4 p4d = vec4(p * density, sin(u_time * 0.5) * morph + u_scrollIntensity);
+                        
+                        float rotX = u_time * u_rotationSpeed + u_mouseIntensity * 3.14159;
+                        float rotY = u_time * u_rotationSpeed * 0.7 + u_clickIntensity * 2.0;
+                        float rotZ = u_time * u_rotationSpeed * 0.5 + u_energy * 1.5;
+                        
+                        p4d = rotateXW(rotX) * p4d;
+                        p4d = rotateYW(rotY) * p4d;
+                        p4d = rotateZW(rotZ) * p4d;
+                        
+                        vec4 latticePos = fract(p4d) - 0.5;
+                        float dist = max(max(abs(latticePos.x), abs(latticePos.y)), 
+                                       max(abs(latticePos.z), abs(latticePos.w)));
+                        
+                        return 1.0 - smoothstep(0.4, 0.5, dist);
+                    }
+                    
+                    float sphereGeometry(vec3 p, float morph, float density) {
+                        vec3 sphereP = p * density;
+                        sphereP += vec3(sin(u_time + u_scrollIntensity), cos(u_time * 1.3 + u_clickIntensity), 
+                                       sin(u_time * 0.7 + u_mouseIntensity)) * morph;
+                        
+                        float sphereDist = length(fract(sphereP) - 0.5) - 0.3;
+                        return 1.0 - smoothstep(0.0, 0.1, abs(sphereDist));
+                    }
+                    
+                    float torusGeometry(vec3 p, float morph, float density) {
+                        vec3 torusP = p * density;
+                        torusP.x += sin(u_time + u_energy) * morph;
+                        torusP.z += cos(u_time * 1.2 + u_focus) * morph;
+                        
+                        vec3 q = fract(torusP) - 0.5;
+                        float torusDist = length(vec2(length(q.xz) - 0.3, q.y)) - 0.1;
+                        return 1.0 - smoothstep(0.0, 0.05, abs(torusDist));
+                    }
+                    
+                    float tetrahedronGeometry(vec3 p, float morph, float density) {
+                        vec3 tetraP = p * density;
+                        tetraP += sin(u_time * vec3(1.0, 1.3, 0.7) + u_exploration) * morph;
+                        
+                        vec3 q = fract(tetraP) - 0.5;
+                        float tetraDist = max(max(-q.x-q.y-q.z, q.x+q.y-q.z), max(-q.x+q.y+q.z, q.x-q.y+q.z));
+                        return 1.0 - smoothstep(0.3, 0.4, tetraDist);
+                    }
+                    
+                    float fractalGeometry(vec3 p, float morph, float density) {
+                        vec3 fractalP = p * density;
+                        float fractal = 0.0;
+                        float amplitude = 1.0;
+                        
+                        for (int i = 0; i < 4; i++) {
+                            fractalP = abs(fractalP) - morph * (1.0 + u_energy);
+                            fractal += abs(sin(fractalP.x + fractalP.y + fractalP.z)) * amplitude;
+                            fractalP *= 2.0;
+                            amplitude *= 0.5;
+                        }
+                        
+                        return fractal * (0.5 + u_mouseIntensity * 0.5);
+                    }
+                    
+                    float waveGeometry(vec3 p, float morph, float density) {
+                        vec3 waveP = p * density;
+                        float wave = sin(waveP.x + u_time + u_scrollIntensity * 2.0) * 
+                                   cos(waveP.y + u_time * 1.3 + u_clickIntensity * 1.5) * 
+                                   sin(waveP.z + u_time * 0.7 + u_energy);
+                        return abs(wave) * morph;
+                    }
+                    
+                    float kleinGeometry(vec3 p, float morph, float density) {
+                        vec3 kleinP = p * density + sin(u_time * 0.5 + u_focus) * morph;
+                        float klein = sin(kleinP.x) * cos(kleinP.y) + sin(kleinP.y) * cos(kleinP.z) + sin(kleinP.z) * cos(kleinP.x);
+                        return abs(klein) * (0.5 + u_exploration * 0.5);
+                    }
+                    
+                    float crystalGeometry(vec3 p, float morph, float density) {
+                        vec3 crystalP = p * density;
+                        crystalP = abs(crystalP) - morph * (1.0 + u_energy * 0.5);
+                        float crystal = max(max(crystalP.x, crystalP.y), crystalP.z) - 0.3;
+                        return 1.0 - smoothstep(0.0, 0.1, abs(crystal));
+                    }
+                    
+                    void main() {
+                        vec2 uv = (v_uv - 0.5) * 2.0;
+                        uv.x *= u_resolution.x / u_resolution.y;
+                        
+                        vec3 rayDir = normalize(vec3(uv, 1.0));
+                        
+                        float result;
+                        if (u_geometry == 0) result = hypercubeGeometry(rayDir, u_morphFactor, u_gridDensity);
+                        else if (u_geometry == 1) result = tetrahedronGeometry(rayDir, u_morphFactor, u_gridDensity);
+                        else if (u_geometry == 2) result = sphereGeometry(rayDir, u_morphFactor, u_gridDensity);
+                        else if (u_geometry == 3) result = torusGeometry(rayDir, u_morphFactor, u_gridDensity);
+                        else if (u_geometry == 4) result = kleinGeometry(rayDir, u_morphFactor, u_gridDensity);
+                        else if (u_geometry == 5) result = fractalGeometry(rayDir, u_morphFactor, u_gridDensity);
+                        else if (u_geometry == 6) result = waveGeometry(rayDir, u_morphFactor, u_gridDensity);
+                        else if (u_geometry == 7) result = crystalGeometry(rayDir, u_morphFactor, u_gridDensity);
+                        
+                        // Color based on geometry and interactions
+                        vec3 color1 = vec3(0.0, 0.8, 1.0);  // Cyan
+                        vec3 color2 = vec3(1.0, 0.0, 1.0);  // Magenta
+                        vec3 color3 = vec3(1.0, 1.0, 0.0);  // Yellow
+                        
+                        vec3 finalColor = mix(mix(color1, color2, u_energy), color3, u_focus);
+                        finalColor *= (0.3 + result * 1.2);
+                        finalColor *= (0.8 + u_exploration * 0.4);
+                        
+                        gl_FragColor = vec4(finalColor, 1.0);
+                    }
+                `;
+                
+                const vertexShader = this.compileShader(vertexShaderSource, this.gl.VERTEX_SHADER);
+                const fragmentShader = this.compileShader(fragmentShaderSource, this.gl.FRAGMENT_SHADER);
+                
+                this.program = this.gl.createProgram();
+                this.gl.attachShader(this.program, vertexShader);
+                this.gl.attachShader(this.program, fragmentShader);
+                this.gl.linkProgram(this.program);
+                
+                if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)) {
+                    console.error('Program link error:', this.gl.getProgramInfoLog(this.program));
+                    return;
+                }
+                
+                this.gl.useProgram(this.program);
+                
+                this.uniforms = {
+                    time: this.gl.getUniformLocation(this.program, 'u_time'),
+                    dimension: this.gl.getUniformLocation(this.program, 'u_dimension'),
+                    morphFactor: this.gl.getUniformLocation(this.program, 'u_morphFactor'),
+                    gridDensity: this.gl.getUniformLocation(this.program, 'u_gridDensity'),
+                    rotationSpeed: this.gl.getUniformLocation(this.program, 'u_rotationSpeed'),
+                    resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
+                    mouse: this.gl.getUniformLocation(this.program, 'u_mouse'),
+                    geometry: this.gl.getUniformLocation(this.program, 'u_geometry'),
+                    scrollIntensity: this.gl.getUniformLocation(this.program, 'u_scrollIntensity'),
+                    clickIntensity: this.gl.getUniformLocation(this.program, 'u_clickIntensity'),
+                    mouseIntensity: this.gl.getUniformLocation(this.program, 'u_mouseIntensity'),
+                    energy: this.gl.getUniformLocation(this.program, 'u_energy'),
+                    focus: this.gl.getUniformLocation(this.program, 'u_focus'),
+                    exploration: this.gl.getUniformLocation(this.program, 'u_exploration')
+                };
+            }
+            
+            compileShader(source, type) {
+                const shader = this.gl.createShader(type);
+                this.gl.shaderSource(shader, source);
+                this.gl.compileShader(shader);
+                
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+                    console.error('Shader compile error:', this.gl.getShaderInfoLog(shader));
+                    return null;
+                }
+                
+                return shader;
+            }
+            
+            createGeometry() {
+                const vertices = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+                
+                this.vertexBuffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
+                
+                const positionLocation = this.gl.getAttribLocation(this.program, 'a_position');
+                this.gl.enableVertexAttribArray(positionLocation);
+                this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+            }
+            
+            bindEvents() {
+                // Parameter controls
+                const params = ['dimension', 'morphFactor', 'gridDensity', 'rotationSpeed'];
+                params.forEach(param => {
+                    const slider = document.getElementById(param);
+                    const display = document.getElementById(param + 'Value');
+                    slider.addEventListener('input', (e) => {
+                        this.params[param] = parseFloat(e.target.value);
+                        display.textContent = e.target.value;
+                    });
+                });
+                
+                // Geometry buttons
+                const geometryMap = {
+                    'hypercube': 0, 'tetrahedron': 1, 'sphere': 2, 'torus': 3,
+                    'klein': 4, 'fractal': 5, 'wave': 6, 'crystal': 7
+                };
+                
+                document.querySelectorAll('.geometry-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.geometry-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.currentGeometry = btn.dataset.geometry;
+                    });
+                });
+            }
+            
+            updateHUD() {
+                const data = this.interactionEngine.getInteractionData();
+                
+                document.getElementById('patternType').textContent = data.pattern.type.toUpperCase();
+                document.getElementById('patternIndicator').className = `status-indicator status-${data.pattern.type}`;
+                document.getElementById('scrollIntensity').textContent = data.scroll.smoothed.toFixed(2);
+                document.getElementById('clickIntensity').textContent = data.click.smoothed.toFixed(2);
+                document.getElementById('mouseIntensity').textContent = data.mouse.smoothed.toFixed(2);
+                document.getElementById('energy').textContent = data.energy.toFixed(2);
+                document.getElementById('focus').textContent = data.focus.toFixed(2);
+                document.getElementById('exploration').textContent = data.exploration.toFixed(2);
+            }
+            
+            render() {
+                this.time = (Date.now() - this.startTime) / 1000;
+                
+                this.interactionEngine.update();
+                this.updateHUD();
+                
+                const data = this.interactionEngine.getInteractionData();
+                const geometryMap = {
+                    'hypercube': 0, 'tetrahedron': 1, 'sphere': 2, 'torus': 3,
+                    'klein': 4, 'fractal': 5, 'wave': 6, 'crystal': 7
+                };
+                
+                this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+                
+                // Set uniforms
+                this.gl.uniform1f(this.uniforms.time, this.time);
+                this.gl.uniform1f(this.uniforms.dimension, this.params.dimension);
+                this.gl.uniform1f(this.uniforms.morphFactor, this.params.morphFactor);
+                this.gl.uniform1f(this.uniforms.gridDensity, this.params.gridDensity);
+                this.gl.uniform1f(this.uniforms.rotationSpeed, this.params.rotationSpeed);
+                this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
+                this.gl.uniform2f(this.uniforms.mouse, data.mouse.position[0], data.mouse.position[1]);
+                this.gl.uniform1i(this.uniforms.geometry, geometryMap[this.currentGeometry]);
+                
+                // Interaction uniforms
+                this.gl.uniform1f(this.uniforms.scrollIntensity, data.scroll.smoothed);
+                this.gl.uniform1f(this.uniforms.clickIntensity, data.click.smoothed);
+                this.gl.uniform1f(this.uniforms.mouseIntensity, data.mouse.smoothed);
+                this.gl.uniform1f(this.uniforms.energy, data.energy);
+                this.gl.uniform1f(this.uniforms.focus, data.focus);
+                this.gl.uniform1f(this.uniforms.exploration, data.exploration);
+                
+                // Draw
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+            
+            animate() {
+                this.render();
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+        
+        // Initialize the system
+        const vib34dSystem = new VIB34DCompleteSystem();
+    </script>
+    
+    <!-- Add collapsible menu system -->
+    <script>
+        window.COLLAPSIBLE_MENU_CONFIG = {
+            startCollapsed: true,
+            position: 'top-right',
+            theme: 'dark'
+        };
+    </script>
+    <script src="../js/inject-collapsible-menu.js"></script>
+</body>
+</html>

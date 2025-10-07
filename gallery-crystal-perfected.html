@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Codex Gallery - Crystal Perfected System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        :root {
+            --silicon-green: #0d2818;
+            --crystal-teal: #00ffaa;
+            --accent-red: #ff004d;
+            --neon-cyan: #00ffff;
+            --neon-magenta: #ff00ff;
+            --neon-yellow: #ffff00;
+            --electric-blue: #0080ff;
+            --hot-pink: #ff1088;
+            --cyber-purple: #8000ff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: var(--crystal-teal);
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow-x: hidden;
+            cursor: crosshair;
+            height: 100vh;
+            overflow-y: hidden;
+            perspective: 2000px;
+        }
+        
+        /* EVOLVING BACKGROUND SYSTEM */
+        .background-visualizer-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+        
+        .background-visualizer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1.2s ease;
+        }
+        
+        .background-visualizer.active {
+            opacity: 0.9;
+        }
+        
+        /* COLLAPSIBLE NAVIGATION */
+        .nav-container {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--silicon-green), rgba(13, 40, 24, 0.95));
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            transition: left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-right: 2px solid var(--crystal-teal);
+            box-shadow: 
+                0 0 40px var(--crystal-teal),
+                inset -2px 0 0 rgba(0, 255, 170, 0.2);
+        }
+        
+        .nav-container.open {
+            left: 0;
+        }
+        
+        .nav-toggle {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--silicon-green);
+            border: 2px solid var(--crystal-teal);
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 2100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px var(--crystal-teal);
+        }
+        
+        .nav-toggle:hover {
+            background: rgba(0, 255, 170, 0.1);
+            box-shadow: 0 0 30px var(--crystal-teal);
+        }
+        
+        .nav-toggle span {
+            width: 20px;
+            height: 2px;
+            background: var(--crystal-teal);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-toggle.open span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        
+        .nav-toggle.open span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .nav-toggle.open span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+        
+        .nav-header {
+            padding: 30px 20px;
+            border-bottom: 1px solid rgba(0, 255, 170, 0.3);
+        }
+        
+        .nav-title {
+            color: var(--crystal-teal);
+            font-size: 1.4em;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 15px var(--crystal-teal);
+        }
+        
+        .nav-subtitle {
+            color: var(--crystal-teal);
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        
+        .nav-sections {
+            padding: 20px 0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        .nav-section {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-section:hover {
+            background: rgba(0, 255, 170, 0.1);
+            border-left-color: var(--crystal-teal);
+        }
+        
+        .nav-section.active {
+            background: rgba(0, 255, 170, 0.2);
+            border-left-color: var(--crystal-teal);
+        }
+        
+        .nav-section-name {
+            color: var(--crystal-teal);
+            font-size: 1.0em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .nav-section-info {
+            color: var(--crystal-teal);
+            font-size: 0.7em;
+            opacity: 0.6;
+        }
+        
+        /* CRYSTAL WAFER SYSTEM */
+        .crystal-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 95vw;
+            max-width: 1400px;
+            height: 85vh;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 25px;
+            z-index: 100;
+            perspective: 2000px;
+        }
+        
+        .crystal-wafer {
+            background: var(--silicon-green);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            transform-style: preserve-3d;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            border-radius: 12px;
+            border: 2px solid var(--crystal-teal);
+            
+            box-shadow: 
+                /* Ghosting afterimage effect */
+                -3px -3px 0 var(--accent-red),
+                3px 3px 0 var(--electric-blue),
+                /* Crystal depth */
+                0 15px 30px rgba(0, 0, 0, 0.7),
+                /* Inner crystal glow */
+                inset 0 2px 0 rgba(0, 255, 170, 0.1);
+        }
+        
+        /* RGB GLITCHY ENERGY BORDERS */
+        .crystal-wafer::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            background: transparent;
+            border-radius: 16px;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .crystal-wafer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 12px;
+            pointer-events: none;
+            z-index: 5;
+            
+            /* Multiple RGB energy lines */
+            background: 
+                /* Horizontal lines */
+                linear-gradient(0deg, transparent 0%, transparent 10%, #ff0000 10%, #ff0000 12%, transparent 12%, transparent 22%, #00ff00 22%, #00ff00 24%, transparent 24%, transparent 34%, #0000ff 34%, #0000ff 36%, transparent 36%, transparent 100%),
+                /* Vertical lines */
+                linear-gradient(90deg, transparent 0%, transparent 15%, #ff0000 15%, #ff0000 17%, transparent 17%, transparent 32%, #00ff00 32%, #00ff00 34%, transparent 34%, transparent 49%, #0000ff 49%, #0000ff 51%, transparent 51%, transparent 100%),
+                /* Diagonal lines */
+                linear-gradient(45deg, transparent 0%, transparent 8%, #ff0000 8%, #ff0000 10%, transparent 10%, transparent 25%, #00ff00 25%, #00ff00 27%, transparent 27%, transparent 42%, #0000ff 42%, #0000ff 44%, transparent 44%, transparent 100%);
+            
+            background-size: 100% 100%, 100% 100%, 100% 100%;
+            opacity: 0;
+            animation: rgbEnergyGlitch 2s linear infinite;
+        }
+        
+        .crystal-wafer:hover {
+            transform: scale(1.08) translateZ(40px) rotateX(3deg) rotateY(3deg);
+            box-shadow: 
+                /* Enhanced ghosting afterimage */
+                -6px -6px 0 var(--accent-red),
+                6px 6px 0 var(--electric-blue),
+                /* Crystal resonance */
+                0 0 60px var(--crystal-teal),
+                /* Deep shadow */
+                0 25px 50px rgba(0, 0, 0, 0.8),
+                /* Inner glow */
+                inset 0 2px 0 rgba(0, 255, 170, 0.3);
+        }
+        
+        .crystal-wafer:hover::after {
+            opacity: 0.8;
+            animation: rgbEnergyReactive 0.5s linear infinite;
+        }
+        
+        .crystal-wafer:active::after {
+            opacity: 1;
+            animation: rgbEnergyBlast 0.2s linear infinite;
+        }
+        
+        @keyframes rgbEnergyGlitch {
+            0% { 
+                opacity: 0.2;
+                transform: translate(0, 0);
+                filter: blur(0px);
+            }
+            25% { 
+                opacity: 0.4;
+                transform: translate(1px, -1px);
+                filter: blur(0.5px);
+            }
+            50% { 
+                opacity: 0.3;
+                transform: translate(-1px, 1px);
+                filter: blur(0px);
+            }
+            75% { 
+                opacity: 0.5;
+                transform: translate(1px, 1px);
+                filter: blur(0.5px);
+            }
+            100% { 
+                opacity: 0.2;
+                transform: translate(0, 0);
+                filter: blur(0px);
+            }
+        }
+        
+        @keyframes rgbEnergyReactive {
+            0% { 
+                opacity: 0.8;
+                transform: scale(1) translate(0, 0);
+                filter: blur(0px);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1.02) translate(2px, -2px);
+                filter: blur(1px);
+            }
+            100% { 
+                opacity: 0.8;
+                transform: scale(1) translate(-2px, 2px);
+                filter: blur(0px);
+            }
+        }
+        
+        @keyframes rgbEnergyBlast {
+            0% { 
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0px) brightness(1);
+            }
+            50% { 
+                opacity: 1.5;
+                transform: scale(1.05);
+                filter: blur(2px) brightness(1.5);
+            }
+            100% { 
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0px) brightness(1);
+            }
+        }
+        
+        /* TRANSITION STATES */
+        .crystal-wafer.breaking {
+            animation: crystalBreak 0.8s ease-in forwards;
+        }
+        
+        .crystal-wafer.reforming {
+            animation: crystalReform 1.0s ease-out forwards;
+        }
+        
+        @keyframes crystalBreak {
+            0% { 
+                transform: scale(1) translateZ(0px) rotateY(0deg);
+                opacity: 1;
+                filter: brightness(1);
+            }
+            30% {
+                transform: scale(1.05) translateZ(20px) rotateY(10deg);
+                filter: brightness(1.3) blur(1px);
+            }
+            70% {
+                transform: scale(0.9) translateZ(-10px) rotateY(-8deg) rotateX(3deg);
+                opacity: 0.8;
+                filter: brightness(0.7) blur(2px);
+            }
+            100% { 
+                transform: scale(0.7) translateZ(-30px) rotateY(20deg) rotateX(10deg);
+                opacity: 0.4;
+                filter: brightness(0.5) blur(3px);
+            }
+        }
+        
+        @keyframes crystalReform {
+            0% { 
+                transform: scale(0.7) translateZ(-30px) rotateY(-20deg) rotateX(-10deg);
+                opacity: 0.4;
+                filter: brightness(1.5) blur(3px);
+            }
+            40% {
+                transform: scale(0.95) translateZ(10px) rotateY(5deg) rotateX(2deg);
+                opacity: 0.9;
+                filter: brightness(1.2) blur(1px);
+            }
+            70% {
+                transform: scale(1.02) translateZ(15px) rotateY(-2deg);
+                opacity: 1;
+                filter: brightness(1.1);
+            }
+            100% { 
+                transform: scale(1) translateZ(0px);
+                opacity: 1;
+                filter: brightness(1);
+            }
+        }
+        
+        /* NEGATIVE SPACE TEXT WITH TEAL */
+        .wafer-title {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            font-size: 1.2em;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 10;
+            
+            /* Negative space effect with teal border */
+            color: transparent;
+            -webkit-text-stroke: 2px var(--crystal-teal);
+            text-stroke: 2px var(--crystal-teal);
+            
+            /* Ghosting afterimage for text */
+            text-shadow: 
+                -2px -2px 0 var(--accent-red),
+                2px 2px 0 var(--electric-blue),
+                0 0 10px var(--crystal-teal);
+        }
+        
+        /* LARGE UNIFORM PREVIEW WINDOWS */
+        .wafer-preview {
+            position: absolute;
+            top: 60px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            border: 2px solid var(--crystal-teal);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.9);
+            overflow: hidden;
+            transition: all 0.6s ease;
+            box-shadow: 
+                inset 0 0 20px rgba(0, 255, 170, 0.2),
+                0 0 15px rgba(0, 255, 170, 0.1),
+                /* Ghosting afterimage for preview frame */
+                -2px -2px 0 var(--accent-red),
+                2px 2px 0 var(--electric-blue);
+        }
+        
+        .wafer-preview iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 6px;
+        }
+        
+        /* HOVER INFO OVERLAY */
+        .wafer-info {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(13, 40, 24, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            z-index: 20;
+            border-radius: 12px;
+            border: 2px solid var(--crystal-teal);
+            
+            /* Ghosting afterimage for info overlay */
+            box-shadow: 
+                -3px -3px 0 var(--accent-red),
+                3px 3px 0 var(--electric-blue);
+        }
+        
+        .crystal-wafer:hover .wafer-info {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .info-title {
+            color: var(--crystal-teal);
+            font-size: 1.4em;
+            font-weight: 900;
+            margin-bottom: 15px;
+            text-shadow: 
+                0 0 10px var(--crystal-teal),
+                -1px -1px 0 var(--accent-red),
+                1px 1px 0 var(--electric-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .info-description {
+            color: var(--crystal-teal);
+            font-size: 0.9em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px rgba(0, 255, 170, 0.5);
+        }
+        
+        .info-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: auto;
+        }
+        
+        .info-tag {
+            background: linear-gradient(45deg, rgba(255, 0, 77, 0.3), rgba(0, 255, 170, 0.3));
+            color: var(--crystal-teal);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7em;
+            font-weight: bold;
+            border: 1px solid var(--crystal-teal);
+            text-shadow: 0 0 5px var(--crystal-teal);
+            box-shadow: 
+                0 0 10px rgba(0, 255, 170, 0.3),
+                -1px -1px 0 var(--accent-red),
+                1px 1px 0 var(--electric-blue);
+        }
+        
+        /* SECTION INDICATOR */
+        .section-indicator {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: var(--silicon-green);
+            border: 2px solid var(--crystal-teal);
+            border-radius: 15px;
+            padding: 20px 25px;
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            box-shadow: 
+                0 0 30px var(--crystal-teal),
+                inset 0 1px 0 rgba(0, 255, 170, 0.2),
+                -2px -2px 0 var(--accent-red),
+                2px 2px 0 var(--electric-blue);
+        }
+        
+        .section-title {
+            color: var(--crystal-teal);
+            font-size: 1.3em;
+            font-weight: 900;
+            margin-bottom: 8px;
+            text-shadow: 
+                0 0 15px var(--crystal-teal),
+                -1px -1px 0 var(--accent-red),
+                1px 1px 0 var(--electric-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .section-subtitle {
+            color: var(--crystal-teal);
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+        
+        /* MOMENTUM INDICATOR */
+        .momentum-indicator {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--silicon-green);
+            border: 2px solid var(--crystal-teal);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 0 30px var(--crystal-teal),
+                inset 0 1px 0 rgba(0, 255, 170, 0.2),
+                -2px -2px 0 var(--accent-red),
+                2px 2px 0 var(--electric-blue);
+        }
+        
+        .momentum-indicator.active {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        
+        .momentum-title {
+            color: var(--crystal-teal);
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px var(--crystal-teal);
+        }
+        
+        .momentum-bar {
+            width: 120px;
+            height: 8px;
+            background: rgba(0, 255, 170, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--crystal-teal);
+        }
+        
+        .momentum-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--crystal-teal), var(--electric-blue));
+            border-radius: 4px;
+            transition: width 0.1s ease;
+            box-shadow: 0 0 10px var(--crystal-teal);
+        }
+        
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .crystal-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(6, 1fr);
+                gap: 15px;
+                width: 95vw;
+                height: 90vh;
+            }
+            
+            .wafer-preview {
+                top: 50px;
+            }
+            
+            .wafer-title {
+                font-size: 1.0em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Visualizer Container -->
+    <div class="background-visualizer-container" id="backgroundContainer">
+        <!-- 7 background visualizers will be created dynamically -->
+    </div>
+    
+    <!-- Navigation Toggle -->
+    <div class="nav-toggle" id="navToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    
+    <!-- Collapsible Navigation -->
+    <div class="nav-container" id="navContainer">
+        <div class="nav-header">
+            <div class="nav-title">Visual Codex</div>
+            <div class="nav-subtitle">Crystal Navigation</div>
+        </div>
+        <div class="nav-sections" id="navSections">
+            <!-- Navigation sections will be populated dynamically -->
+        </div>
+    </div>
+    
+    <!-- Section Indicator -->
+    <div class="section-indicator">
+        <div class="section-title" id="sectionTitle">Holographic Genesis</div>
+        <div class="section-subtitle" id="sectionSubtitle">Crystal Wafer System</div>
+    </div>
+    
+    <!-- Momentum Indicator -->
+    <div class="momentum-indicator" id="momentumIndicator">
+        <div class="momentum-title">Scroll Power</div>
+        <div class="momentum-bar">
+            <div class="momentum-fill" id="momentumFill" style="width: 0%;"></div>
+        </div>
+    </div>
+    
+    <!-- Crystal Container -->
+    <div class="crystal-container" id="crystalContainer">
+        <!-- 6 crystal wafers will be created -->
+    </div>
+
+    <script>
+        console.log('💎 Visual Codex Crystal Perfected System - RGB Energy Borders');
+        
+        // REAL VISUAL EFFECTS DATA
+        const contentSets = [
+            // Set 1: Holographic Genesis
+            [
+                { title: "Neoskeuomorphic", description: "Modern depth-based card design with advanced shadow systems and interactive hover states", tags: ["CSS", "Design", "Cards"], file: "demos/neoskeuomorphic-cards-demo.html", type: "css" },
+                { title: "Glassmorphism", description: "Translucent glass-like interface elements with backdrop blur and transparency", tags: ["CSS", "Glass", "Modern"], file: "demos/css-glassmorphism-demo.html", type: "css" },
+                { title: "Holographic Progress", description: "Futuristic progress indicators with neon glow effects and smooth animations", tags: ["CSS", "Progress", "Neon"], file: "demos/holographic-progress-indicators-demo.html", type: "css" },
+                { title: "State Control", description: "Interactive navigation dot systems with smooth state transitions", tags: ["CSS", "Controls", "Interactive"], file: "demos/state-control-dots-demo.html", type: "css" },
+                { title: "Vaporwave", description: "Retro-futuristic aesthetic elements with classic 80s styling", tags: ["CSS", "Retro", "Aesthetic"], file: "demos/css-vaporwave-aesthetics-demo.html", type: "css" },
+                { title: "Grid Overlay", description: "Dynamic grid pattern animations with morphing geometric structures", tags: ["CSS", "Grid", "Animation"], file: "demos/animated-grid-overlay-demo.html", type: "css" }
+            ],
+            // Set 2: Plasma Emergence
+            [
+                { title: "Holographic Visualizer", description: "Multi-layer WebGL blend mode system with depth-based holographic effects", tags: ["WebGL", "Holographic", "Blend"], file: "effects/holographic-visualizer.html", type: "webgl" },
+                { title: "Cyberpunk UI", description: "Futuristic interface design elements with neon highlights and tech aesthetics", tags: ["CSS", "Cyberpunk", "Interface"], file: "demos/css-cyberpunk-ui-demo.html", type: "css" },
+                { title: "Particle System", description: "Advanced particle physics visualization with 3D depth and movement", tags: ["WebGL", "Particles", "Physics"], file: "demos/holographic-particle-system-demo.html", type: "webgl" },
+                { title: "Glitch Effects", description: "Digital corruption and distortion effects with RGB channel separation", tags: ["CSS", "Glitch", "Digital"], file: "demos/css-glitch-effects-demo.html", type: "css" },
+                { title: "Depth Layers", description: "Multi-dimensional depth visualization with parallax scrolling effects", tags: ["CSS", "Depth", "Layers"], file: "demos/holographic-depth-layers-demo.html", type: "css" },
+                { title: "Adaptive Cards", description: "Dynamic responsive card system with intelligent layout adaptation", tags: ["CSS", "Adaptive", "Responsive"], file: "demos/vib34d-adaptive-cards-demo.html", type: "css" }
+            ],
+            // Set 3: Neural Awakening
+            [
+                { title: "MVEP Hypercube", description: "4D hypercube with interference patterns and mathematical precision", tags: ["WebGL", "4D", "Hypercube"], file: "effects/mvep-moire-hypercube.html", type: "webgl" },
+                { title: "Hypercube Codex", description: "Advanced 4D mathematical visualization with interactive rotation controls", tags: ["WebGL", "Math", "4D"], file: "demos/moire-hypercube-codex-demo.html", type: "webgl" },
+                { title: "Lattice Visualizer", description: "Geometric lattice structure system with crystalline formations", tags: ["WebGL", "Lattice", "Geometry"], file: "demos/hypercube-lattice-visualizer-demo.html", type: "webgl" },
+                { title: "Chaos Overlay", description: "Digital interference and chaos patterns with algorithmic generation", tags: ["WebGL", "Chaos", "Interference"], file: "demos/chaos-overlay-effects-demo.html", type: "webgl" },
+                { title: "Orchestration Engine", description: "Coordinated multi-system visualization with synchronized behaviors", tags: ["WebGL", "System", "Orchestra"], file: "demos/system-orchestration-engine-demo.html", type: "webgl" },
+                { title: "Reactive Core", description: "Reactive state management system with real-time data visualization", tags: ["WebGL", "Reactive", "Core"], file: "demos/vib3code-reactive-core-demo.html", type: "webgl" }
+            ],
+            // Set 4: Crystal Resonance
+            [
+                { title: "VIB34D Complete", description: "Revolutionary 4D framework with 8+ geometric systems and advanced rendering", tags: ["WebGL", "VIB34D", "Framework"], file: "effects/vib34d-complete-system.html", type: "webgl" },
+                { title: "4D HyperAV", description: "Proven 4D audiovisual system with synchronized sound and visuals", tags: ["WebGL", "4D", "Audio"], file: "effects/working-4d-hyperav.html", type: "webgl" },
+                { title: "Core Framework", description: "Core 4D mathematics framework with optimized projection algorithms", tags: ["WebGL", "Core", "Math"], file: "effects/hypercube-core-framework.html", type: "webgl" },
+                { title: "Production Spectacular", description: "Production-ready VIB34D system with performance optimizations", tags: ["WebGL", "Production", "VIB34D"], file: "demos/vib34d-production-spectacular-demo.html", type: "webgl" },
+                { title: "Editor Dashboard", description: "Interactive editor interface with real-time parameter adjustment", tags: ["WebGL", "Editor", "Dashboard"], file: "demos/vib34d-editor-dashboard-demo.html", type: "webgl" },
+                { title: "Consciousness Shader", description: "N-dimensional consciousness visualization with abstract thought patterns", tags: ["WebGL", "Polytopal", "Consciousness"], file: "demos/polytopal-consciousness-shader-demo.html", type: "webgl" }
+            ],
+            // Set 5: Quantum Chaos
+            [
+                { title: "Hyperdimensional Matrix", description: "8D+ chaos visualization with fractal tessellations and infinite complexity", tags: ["WebGL", "8D", "Chaos"], file: "effects/insane-hyperdimensional-matrix.html", type: "webgl" },
+                { title: "4D Flow Visualizer", description: "Organic 4D movements with graceful particle systems and fluid dynamics", tags: ["WebGL", "4D", "Flow"], file: "effects/elegant-4d-flow-visualizer.html", type: "webgl" },
+                { title: "Card Bending", description: "Advanced 3D CSS transform morphing with 6 unique bending behaviors", tags: ["CSS", "3D", "Morphing"], file: "effects/vib34d-advanced-card-bending-system.html", type: "css" },
+                { title: "Color Shift", description: "Extreme filter effects with contrast shifts and chromatic aberration", tags: ["CSS", "Color", "Filters"], file: "effects/enhanced-color-shift-contrast-system.html", type: "css" },
+                { title: "Maleficarum Codex", description: "Advanced magical interface system with spell-casting interactions", tags: ["WebGL", "Magic", "Interface"], file: "demos/millzmaleficarum-codex-demo.html", type: "webgl" },
+                { title: "Morphing Blog", description: "Dynamic content morphing system with seamless transitions", tags: ["WebGL", "Morphing", "Blog"], file: "demos/vib34d-morphing-blog-demo.html", type: "webgl" }
+            ],
+            // Set 6: Fractal Storm
+            [
+                { title: "Narrative Choreography", description: "JSON-driven scroll transformations with story-based interactions", tags: ["WebGL", "Narrative", "Choreography"], file: "effects/narrative-choreography-engine.html", type: "webgl" },
+                { title: "Pulse System", description: "Multi-layer glow animations with synchronized breathing effects", tags: ["WebGL", "Pulse", "Glow"], file: "effects/holographic-pulse-system.html", type: "webgl" },
+                { title: "Multi-Canvas", description: "Synchronized multi-canvas system with coordinated rendering", tags: ["WebGL", "Multi", "Canvas"], file: "effects/multi-canvas-visualizer-system.html", type: "webgl" },
+                { title: "Tabbed Visualizer", description: "Advanced WebGL tab management with state preservation", tags: ["WebGL", "Tabs", "Management"], file: "effects/tabbed-visualizer-system.html", type: "webgl" },
+                { title: "WebGL Framework", description: "High-performance shader framework with optimization algorithms", tags: ["WebGL", "Framework", "Performance"], file: "effects/hypercube-core-webgl-framework.html", type: "webgl" },
+                { title: "Digital Magazine", description: "Interactive digital publication with immersive page transitions", tags: ["WebGL", "Magazine", "Interactive"], file: "demos/vib3code-digital-magazine-demo.html", type: "webgl" }
+            ],
+            // Set 7: Dimensional Collapse
+            [
+                { title: "Active Holographic", description: "125 WebGL visualizers in mega-demo with coordinated chaos", tags: ["WebGL", "Mega", "Active"], file: "demos/active-holographic-systems-mega-demo.html", type: "webgl", isHeavy: true },
+                { title: "Parallax Systems", description: "Advanced parallax visualization with infinite depth perception", tags: ["WebGL", "Parallax", "System"], file: "demos/holographic-parallax-systems-mega-demo.html", type: "webgl" },
+                { title: "Tech Layout", description: "Advanced layout with active systems and dynamic positioning", tags: ["WebGL", "Layout", "Tech"], file: "demos/tech-layout-active-holographic-demo.html", type: "webgl" },
+                { title: "Production Ultimate", description: "Ultimate production system with all VIB34D features enabled", tags: ["WebGL", "Ultimate", "Production"], file: "demos/vib34d-production-spectacular-demo.html", type: "webgl" },
+                { title: "Complete Magazine", description: "Complete digital magazine system with all interactive features", tags: ["WebGL", "Complete", "Magazine"], file: "demos/vib3code-digital-magazine-demo.html", type: "webgl" },
+                { title: "Full Magic System", description: "Full magical interface system with advanced spell combinations", tags: ["WebGL", "Full", "Magic"], file: "demos/millzmaleficarum-codex-demo.html", type: "webgl" }
+            ]
+        ];
+        
+        // BACKGROUND THEMES - GREATLY VARIED
+        const backgroundThemes = [
+            { 
+                name: 'Holographic Genesis', 
+                geometry: 'hypercube',
+                particleCount: 50,
+                chaos: 0.1,
+                colors: ['#00ffaa', '#00ffff', '#0080ff'],
+                speed: 0.3
+            },
+            { 
+                name: 'Plasma Emergence', 
+                geometry: 'plasma',
+                particleCount: 120,
+                chaos: 0.3,
+                colors: ['#ff00ff', '#ff1088', '#ff004d'],
+                speed: 0.6
+            },
+            { 
+                name: 'Neural Awakening', 
+                geometry: 'neural',
+                particleCount: 200,
+                chaos: 0.5,
+                colors: ['#ffff00', '#00ff00', '#80ff00'],
+                speed: 0.8
+            },
+            { 
+                name: 'Crystal Resonance', 
+                geometry: 'crystal',
+                particleCount: 300,
+                chaos: 0.65,
+                colors: ['#8000ff', '#ff00ff', '#ff0080'],
+                speed: 1.0
+            },
+            { 
+                name: 'Quantum Chaos', 
+                geometry: 'quantum',
+                particleCount: 400,
+                chaos: 0.8,
+                colors: ['#ff0000', '#ff8000', '#ffff00'],
+                speed: 1.3
+            },
+            { 
+                name: 'Fractal Storm', 
+                geometry: 'fractal',
+                particleCount: 500,
+                chaos: 0.9,
+                colors: ['#0000ff', '#8000ff', '#ff0080'],
+                speed: 1.6
+            },
+            { 
+                name: 'Dimensional Collapse', 
+                geometry: 'matrix',
+                particleCount: 600,
+                chaos: 1.0,
+                colors: ['#ff0000', '#00ff00', '#0000ff'],
+                speed: 2.0
+            }
+        ];
+        
+        // CRYSTAL WAFER SYSTEM MANAGER
+        class CrystalWaferSystemManager {
+            constructor() {
+                this.currentSection = 0;
+                this.scrollMomentum = 0;
+                this.isTransitioning = false;
+                this.momentumThreshold = 25;
+                this.backgroundVisualizers = [];
+                
+                this.initialize();
+            }
+            
+            initialize() {
+                console.log('💎 Initializing Crystal Perfected System...');
+                
+                this.createBackgroundVisualizers();
+                this.createCrystalWafers();
+                this.createNavigation();
+                this.setupTactileScrollPhysics();
+                this.setupNavigation();
+                this.updateContent();
+                
+                console.log('✅ Crystal System ready - RGB energy borders with ghosting afterimage');
+            }
+            
+            createBackgroundVisualizers() {
+                const container = document.getElementById('backgroundContainer');
+                
+                backgroundThemes.forEach((theme, index) => {
+                    const visualizerDiv = document.createElement('div');
+                    visualizerDiv.className = 'background-visualizer';
+                    visualizerDiv.id = `bg-visualizer-${index}`;
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.id = `bg-canvas-${index}`;
+                    visualizerDiv.appendChild(canvas);
+                    
+                    container.appendChild(visualizerDiv);
+                    
+                    // Create visualizer with delay
+                    setTimeout(() => {
+                        const visualizer = new VariedBackgroundVisualizer(canvas, theme, index);
+                        this.backgroundVisualizers.push(visualizer);
+                    }, index * 100);
+                });
+            }
+            
+            createNavigation() {
+                const navSections = document.getElementById('navSections');
+                
+                backgroundThemes.forEach((theme, index) => {
+                    const section = document.createElement('div');
+                    section.className = 'nav-section';
+                    section.innerHTML = `
+                        <div class="nav-section-name">${theme.name}</div>
+                        <div class="nav-section-info">${theme.geometry} • ${theme.particleCount} particles • ${(theme.chaos * 100).toFixed(0)}% chaos</div>
+                    `;
+                    
+                    section.addEventListener('click', () => {
+                        this.jumpToSection(index);
+                    });
+                    
+                    navSections.appendChild(section);
+                });
+            }
+            
+            setupNavigation() {
+                const navToggle = document.getElementById('navToggle');
+                const navContainer = document.getElementById('navContainer');
+                
+                navToggle.addEventListener('click', () => {
+                    navToggle.classList.toggle('open');
+                    navContainer.classList.toggle('open');
+                });
+                
+                // Close nav when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!navContainer.contains(e.target) && !navToggle.contains(e.target)) {
+                        navToggle.classList.remove('open');
+                        navContainer.classList.remove('open');
+                    }
+                });
+            }
+            
+            jumpToSection(sectionIndex) {
+                if (this.isTransitioning) return;
+                
+                console.log(`💎 Navigation Jump: ${this.currentSection} → ${sectionIndex}`);
+                
+                this.isTransitioning = true;
+                this.performCrystalTransition(sectionIndex);
+                
+                // Close navigation
+                document.getElementById('navToggle').classList.remove('open');
+                document.getElementById('navContainer').classList.remove('open');
+                
+                setTimeout(() => {
+                    this.isTransitioning = false;
+                }, 1000);
+            }
+            
+            createCrystalWafers() {
+                const container = document.getElementById('crystalContainer');
+                
+                for (let i = 0; i < 6; i++) {
+                    const wafer = document.createElement('div');
+                    wafer.className = 'crystal-wafer';
+                    wafer.id = `crystal-wafer-${i}`;
+                    
+                    wafer.innerHTML = `
+                        <div class="wafer-title" id="title-${i}">Loading...</div>
+                        <div class="wafer-preview" id="preview-${i}">
+                            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--crystal-teal); font-size: 1.0em;">
+                                ◆ Initializing crystal matrix...
+                            </div>
+                        </div>
+                        <div class="wafer-info" id="info-${i}">
+                            <div class="info-title" id="info-title-${i}">Crystal Analysis</div>
+                            <div class="info-description" id="info-description-${i}">Scanning silicon wafer structure...</div>
+                            <div class="info-tags" id="info-tags-${i}">
+                                <!-- Tags will be populated dynamically -->
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(wafer);
+                }
+            }
+            
+            setupTactileScrollPhysics() {
+                let momentumDecay;
+                
+                window.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    
+                    if (this.isTransitioning) return;
+                    
+                    // Build momentum
+                    const delta = Math.abs(e.deltaY);
+                    this.scrollMomentum += delta * 0.4;
+                    this.scrollMomentum = Math.min(this.scrollMomentum, 100);
+                    
+                    // Show momentum indicator
+                    this.showMomentumIndicator();
+                    
+                    // Clear previous decay
+                    clearTimeout(momentumDecay);
+                    
+                    // Check for crystal transition threshold
+                    if (this.scrollMomentum >= this.momentumThreshold) {
+                        this.triggerCrystalTransition(e.deltaY > 0 ? 1 : -1);
+                    } else {
+                        // Set momentum decay
+                        momentumDecay = setTimeout(() => {
+                            this.decayMomentum();
+                        }, 150);
+                    }
+                }, { passive: false });
+                
+                // Touch support
+                let touchStartY = 0;
+                let touchMomentum = 0;
+                
+                window.addEventListener('touchstart', (e) => {
+                    touchStartY = e.touches[0].clientY;
+                    touchMomentum = 0;
+                });
+                
+                window.addEventListener('touchmove', (e) => {
+                    if (this.isTransitioning) return;
+                    
+                    const touchY = e.touches[0].clientY;
+                    const deltaY = touchStartY - touchY;
+                    
+                    touchMomentum += Math.abs(deltaY) * 0.6;
+                    touchMomentum = Math.min(touchMomentum, 100);
+                    
+                    this.scrollMomentum = touchMomentum;
+                    this.showMomentumIndicator();
+                    
+                    if (this.scrollMomentum >= this.momentumThreshold) {
+                        this.triggerCrystalTransition(deltaY > 0 ? 1 : -1);
+                    }
+                });
+                
+                window.addEventListener('touchend', () => {
+                    setTimeout(() => {
+                        this.decayMomentum();
+                    }, 150);
+                });
+            }
+            
+            triggerCrystalTransition(direction) {
+                if (this.isTransitioning) return;
+                
+                const newSection = this.currentSection + direction;
+                
+                // Boundary check with wraparound
+                let targetSection;
+                if (newSection < 0) {
+                    targetSection = 6; // Wrap to last section
+                } else if (newSection > 6) {
+                    targetSection = 0; // Wrap to first section
+                } else {
+                    targetSection = newSection;
+                }
+                
+                console.log(`💎 Crystal Transition: ${this.currentSection} → ${targetSection} (power: ${this.scrollMomentum.toFixed(1)})`);
+                
+                this.isTransitioning = true;
+                this.scrollMomentum = 0;
+                this.hideMomentumIndicator();
+                
+                // Crystal transition sequence
+                this.performCrystalTransition(targetSection);
+                
+                setTimeout(() => {
+                    this.isTransitioning = false;
+                }, 1000);
+            }
+            
+            performCrystalTransition(targetSection) {
+                this.currentSection = targetSection;
+                
+                // Update background
+                this.updateBackgroundVisibility();
+                
+                // Update navigation
+                this.updateNavigation();
+                
+                // Crystal breaking and reforming sequence
+                this.crystalBreakingSequence();
+                
+                // Update UI
+                setTimeout(() => {
+                    this.updateUI();
+                }, 200);
+            }
+            
+            crystalBreakingSequence() {
+                const wafers = document.querySelectorAll('.crystal-wafer');
+                
+                // Phase 1: Breaking animation
+                wafers.forEach((wafer, index) => {
+                    setTimeout(() => {
+                        wafer.classList.add('breaking');
+                        
+                        // Remove breaking class and add reforming
+                        setTimeout(() => {
+                            wafer.classList.remove('breaking');
+                            wafer.classList.add('reforming');
+                            
+                            // Update content during reform
+                            setTimeout(() => {
+                                this.updateWaferContent(index);
+                            }, 200);
+                            
+                            // Remove reforming class
+                            setTimeout(() => {
+                                wafer.classList.remove('reforming');
+                            }, 1000);
+                            
+                        }, 800);
+                    }, index * 80);
+                });
+            }
+            
+            updateWaferContent(waferIndex) {
+                const currentSet = contentSets[this.currentSection];
+                const content = currentSet[waferIndex];
+                
+                document.getElementById(`title-${waferIndex}`).textContent = content.title;
+                document.getElementById(`info-title-${waferIndex}`).textContent = content.title;
+                document.getElementById(`info-description-${waferIndex}`).textContent = content.description;
+                
+                // Update tags
+                const tagsContainer = document.getElementById(`info-tags-${waferIndex}`);
+                tagsContainer.innerHTML = content.tags.map(tag => 
+                    `<span class="info-tag">${tag}</span>`
+                ).join('');
+                
+                // Auto-load preview
+                this.autoLoadPreview(waferIndex, content);
+            }
+            
+            updateContent() {
+                const currentSet = contentSets[this.currentSection];
+                
+                for (let i = 0; i < 6; i++) {
+                    this.updateWaferContent(i);
+                }
+            }
+            
+            autoLoadPreview(waferIndex, content) {
+                const preview = document.getElementById(`preview-${waferIndex}`);
+                
+                if (content.isHeavy) {
+                    preview.innerHTML = `
+                        <div style="padding: 20px; text-align: center;">
+                            <div style="color: var(--crystal-teal); margin-bottom: 15px; font-size: 1.1em;">⚡ MEGA SYSTEM</div>
+                            <div style="font-size: 0.8em; line-height: 1.6; color: var(--crystal-teal);">
+                                125 WebGL visualizers<br>
+                                <button onclick="window.open('${content.file}', '_blank')" 
+                                        style="margin-top: 10px; padding: 8px 16px; background: var(--silicon-green); 
+                                               border: 2px solid var(--crystal-teal); color: var(--crystal-teal); 
+                                               border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8em;">
+                                    ◆ Launch System
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Auto-load with staggered entrance
+                    setTimeout(() => {
+                        preview.innerHTML = `
+                            <iframe src="${content.file}" 
+                                    width="100%" 
+                                    height="100%" 
+                                    frameborder="0"
+                                    loading="lazy"
+                                    style="opacity: 0; transition: opacity 0.6s ease;">
+                            </iframe>
+                        `;
+                        
+                        const iframe = preview.querySelector('iframe');
+                        iframe.onload = () => {
+                            iframe.style.opacity = '1';
+                        };
+                    }, waferIndex * 150 + 300);
+                }
+            }
+            
+            updateBackgroundVisibility() {
+                const backgrounds = document.querySelectorAll('.background-visualizer');
+                backgrounds.forEach((bg, index) => {
+                    bg.classList.toggle('active', index === this.currentSection);
+                });
+            }
+            
+            updateNavigation() {
+                const navSections = document.querySelectorAll('.nav-section');
+                navSections.forEach((section, index) => {
+                    section.classList.toggle('active', index === this.currentSection);
+                });
+            }
+            
+            showMomentumIndicator() {
+                const indicator = document.getElementById('momentumIndicator');
+                const fill = document.getElementById('momentumFill');
+                
+                indicator.classList.add('active');
+                fill.style.width = `${this.scrollMomentum}%`;
+            }
+            
+            hideMomentumIndicator() {
+                const indicator = document.getElementById('momentumIndicator');
+                indicator.classList.remove('active');
+            }
+            
+            decayMomentum() {
+                const decayInterval = setInterval(() => {
+                    this.scrollMomentum -= 3;
+                    
+                    if (this.scrollMomentum <= 0) {
+                        this.scrollMomentum = 0;
+                        this.hideMomentumIndicator();
+                        clearInterval(decayInterval);
+                    } else {
+                        this.showMomentumIndicator();
+                    }
+                }, 50);
+            }
+            
+            updateUI() {
+                const theme = backgroundThemes[this.currentSection];
+                
+                // Update section info
+                document.getElementById('sectionTitle').textContent = theme.name;
+                document.getElementById('sectionSubtitle').textContent = `Crystal Wafer System`;
+            }
+            
+            startRenderLoop() {
+                const render = () => {
+                    this.backgroundVisualizers.forEach(viz => {
+                        if (viz) viz.render();
+                    });
+                    requestAnimationFrame(render);
+                };
+                
+                render();
+                console.log('🎬 Crystal wafer render loop started');
+            }
+        }
+        
+        // GREATLY VARIED BACKGROUND VISUALIZER
+        class VariedBackgroundVisualizer {
+            constructor(canvas, theme, sectionIndex) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.theme = theme;
+                this.sectionIndex = sectionIndex;
+                
+                this.particles = [];
+                this.startTime = Date.now();
+                
+                this.resize();
+                this.initializeParticles();
+                
+                console.log(`💎 Varied Background ${sectionIndex}: ${theme.name} (${theme.geometry})`);
+            }
+            
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+            
+            initializeParticles() {
+                this.particles = [];
+                
+                for (let i = 0; i < this.theme.particleCount; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * this.theme.speed * 2,
+                        vy: (Math.random() - 0.5) * this.theme.speed * 2,
+                        size: Math.random() * (2 + this.theme.chaos * 4),
+                        color: this.theme.colors[Math.floor(Math.random() * this.theme.colors.length)],
+                        life: Math.random(),
+                        decay: Math.random() * 0.008 + 0.002,
+                        rotation: Math.random() * Math.PI * 2,
+                        rotationSpeed: (Math.random() - 0.5) * 0.1 * this.theme.speed
+                    });
+                }
+            }
+            
+            render() {
+                this.resize();
+                
+                // Varied background clear based on chaos
+                this.ctx.fillStyle = `rgba(0, 0, 0, ${0.15 - this.theme.chaos * 0.1})`;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                const time = (Date.now() - this.startTime) * 0.001;
+                
+                // Draw geometry based on theme
+                this.drawGeometry(time);
+                
+                // Draw themed particles
+                this.drawParticles(time);
+            }
+            
+            drawGeometry(time) {
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                
+                switch (this.theme.geometry) {
+                    case 'hypercube':
+                        this.drawHypercubeGeometry(time);
+                        break;
+                    case 'plasma':
+                        this.drawPlasmaGeometry(time);
+                        break;
+                    case 'neural':
+                        this.drawNeuralGeometry(time);
+                        break;
+                    case 'crystal':
+                        this.drawCrystalGeometry(time);
+                        break;
+                    case 'quantum':
+                        this.drawQuantumGeometry(time);
+                        break;
+                    case 'fractal':
+                        this.drawFractalGeometry(time);
+                        break;
+                    case 'matrix':
+                        this.drawMatrixGeometry(time);
+                        break;
+                }
+            }
+            
+            drawHypercubeGeometry(time) {
+                const gridSize = 80;
+                this.ctx.strokeStyle = this.theme.colors[0] + '40';
+                this.ctx.lineWidth = 1;
+                
+                for (let x = 0; x < this.canvas.width; x += gridSize) {
+                    for (let y = 0; y < this.canvas.height; y += gridSize) {
+                        const distortX = Math.sin(time * 0.3 + x * 0.01) * 10;
+                        const distortY = Math.cos(time * 0.3 + y * 0.01) * 10;
+                        
+                        this.ctx.beginPath();
+                        this.ctx.rect(x + distortX, y + distortY, gridSize * 0.7, gridSize * 0.7);
+                        this.ctx.stroke();
+                    }
+                }
+            }
+            
+            drawPlasmaGeometry(time) {
+                for (let x = 0; x < this.canvas.width; x += 8) {
+                    for (let y = 0; y < this.canvas.height; y += 8) {
+                        const value = Math.sin(x * 0.02 + time) + Math.sin(y * 0.02 + time);
+                        const alpha = (value + 2) * 0.1;
+                        
+                        this.ctx.fillStyle = this.theme.colors[1] + Math.floor(alpha * 255).toString(16);
+                        this.ctx.fillRect(x, y, 4, 4);
+                    }
+                }
+            }
+            
+            drawNeuralGeometry(time) {
+                const nodeCount = 15;
+                const nodes = [];
+                
+                for (let i = 0; i < nodeCount; i++) {
+                    nodes.push({
+                        x: this.canvas.width / 2 + Math.cos(i * Math.PI * 2 / nodeCount + time) * 200,
+                        y: this.canvas.height / 2 + Math.sin(i * Math.PI * 2 / nodeCount + time) * 200
+                    });
+                }
+                
+                // Draw connections
+                this.ctx.strokeStyle = this.theme.colors[0] + '60';
+                this.ctx.lineWidth = 1;
+                
+                for (let i = 0; i < nodes.length; i++) {
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(nodes[i].x, nodes[i].y);
+                        this.ctx.lineTo(nodes[j].x, nodes[j].y);
+                        this.ctx.stroke();
+                    }
+                }
+                
+                // Draw nodes
+                this.ctx.fillStyle = this.theme.colors[1];
+                nodes.forEach(node => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(node.x, node.y, 3, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+            }
+            
+            drawCrystalGeometry(time) {
+                const gridSize = 60;
+                this.ctx.strokeStyle = this.theme.colors[0] + '50';
+                this.ctx.lineWidth = 1;
+                
+                for (let x = 0; x < this.canvas.width; x += gridSize) {
+                    for (let y = 0; y < this.canvas.height; y += gridSize) {
+                        const rotation = time * 0.2;
+                        
+                        this.ctx.save();
+                        this.ctx.translate(x + gridSize/2, y + gridSize/2);
+                        this.ctx.rotate(rotation);
+                        
+                        // Draw crystal shape
+                        this.ctx.beginPath();
+                        for (let i = 0; i < 6; i++) {
+                            const angle = i * Math.PI / 3;
+                            const x = Math.cos(angle) * 20;
+                            const y = Math.sin(angle) * 20;
+                            if (i === 0) this.ctx.moveTo(x, y);
+                            else this.ctx.lineTo(x, y);
+                        }
+                        this.ctx.closePath();
+                        this.ctx.stroke();
+                        
+                        this.ctx.restore();
+                    }
+                }
+            }
+            
+            drawQuantumGeometry(time) {
+                const waveCount = 20;
+                this.ctx.strokeStyle = this.theme.colors[0] + '40';
+                this.ctx.lineWidth = 2;
+                
+                for (let i = 0; i < waveCount; i++) {
+                    const y = (i / waveCount) * this.canvas.height;
+                    
+                    this.ctx.beginPath();
+                    for (let x = 0; x < this.canvas.width; x += 4) {
+                        const waveY = y + Math.sin(x * 0.01 + time + i) * 30 * this.theme.chaos;
+                        if (x === 0) this.ctx.moveTo(x, waveY);
+                        else this.ctx.lineTo(x, waveY);
+                    }
+                    this.ctx.stroke();
+                }
+            }
+            
+            drawFractalGeometry(time) {
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                
+                this.ctx.strokeStyle = this.theme.colors[0] + '30';
+                this.ctx.lineWidth = 1;
+                
+                const drawBranch = (x, y, angle, length, depth) => {
+                    if (depth === 0) return;
+                    
+                    const endX = x + Math.cos(angle) * length;
+                    const endY = y + Math.sin(angle) * length;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, y);
+                    this.ctx.lineTo(endX, endY);
+                    this.ctx.stroke();
+                    
+                    const newLength = length * 0.7;
+                    drawBranch(endX, endY, angle - 0.5 + Math.sin(time) * 0.2, newLength, depth - 1);
+                    drawBranch(endX, endY, angle + 0.5 + Math.cos(time) * 0.2, newLength, depth - 1);
+                };
+                
+                drawBranch(centerX, centerY + 100, -Math.PI / 2, 80, 6);
+            }
+            
+            drawMatrixGeometry(time) {
+                const gridSize = 40;
+                this.ctx.strokeStyle = this.theme.colors[0] + '20';
+                this.ctx.lineWidth = 1;
+                
+                // Grid lines
+                for (let x = 0; x < this.canvas.width; x += gridSize) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                
+                for (let y = 0; y < this.canvas.height; y += gridSize) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+                
+                // Matrix rain effect
+                this.ctx.fillStyle = this.theme.colors[1];
+                this.ctx.font = '12px monospace';
+                
+                for (let i = 0; i < 30; i++) {
+                    const x = (i * gridSize * 2) % this.canvas.width;
+                    const y = (time * 100 + i * 50) % this.canvas.height;
+                    const char = String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96));
+                    this.ctx.fillText(char, x, y);
+                }
+            }
+            
+            drawParticles(time) {
+                this.particles.forEach(particle => {
+                    // Update particle
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.life -= particle.decay;
+                    particle.rotation += particle.rotationSpeed;
+                    
+                    // Reset if dead
+                    if (particle.life <= 0) {
+                        particle.x = Math.random() * this.canvas.width;
+                        particle.y = Math.random() * this.canvas.height;
+                        particle.life = 1;
+                        particle.color = this.theme.colors[Math.floor(Math.random() * this.theme.colors.length)];
+                    }
+                    
+                    // Wrap around
+                    if (particle.x < 0) particle.x = this.canvas.width;
+                    if (particle.x > this.canvas.width) particle.x = 0;
+                    if (particle.y < 0) particle.y = this.canvas.height;
+                    if (particle.y > this.canvas.height) particle.y = 0;
+                    
+                    // Draw particle
+                    const alpha = particle.life * (0.4 + this.theme.chaos * 0.4);
+                    
+                    this.ctx.save();
+                    this.ctx.translate(particle.x, particle.y);
+                    this.ctx.rotate(particle.rotation);
+                    
+                    this.ctx.fillStyle = particle.color + Math.floor(alpha * 255).toString(16);
+                    this.ctx.beginPath();
+                    this.ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    this.ctx.restore();
+                });
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            console.log('💎 Starting Visual Codex Crystal Perfected System...');
+            const manager = new CrystalWaferSystemManager();
+            manager.startRenderLoop();
+            window.crystalManager = manager;
+        });
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Glassmorphism & Holographic UI Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(0, 255, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 0, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 10%, rgba(255, 255, 0, 0.1) 0%, transparent 40%),
+                linear-gradient(135deg, #0a0a0f 0%, #1a0a1f 50%, #0f1a2f 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #fff;
+        }
+
+        /* Animated Background Grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(0,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,0,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridFlow 15s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes gridFlow {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .container {
+            padding: 40px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 40px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.8)); }
+            to { filter: drop-shadow(0 0 40px rgba(255, 0, 255, 0.8)); }
+        }
+
+        /* Glassmorphism Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .glass-card:hover::before {
+            left: 100%;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(0, 255, 255, 0.6);
+            box-shadow: 
+                0 20px 50px rgba(0, 255, 255, 0.2),
+                inset 0 2px 0 rgba(255, 255, 255, 0.3),
+                0 0 30px rgba(0, 255, 255, 0.4);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .card-description {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: rgba(255, 0, 255, 0.3);
+            border: 1px solid rgba(255, 0, 255, 0.6);
+            color: #ff00ff;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Holographic Elements */
+        .holographic-section {
+            margin: 60px 0;
+            text-align: center;
+        }
+
+        .holographic-button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background: linear-gradient(45deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+            border: 2px solid;
+            border-image: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00, #00ffff) 1;
+            color: #00ffff;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .holographic-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(0, 255, 255, 0.3), transparent);
+            animation: holographicSpin 3s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .holographic-button:hover::before {
+            opacity: 1;
+        }
+
+        @keyframes holographicSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .holographic-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 10px 30px rgba(0, 255, 255, 0.3),
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+
+        /* Morphing Shapes */
+        .morphing-shapes {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 60px 0;
+            gap: 30px;
+        }
+
+        .morphing-shape {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.3), rgba(255, 0, 255, 0.3));
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            transition: all 1s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .shape-circle {
+            border-radius: 50%;
+            animation: shapeFloat 4s ease-in-out infinite;
+        }
+
+        .shape-square {
+            border-radius: 10px;
+            animation: shapeFloat 4s ease-in-out infinite 1s;
+        }
+
+        .shape-diamond {
+            border-radius: 10px;
+            transform: rotate(45deg);
+            animation: shapeFloat 4s ease-in-out infinite 2s;
+        }
+
+        .shape-hexagon {
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            animation: shapeFloat 4s ease-in-out infinite 3s;
+        }
+
+        @keyframes shapeFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.1); }
+        }
+
+        .morphing-shape:hover {
+            background: linear-gradient(45deg, rgba(255, 255, 0, 0.4), rgba(255, 0, 255, 0.4));
+            box-shadow: 0 0 30px rgba(255, 255, 0, 0.6);
+            transform: scale(1.2);
+        }
+
+        /* Neomorphic Elements */
+        .neomorphic-section {
+            background: linear-gradient(145deg, rgba(20, 20, 40, 0.8), rgba(40, 20, 60, 0.8));
+            border-radius: 30px;
+            padding: 40px;
+            margin: 60px 0;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                20px 20px 60px rgba(0, 0, 0, 0.5),
+                -20px -20px 60px rgba(100, 100, 150, 0.1);
+        }
+
+        .neomorphic-button {
+            background: linear-gradient(145deg, rgba(40, 40, 80, 0.8), rgba(20, 20, 40, 0.8));
+            border: none;
+            border-radius: 15px;
+            padding: 15px 25px;
+            margin: 10px;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 
+                8px 8px 16px rgba(0, 0, 0, 0.5),
+                -8px -8px 16px rgba(100, 100, 150, 0.1);
+        }
+
+        .neomorphic-button:hover {
+            box-shadow: 
+                inset 8px 8px 16px rgba(0, 0, 0, 0.3),
+                inset -8px -8px 16px rgba(100, 100, 150, 0.1);
+            transform: translateY(2px);
+        }
+
+        .neomorphic-button:active {
+            box-shadow: 
+                inset 4px 4px 8px rgba(0, 0, 0, 0.4),
+                inset -4px -4px 8px rgba(100, 100, 150, 0.1);
+        }
+
+        /* Floating Particles */
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: radial-gradient(circle, var(--color) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: particleFloat 12s infinite linear;
+        }
+
+        @keyframes particleFloat {
+            0% { 
+                opacity: 0; 
+                transform: translateY(100vh) translateX(0) scale(0); 
+            }
+            10% { 
+                opacity: 1; 
+                transform: translateY(90vh) translateX(10px) scale(1); 
+            }
+            90% { 
+                opacity: 1; 
+                transform: translateY(10vh) translateX(-10px) scale(1); 
+            }
+            100% { 
+                opacity: 0; 
+                transform: translateY(0) translateX(0) scale(0); 
+            }
+        }
+
+        @media (max-width: 768px) {
+            .title { font-size: 2rem; }
+            .cards-grid { grid-template-columns: 1fr; }
+            .morphing-shapes { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+
+    <div class="container">
+        <h1 class="title">CSS GLASSMORPHISM & HOLOGRAPHIC UI</h1>
+
+        <div class="cards-grid">
+            <div class="glass-card">
+                <h3 class="card-title">Backdrop Blur Effects</h3>
+                <p class="card-description">
+                    Advanced glassmorphism effects using backdrop-filter blur, creating depth 
+                    and transparency layers with subtle color overlays.
+                </p>
+                <div class="card-tags">
+                    <span class="tag">CSS3</span>
+                    <span class="tag">Backdrop-Filter</span>
+                    <span class="tag">Blur</span>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3 class="card-title">Holographic Borders</h3>
+                <p class="card-description">
+                    Dynamic border gradients and conic gradients that simulate holographic 
+                    effects with animated color transitions.
+                </p>
+                <div class="card-tags">
+                    <span class="tag">Gradients</span>
+                    <span class="tag">Animation</span>
+                    <span class="tag">Borders</span>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3 class="card-title">Morphing Shapes</h3>
+                <p class="card-description">
+                    CSS transforms and clip-path properties creating shape-shifting 
+                    geometric forms with smooth transitions.
+                </p>
+                <div class="card-tags">
+                    <span class="tag">Transform</span>
+                    <span class="tag">Clip-Path</span>
+                    <span class="tag">Morph</span>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3 class="card-title">Neomorphic Design</h3>
+                <p class="card-description">
+                    Soft UI elements with depth created through strategic use of box-shadows 
+                    and gradient overlays.
+                </p>
+                <div class="card-tags">
+                    <span class="tag">Neomorphism</span>
+                    <span class="tag">Shadows</span>
+                    <span class="tag">Depth</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="holographic-section">
+            <h2 style="margin-bottom: 30px; color: #ff00ff;">Holographic Interactive Elements</h2>
+            <a href="#" class="holographic-button">Holographic Button</a>
+            <a href="#" class="holographic-button">Quantum Interface</a>
+            <a href="#" class="holographic-button">Neural Link</a>
+        </div>
+
+        <div class="morphing-shapes">
+            <div class="morphing-shape shape-circle">CIRCLE</div>
+            <div class="morphing-shape shape-square">SQUARE</div>
+            <div class="morphing-shape shape-diamond">DIAMOND</div>
+            <div class="morphing-shape shape-hexagon">HEXAGON</div>
+        </div>
+
+        <div class="neomorphic-section">
+            <h2 style="margin-bottom: 30px; color: #ffff00; text-align: center;">Neomorphic Controls</h2>
+            <div style="text-align: center;">
+                <button class="neomorphic-button">Soft Button</button>
+                <button class="neomorphic-button">Pressed State</button>
+                <button class="neomorphic-button">Interactive UI</button>
+                <button class="neomorphic-button">Depth Effect</button>
+            </div>
+            <p style="text-align: center; margin-top: 20px; color: rgba(255, 255, 255, 0.7);">
+                Click buttons to experience tactile feedback through shadow transitions
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            const colors = ['#00ffff', '#ff00ff', '#ffff00', '#ff0088', '#8000ff'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            particle.style.setProperty('--color', color);
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            particle.style.animationDuration = (Math.random() * 8 + 8) + 's';
+            
+            document.getElementById('particles').appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 16000);
+        }
+
+        // Generate particles continuously
+        setInterval(createParticle, 300);
+
+        // Initial particles
+        for (let i = 0; i < 20; i++) {
+            setTimeout(createParticle, i * 100);
+        }
+
+        // Interactive shape morphing
+        document.querySelectorAll('.morphing-shape').forEach(shape => {
+            shape.addEventListener('click', () => {
+                const shapes = ['shape-circle', 'shape-square', 'shape-diamond', 'shape-hexagon'];
+                const currentShape = shapes.find(s => shape.classList.contains(s));
+                const currentIndex = shapes.indexOf(currentShape);
+                const nextIndex = (currentIndex + 1) % shapes.length;
+                
+                shape.classList.remove(currentShape);
+                shape.classList.add(shapes[nextIndex]);
+                
+                // Update text
+                const shapeNames = ['CIRCLE', 'SQUARE', 'DIAMOND', 'HEXAGON'];
+                shape.textContent = shapeNames[nextIndex];
+            });
+        });
+
+        // Glass card hover effects
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.background = 'rgba(255, 255, 255, 0.15)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.background = 'rgba(255, 255, 255, 0.1)';
+            });
+        });
+
+        // Holographic button interaction
+        document.querySelectorAll('.holographic-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Create ripple effect
+                const ripple = document.createElement('div');
+                ripple.style.position = 'absolute';
+                ripple.style.borderRadius = '50%';
+                ripple.style.background = 'rgba(0, 255, 255, 0.6)';
+                ripple.style.transform = 'scale(0)';
+                ripple.style.animation = 'ripple 0.6s linear';
+                ripple.style.left = '50%';
+                ripple.style.top = '50%';
+                ripple.style.width = '100px';
+                ripple.style.height = '100px';
+                ripple.style.marginLeft = '-50px';
+                ripple.style.marginTop = '-50px';
+                
+                button.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        // Add ripple animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(2);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

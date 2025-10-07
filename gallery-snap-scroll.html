@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Codex Gallery - Snap Scroll System</title>
+    <style>
+        :root {
+            --neon-cyan: #00ffff;
+            --neon-magenta: #ff00ff;
+            --neon-yellow: #ffff00;
+            --electric-blue: #0080ff;
+            --hot-pink: #ff1088;
+            --cyber-purple: #8000ff;
+            --vaporwave-bg: #0a0a0f;
+            --card-bg: rgba(16, 16, 32, 0.9);
+            --glow-intensity: 0 0 20px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: var(--neon-cyan);
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Evolving background canvas */
+        #background-visualizer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            opacity: 0.4;
+        }
+        
+        /* Snap scroll container */
+        .snap-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            position: relative;
+            scrollbar-width: thin;
+            scrollbar-color: var(--neon-cyan) transparent;
+        }
+        
+        .snap-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .snap-container::-webkit-scrollbar-track {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        
+        .snap-container::-webkit-scrollbar-thumb {
+            background: var(--neon-cyan);
+            border-radius: 4px;
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+        
+        /* Each snap section shows exactly 6 cards */
+        .snap-section {
+            height: 100vh;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 20px;
+            padding: 40px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        /* Card styling for snap layout */
+        .snap-card {
+            background: var(--card-bg);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: var(--glow-intensity) var(--neon-cyan);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .snap-card:hover {
+            transform: scale(1.05) translateZ(20px);
+            box-shadow: 0 0 40px var(--neon-magenta);
+            border-color: var(--neon-magenta);
+        }
+        
+        .snap-card h3 {
+            color: var(--neon-yellow);
+            margin-bottom: 10px;
+            font-size: 1.2em;
+            text-shadow: 0 0 10px var(--neon-yellow);
+        }
+        
+        .snap-card p {
+            color: var(--neon-cyan);
+            font-size: 0.9em;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            flex-grow: 1;
+        }
+        
+        .snap-card .preview-frame {
+            width: 100%;
+            height: 200px;
+            border: 1px solid var(--electric-blue);
+            border-radius: 8px;
+            background: rgba(0, 20, 40, 0.8);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 128, 255, 0.3);
+        }
+        
+        .snap-card iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+        
+        .snap-card .tags {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .snap-card .tag {
+            background: rgba(255, 0, 255, 0.2);
+            color: var(--neon-magenta);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            border: 1px solid var(--neon-magenta);
+        }
+        
+        /* Navigation dots */
+        .nav-dots {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+        }
+        
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-cyan);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-dot.active {
+            background: var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        
+        .nav-dot:hover {
+            transform: scale(1.3);
+            border-color: var(--neon-magenta);
+        }
+        
+        /* Section indicator */
+        .section-indicator {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: var(--card-bg);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 10px;
+            padding: 15px 20px;
+            font-family: 'Courier New', monospace;
+            color: var(--neon-yellow);
+            text-shadow: 0 0 10px var(--neon-yellow);
+            z-index: 1000;
+        }
+        
+        /* Loading indicator */
+        .loading-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            border: 2px solid var(--electric-blue);
+            border-radius: 10px;
+            padding: 10px 20px;
+            color: var(--electric-blue);
+            font-size: 0.9em;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading-indicator.active {
+            opacity: 1;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .snap-section {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(6, 1fr);
+                gap: 15px;
+                padding: 20px;
+            }
+            
+            .snap-card {
+                padding: 15px;
+            }
+            
+            .snap-card .preview-frame {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Evolving background visualizer -->
+    <canvas id="background-visualizer"></canvas>
+    
+    <!-- Section indicator -->
+    <div class="section-indicator">
+        <div>Section <span id="current-section">1</span> of <span id="total-sections">7</span></div>
+        <div style="font-size: 0.8em; margin-top: 5px;">Visual Codex Gallery</div>
+    </div>
+    
+    <!-- Navigation dots -->
+    <div class="nav-dots" id="nav-dots"></div>
+    
+    <!-- Loading indicator -->
+    <div class="loading-indicator" id="loading-indicator">
+        Loading visual effects...
+    </div>
+    
+    <!-- Snap scroll container -->
+    <div class="snap-container" id="snap-container">
+        <!-- Sections will be dynamically generated -->
+    </div>
+
+    <script>
+        // Visual Codex Gallery Data
+        const visualEffects = [
+            {
+                title: "Holographic Visualizer",
+                description: "Multi-layer blend mode system with depth transforms and mouse reactivity",
+                tags: ["holographic", "parallax", "webgl"],
+                file: "demos/holographic-visualizer.html"
+            },
+            {
+                title: "MVEP Moire Hypercube",
+                description: "4D hypercube projection with interference patterns",
+                tags: ["4d", "hypercube", "moire"],
+                file: "demos/mvep-moire-hypercube.html"
+            },
+            {
+                title: "Neoskeuomorphic Cards",
+                description: "Modern skeuomorphic card design with advanced shadows",
+                tags: ["neoskeuomorphic", "cards", "shadows"],
+                file: "demos/neoskeuomorphic-cards.html"
+            },
+            {
+                title: "Chaos Overlay System",
+                description: "Digital interference patterns with blend mode chaos",
+                tags: ["chaos", "overlay", "interference"],
+                file: "demos/chaos-overlay-system.html"
+            },
+            {
+                title: "Holographic Progress",
+                description: "Futuristic progress indicators with neon glow effects",
+                tags: ["progress", "holographic", "neon"],
+                file: "demos/holographic-progress.html"
+            },
+            {
+                title: "State Control Dots",
+                description: "Interactive navigation dots with state management",
+                tags: ["controls", "state", "interactive"],
+                file: "demos/state-control-dots.html"
+            },
+            {
+                title: "VIB34D Complete System",
+                description: "Revolutionary 4D framework with 8+ geometric systems",
+                tags: ["vib34d", "4d", "framework"],
+                file: "effects/vib34d-complete-system.html"
+            },
+            {
+                title: "Hyperdimensional Matrix",
+                description: "8D+ chaos visualization with fractal tessellations",
+                tags: ["8d", "chaos", "fractal"],
+                file: "effects/insane-hyperdimensional-matrix.html"
+            },
+            {
+                title: "Elegant 4D Flow",
+                description: "Organic 4D movements with graceful particle systems",
+                tags: ["4d", "flow", "organic"],
+                file: "effects/elegant-4d-flow-visualizer.html"
+            },
+            {
+                title: "Narrative Choreography",
+                description: "JSON-driven scroll transformations with story elements",
+                tags: ["narrative", "scroll", "choreography"],
+                file: "effects/narrative-choreography-engine.html"
+            },
+            {
+                title: "Card Bending System",
+                description: "Advanced 3D CSS transform morphing with 6 unique behaviors",
+                tags: ["3d", "cards", "morphing"],
+                file: "effects/vib34d-advanced-card-bending-system.html"
+            },
+            {
+                title: "Color Shift System",
+                description: "Extreme filter effects with contrast and brightness shifts",
+                tags: ["color", "filters", "contrast"],
+                file: "effects/enhanced-color-shift-contrast-system.html"
+            },
+            {
+                title: "Multi-Canvas Visualizer",
+                description: "5 horizontal canvas strips with synchronized cycling",
+                tags: ["canvas", "multi", "synchronized"],
+                file: "effects/multi-canvas-visualizer-system.html"
+            },
+            {
+                title: "Tabbed Visualizer",
+                description: "Tab-based interface with WebGL visualizer management",
+                tags: ["tabs", "webgl", "interface"],
+                file: "effects/tabbed-visualizer-system.html"
+            },
+            {
+                title: "Holographic Pulse",
+                description: "Multi-layer glow animations with pulse effects",
+                tags: ["pulse", "glow", "animation"],
+                file: "effects/holographic-pulse-system.html"
+            },
+            {
+                title: "Geometric Patterns",
+                description: "Complex geometric pattern generation with SVG",
+                tags: ["geometric", "patterns", "svg"],
+                file: "demos/geometric-patterns.html"
+            },
+            {
+                title: "Particle Systems",
+                description: "Advanced particle physics with Canvas 2D",
+                tags: ["particles", "physics", "canvas"],
+                file: "demos/particle-systems.html"
+            },
+            {
+                title: "3D Transforms",
+                description: "CSS 3D transform demonstrations with perspective",
+                tags: ["3d", "transforms", "css"],
+                file: "demos/3d-transforms.html"
+            },
+            {
+                title: "Shader Effects",
+                description: "WebGL shader programs with fragment effects",
+                tags: ["shaders", "webgl", "fragments"],
+                file: "demos/shader-effects.html"
+            },
+            {
+                title: "Interactive Animations",
+                description: "Mouse and touch responsive animation systems",
+                tags: ["interactive", "animation", "responsive"],
+                file: "demos/interactive-animations.html"
+            },
+            {
+                title: "Blend Mode Experiments",
+                description: "35+ CSS blend mode combinations and effects",
+                tags: ["blend", "experiments", "css"],
+                file: "demos/blend-mode-experiments.html"
+            },
+            {
+                title: "Fractal Visualizations",
+                description: "Mathematical fractal generation with zoom capabilities",
+                tags: ["fractal", "math", "zoom"],
+                file: "demos/fractal-visualizations.html"
+            },
+            {
+                title: "Neon Typography",
+                description: "Glowing text effects with animated neon styling",
+                tags: ["typography", "neon", "glow"],
+                file: "demos/neon-typography.html"
+            },
+            {
+                title: "Matrix Rain Effect",
+                description: "Classic matrix digital rain with customizable parameters",
+                tags: ["matrix", "rain", "digital"],
+                file: "demos/matrix-rain-effect.html"
+            },
+            {
+                title: "Cyberpunk Interface",
+                description: "Futuristic UI elements with hacker aesthetics",
+                tags: ["cyberpunk", "interface", "futuristic"],
+                file: "demos/cyberpunk-interface.html"
+            },
+            {
+                title: "Liquid Morphing",
+                description: "Fluid shape transformations with CSS and SVG",
+                tags: ["liquid", "morphing", "fluid"],
+                file: "demos/liquid-morphing.html"
+            },
+            {
+                title: "Glitch Effects",
+                description: "Digital corruption and glitch visualization",
+                tags: ["glitch", "corruption", "digital"],
+                file: "demos/glitch-effects.html"
+            },
+            {
+                title: "Hologram Projections",
+                description: "3D hologram-style projections with depth illusion",
+                tags: ["hologram", "projection", "3d"],
+                file: "demos/hologram-projections.html"
+            },
+            {
+                title: "VR Interface Elements",
+                description: "Virtual reality inspired UI components",
+                tags: ["vr", "interface", "virtual"],
+                file: "demos/vr-interface-elements.html"
+            },
+            {
+                title: "Quantum Visualizer",
+                description: "Quantum mechanics inspired visual effects",
+                tags: ["quantum", "physics", "visualization"],
+                file: "demos/quantum-visualizer.html"
+            },
+            {
+                title: "Neural Network Display",
+                description: "Animated neural network visualization",
+                tags: ["neural", "network", "ai"],
+                file: "demos/neural-network-display.html"
+            },
+            {
+                title: "Plasma Field Generator",
+                description: "Plasma-like energy field effects",
+                tags: ["plasma", "energy", "field"],
+                file: "demos/plasma-field-generator.html"
+            },
+            {
+                title: "Crystalline Structures",
+                description: "3D crystal growth and formation patterns",
+                tags: ["crystal", "3d", "growth"],
+                file: "demos/crystalline-structures.html"
+            },
+            {
+                title: "Wormhole Visualization",
+                description: "Spacetime distortion and wormhole effects",
+                tags: ["wormhole", "spacetime", "physics"],
+                file: "demos/wormhole-visualization.html"
+            },
+            {
+                title: "DNA Helix Animator",
+                description: "Rotating DNA double helix with particle trails",
+                tags: ["dna", "helix", "biology"],
+                file: "demos/dna-helix-animator.html"
+            },
+            {
+                title: "Cosmic Background",
+                description: "Animated cosmic microwave background radiation",
+                tags: ["cosmic", "background", "astronomy"],
+                file: "demos/cosmic-background.html"
+            },
+            {
+                title: "Temporal Rifts",
+                description: "Time distortion effects with warping visuals",
+                tags: ["temporal", "time", "distortion"],
+                file: "demos/temporal-rifts.html"
+            },
+            {
+                title: "Dimension Portal",
+                description: "Interdimensional portal with swirling energy",
+                tags: ["portal", "dimension", "energy"],
+                file: "demos/dimension-portal.html"
+            },
+            {
+                title: "Consciousness Stream",
+                description: "Abstract consciousness visualization with flowing streams",
+                tags: ["consciousness", "stream", "abstract"],
+                file: "demos/consciousness-stream.html"
+            }
+        ];
+        
+        // Background Visualizer System
+        class BackgroundVisualizer {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.resize();
+                this.particles = [];
+                this.geometries = [];
+                this.currentTheme = 0;
+                this.themes = [
+                    { name: 'Hypercube', color: '#00ffff', geometry: 'hypercube' },
+                    { name: 'Plasma', color: '#ff00ff', geometry: 'plasma' },
+                    { name: 'Neural', color: '#ffff00', geometry: 'neural' },
+                    { name: 'Crystal', color: '#0080ff', geometry: 'crystal' },
+                    { name: 'Quantum', color: '#ff1088', geometry: 'quantum' },
+                    { name: 'Fractal', color: '#8000ff', geometry: 'fractal' },
+                    { name: 'Matrix', color: '#00ff80', geometry: 'matrix' }
+                ];
+                this.initializeParticles();
+                this.animate();
+            }
+            
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+            
+            initializeParticles() {
+                this.particles = [];
+                for (let i = 0; i < 100; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        z: Math.random() * 1000,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        vz: (Math.random() - 0.5) * 2,
+                        life: Math.random(),
+                        decay: Math.random() * 0.02 + 0.005
+                    });
+                }
+            }
+            
+            updateTheme(sectionIndex) {
+                this.currentTheme = sectionIndex % this.themes.length;
+            }
+            
+            draw() {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                const theme = this.themes[this.currentTheme];
+                const time = Date.now() * 0.001;
+                
+                // Draw geometric background
+                this.drawGeometry(theme, time);
+                
+                // Draw particles
+                this.drawParticles(theme, time);
+            }
+            
+            drawGeometry(theme, time) {
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                
+                this.ctx.strokeStyle = theme.color + '20';
+                this.ctx.lineWidth = 1;
+                
+                switch (theme.geometry) {
+                    case 'hypercube':
+                        this.drawHypercube(centerX, centerY, time);
+                        break;
+                    case 'plasma':
+                        this.drawPlasma(centerX, centerY, time);
+                        break;
+                    case 'neural':
+                        this.drawNeuralNetwork(centerX, centerY, time);
+                        break;
+                    case 'crystal':
+                        this.drawCrystalStructure(centerX, centerY, time);
+                        break;
+                    case 'quantum':
+                        this.drawQuantumField(centerX, centerY, time);
+                        break;
+                    case 'fractal':
+                        this.drawFractalPattern(centerX, centerY, time);
+                        break;
+                    case 'matrix':
+                        this.drawMatrixGrid(centerX, centerY, time);
+                        break;
+                }
+            }
+            
+            drawHypercube(centerX, centerY, time) {
+                const size = 100;
+                const rotation = time * 0.5;
+                const points = [];
+                
+                // Generate 4D hypercube vertices
+                for (let i = 0; i < 16; i++) {
+                    const x = (i & 1) ? 1 : -1;
+                    const y = (i & 2) ? 1 : -1;
+                    const z = (i & 4) ? 1 : -1;
+                    const w = (i & 8) ? 1 : -1;
+                    
+                    // 4D to 3D projection
+                    const distance = 2;
+                    const factor = distance / (distance + w);
+                    const projX = x * factor;
+                    const projY = y * factor;
+                    const projZ = z * factor;
+                    
+                    // 3D rotation
+                    const cosR = Math.cos(rotation);
+                    const sinR = Math.sin(rotation);
+                    const rotX = projX * cosR - projZ * sinR;
+                    const rotZ = projX * sinR + projZ * cosR;
+                    
+                    points.push({
+                        x: centerX + rotX * size,
+                        y: centerY + projY * size,
+                        z: rotZ
+                    });
+                }
+                
+                // Draw hypercube edges
+                this.ctx.beginPath();
+                for (let i = 0; i < 16; i++) {
+                    for (let j = i + 1; j < 16; j++) {
+                        const diff = i ^ j;
+                        if ((diff & (diff - 1)) === 0) { // Only one bit different
+                            this.ctx.moveTo(points[i].x, points[i].y);
+                            this.ctx.lineTo(points[j].x, points[j].y);
+                        }
+                    }
+                }
+                this.ctx.stroke();
+            }
+            
+            drawPlasma(centerX, centerY, time) {
+                const imageData = this.ctx.createImageData(this.canvas.width, this.canvas.height);
+                const data = imageData.data;
+                
+                for (let x = 0; x < this.canvas.width; x += 4) {
+                    for (let y = 0; y < this.canvas.height; y += 4) {
+                        const value = Math.sin(x * 0.01 + time) + 
+                                    Math.sin(y * 0.01 + time) + 
+                                    Math.sin((x + y) * 0.01 + time);
+                        
+                        const index = (y * this.canvas.width + x) * 4;
+                        const intensity = Math.floor((value + 3) * 10);
+                        
+                        data[index] = intensity;     // Red
+                        data[index + 1] = intensity * 0.5; // Green
+                        data[index + 2] = intensity * 2; // Blue
+                        data[index + 3] = 50; // Alpha
+                    }
+                }
+                
+                this.ctx.putImageData(imageData, 0, 0);
+            }
+            
+            drawNeuralNetwork(centerX, centerY, time) {
+                const nodes = [];
+                const nodeCount = 20;
+                
+                // Generate nodes
+                for (let i = 0; i < nodeCount; i++) {
+                    nodes.push({
+                        x: centerX + Math.cos(i * Math.PI * 2 / nodeCount + time) * 200,
+                        y: centerY + Math.sin(i * Math.PI * 2 / nodeCount + time) * 200,
+                        activation: Math.sin(time * 2 + i) * 0.5 + 0.5
+                    });
+                }
+                
+                // Draw connections
+                this.ctx.strokeStyle = '#00ffff40';
+                for (let i = 0; i < nodes.length; i++) {
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        const dist = Math.sqrt(
+                            Math.pow(nodes[i].x - nodes[j].x, 2) + 
+                            Math.pow(nodes[i].y - nodes[j].y, 2)
+                        );
+                        if (dist < 150) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(nodes[i].x, nodes[i].y);
+                            this.ctx.lineTo(nodes[j].x, nodes[j].y);
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+                
+                // Draw nodes
+                nodes.forEach(node => {
+                    this.ctx.fillStyle = `rgba(0, 255, 255, ${node.activation})`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(node.x, node.y, 5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+            }
+            
+            drawCrystalStructure(centerX, centerY, time) {
+                const crystalSize = 150;
+                const rotation = time * 0.3;
+                
+                this.ctx.strokeStyle = '#ff00ff30';
+                this.ctx.lineWidth = 2;
+                
+                // Draw crystal lattice
+                for (let layer = 0; layer < 5; layer++) {
+                    const radius = crystalSize * (layer + 1) / 5;
+                    const sides = 6 + layer * 2;
+                    
+                    this.ctx.beginPath();
+                    for (let i = 0; i <= sides; i++) {
+                        const angle = (i / sides) * Math.PI * 2 + rotation;
+                        const x = centerX + Math.cos(angle) * radius;
+                        const y = centerY + Math.sin(angle) * radius;
+                        
+                        if (i === 0) {
+                            this.ctx.moveTo(x, y);
+                        } else {
+                            this.ctx.lineTo(x, y);
+                        }
+                    }
+                    this.ctx.stroke();
+                }
+            }
+            
+            drawQuantumField(centerX, centerY, time) {
+                const fieldSize = 300;
+                this.ctx.strokeStyle = '#ffff0020';
+                
+                // Draw quantum field fluctuations
+                for (let i = 0; i < 50; i++) {
+                    const angle = (i / 50) * Math.PI * 2;
+                    const radius = fieldSize * (0.5 + Math.sin(time * 3 + i) * 0.3);
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, 2, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                    
+                    // Draw quantum entanglement lines
+                    if (i % 5 === 0) {
+                        const nextAngle = ((i + 25) % 50 / 50) * Math.PI * 2;
+                        const nextRadius = fieldSize * (0.5 + Math.sin(time * 3 + i + 25) * 0.3);
+                        const nextX = centerX + Math.cos(nextAngle) * nextRadius;
+                        const nextY = centerY + Math.sin(nextAngle) * nextRadius;
+                        
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(x, y);
+                        this.ctx.lineTo(nextX, nextY);
+                        this.ctx.stroke();
+                    }
+                }
+            }
+            
+            drawFractalPattern(centerX, centerY, time) {
+                const drawBranch = (x, y, angle, length, depth) => {
+                    if (depth === 0) return;
+                    
+                    const endX = x + Math.cos(angle) * length;
+                    const endY = y + Math.sin(angle) * length;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, y);
+                    this.ctx.lineTo(endX, endY);
+                    this.ctx.stroke();
+                    
+                    const newLength = length * 0.7;
+                    const angleOffset = Math.sin(time + depth) * 0.5;
+                    
+                    drawBranch(endX, endY, angle - 0.5 + angleOffset, newLength, depth - 1);
+                    drawBranch(endX, endY, angle + 0.5 + angleOffset, newLength, depth - 1);
+                };
+                
+                this.ctx.strokeStyle = '#8000ff40';
+                this.ctx.lineWidth = 1;
+                
+                // Draw fractal tree
+                drawBranch(centerX, centerY + 100, -Math.PI / 2, 80, 8);
+            }
+            
+            drawMatrixGrid(centerX, centerY, time) {
+                const gridSize = 30;
+                this.ctx.strokeStyle = '#00ff8020';
+                this.ctx.lineWidth = 1;
+                
+                // Draw grid lines
+                for (let x = 0; x < this.canvas.width; x += gridSize) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                
+                for (let y = 0; y < this.canvas.height; y += gridSize) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+                
+                // Draw matrix rain
+                this.ctx.fillStyle = '#00ff80';
+                this.ctx.font = '12px monospace';
+                
+                for (let i = 0; i < 20; i++) {
+                    const x = (i * gridSize * 3) % this.canvas.width;
+                    const y = (time * 50 + i * 20) % this.canvas.height;
+                    const char = String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96));
+                    this.ctx.fillText(char, x, y);
+                }
+            }
+            
+            drawParticles(theme, time) {
+                this.ctx.fillStyle = theme.color + '60';
+                
+                this.particles.forEach(particle => {
+                    // Update particle position
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.z += particle.vz;
+                    particle.life -= particle.decay;
+                    
+                    // Reset particle if it dies
+                    if (particle.life <= 0) {
+                        particle.x = Math.random() * this.canvas.width;
+                        particle.y = Math.random() * this.canvas.height;
+                        particle.z = Math.random() * 1000;
+                        particle.life = 1;
+                    }
+                    
+                    // Wrap around screen
+                    if (particle.x < 0) particle.x = this.canvas.width;
+                    if (particle.x > this.canvas.width) particle.x = 0;
+                    if (particle.y < 0) particle.y = this.canvas.height;
+                    if (particle.y > this.canvas.height) particle.y = 0;
+                    
+                    // Draw particle with 3D effect
+                    const scale = 1000 / (1000 + particle.z);
+                    const size = 2 * scale * particle.life;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+            }
+            
+            animate() {
+                this.draw();
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+        
+        // State Management System
+        class StateManager {
+            constructor() {
+                this.currentSection = 0;
+                this.totalSections = Math.ceil(visualEffects.length / 6);
+                this.isLoading = false;
+                this.loadedSections = new Set();
+                this.backgroundVisualizer = null;
+                
+                this.initializeBackground();
+                this.generateSections();
+                this.setupNavigation();
+                this.updateUI();
+            }
+            
+            initializeBackground() {
+                const canvas = document.getElementById('background-visualizer');
+                this.backgroundVisualizer = new BackgroundVisualizer(canvas);
+                
+                window.addEventListener('resize', () => {
+                    this.backgroundVisualizer.resize();
+                });
+            }
+            
+            generateSections() {
+                const container = document.getElementById('snap-container');
+                container.innerHTML = '';
+                
+                for (let i = 0; i < this.totalSections; i++) {
+                    const section = document.createElement('div');
+                    section.className = 'snap-section';
+                    section.id = `section-${i}`;
+                    
+                    const startIndex = i * 6;
+                    const endIndex = Math.min(startIndex + 6, visualEffects.length);
+                    
+                    for (let j = startIndex; j < endIndex; j++) {
+                        const effect = visualEffects[j];
+                        const card = this.createCard(effect, j);
+                        section.appendChild(card);
+                    }
+                    
+                    container.appendChild(section);
+                }
+            }
+            
+            createCard(effect, index) {
+                const card = document.createElement('div');
+                card.className = 'snap-card';
+                card.innerHTML = `
+                    <h3>${effect.title}</h3>
+                    <p>${effect.description}</p>
+                    <div class="preview-frame" id="preview-${index}">
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--electric-blue); font-size: 0.9em;">
+                            Click to load preview
+                        </div>
+                    </div>
+                    <div class="tags">
+                        ${effect.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                `;
+                
+                // Add click handler for preview loading
+                const previewFrame = card.querySelector('.preview-frame');
+                previewFrame.addEventListener('click', () => {
+                    this.loadPreview(index, effect);
+                });
+                
+                return card;
+            }
+            
+            loadPreview(index, effect) {
+                const previewFrame = document.getElementById(`preview-${index}`);
+                
+                this.showLoading(true);
+                
+                previewFrame.innerHTML = `
+                    <iframe src="${effect.file}" 
+                            width="100%" 
+                            height="100%" 
+                            frameborder="0"
+                            loading="lazy">
+                    </iframe>
+                `;
+                
+                const iframe = previewFrame.querySelector('iframe');
+                iframe.onload = () => {
+                    this.showLoading(false);
+                };
+                
+                iframe.onerror = () => {
+                    this.showLoading(false);
+                    previewFrame.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--hot-pink); font-size: 0.9em;">
+                            Preview unavailable
+                        </div>
+                    `;
+                };
+            }
+            
+            setupNavigation() {
+                const container = document.getElementById('snap-container');
+                const navDots = document.getElementById('nav-dots');
+                
+                // Create navigation dots
+                for (let i = 0; i < this.totalSections; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'nav-dot';
+                    dot.addEventListener('click', () => {
+                        this.scrollToSection(i);
+                    });
+                    navDots.appendChild(dot);
+                }
+                
+                // Setup scroll listener
+                container.addEventListener('scroll', () => {
+                    const scrollTop = container.scrollTop;
+                    const sectionHeight = window.innerHeight;
+                    const newSection = Math.round(scrollTop / sectionHeight);
+                    
+                    if (newSection !== this.currentSection) {
+                        this.currentSection = newSection;
+                        this.updateUI();
+                        this.updateBackground();
+                    }
+                });
+            }
+            
+            scrollToSection(sectionIndex) {
+                const container = document.getElementById('snap-container');
+                const sectionHeight = window.innerHeight;
+                
+                container.scrollTo({
+                    top: sectionIndex * sectionHeight,
+                    behavior: 'smooth'
+                });
+            }
+            
+            updateUI() {
+                // Update section indicator
+                document.getElementById('current-section').textContent = this.currentSection + 1;
+                document.getElementById('total-sections').textContent = this.totalSections;
+                
+                // Update navigation dots
+                const dots = document.querySelectorAll('.nav-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentSection);
+                });
+            }
+            
+            updateBackground() {
+                if (this.backgroundVisualizer) {
+                    this.backgroundVisualizer.updateTheme(this.currentSection);
+                }
+            }
+            
+            showLoading(show) {
+                const indicator = document.getElementById('loading-indicator');
+                indicator.classList.toggle('active', show);
+            }
+        }
+        
+        // Initialize the system
+        document.addEventListener('DOMContentLoaded', () => {
+            new StateManager();
+        });
+    </script>
+</body>
+</html>

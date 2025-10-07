@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Visual Codex Mobile - 6×7 State System</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
+    
+    <!-- ZingTouch for Advanced Gesture Recognition -->
+    <script src="https://unpkg.com/zingtouch@1.0.6/dist/zingtouch.min.js"></script>
+    
+    <style>
+        /* Mobile-First CSS Framework */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        
+        :root {
+            /* Mobile-optimized color system */
+            --primary-dark: #0a0f0d;
+            --silicon-green: #0d2818;
+            --crystal-teal: #00ffaa;
+            --accent-pink: #ff1b6b;
+            --electric-blue: #00d4ff;
+            --warning-orange: #ff8c00;
+            
+            /* Touch-optimized spacing */
+            --touch-target: 56px;
+            --safe-area-top: env(safe-area-inset-top, 0);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0);
+            
+            /* Typography optimized for mobile screens */
+            --font-size-xs: 12px;
+            --font-size-sm: 14px;
+            --font-size-base: 16px;
+            --font-size-lg: 18px;
+            --font-size-xl: 22px;
+            --font-size-2xl: 28px;
+            
+            /* Performance-optimized shadows */
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.35);
+            --shadow-glow: 0 0 20px rgba(0, 255, 170, 0.3);
+        }
+        
+        /* Global mobile-first reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        html {
+            font-size: 16px;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--silicon-green) 100%);
+            color: var(--crystal-teal);
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            padding-top: var(--safe-area-top);
+            padding-bottom: var(--safe-area-bottom);
+        }
+        
+        /* Mobile Header */
+        .mobile-header {
+            position: fixed;
+            top: var(--safe-area-top);
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(10, 15, 13, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 255, 170, 0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .header-title {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            color: var(--crystal-teal);
+            text-shadow: 0 0 10px var(--crystal-teal);
+        }
+        
+        .state-indicator {
+            font-size: var(--font-size-sm);
+            color: var(--accent-pink);
+            font-weight: 600;
+        }
+        
+        /* Main Content Area */
+        .mobile-content {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 80px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px 10px;
+        }
+        
+        /* Card Grid - 6 Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding-bottom: 20px;
+        }
+        
+        /* Mobile Card Styling */
+        .mobile-card {
+            background: rgba(13, 40, 24, 0.9);
+            border: 2px solid rgba(0, 255, 170, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            min-height: 160px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        /* Card Energy Border */
+        .mobile-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, 
+                #ff004d, #00ffaa, #00d4ff, #ff004d);
+            background-size: 400% 400%;
+            animation: energyBorder 3s ease infinite;
+            border-radius: 16px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        
+        .mobile-card:hover::before,
+        .mobile-card.active::before {
+            opacity: 1;
+        }
+        
+        @keyframes energyBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Card Content */
+        .card-title {
+            font-size: var(--font-size-base);
+            font-weight: 700;
+            color: var(--crystal-teal);
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px currentColor;
+        }
+        
+        .card-description {
+            font-size: var(--font-size-xs);
+            color: rgba(0, 255, 170, 0.7);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 8px;
+        }
+        
+        .card-tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            background: rgba(0, 255, 170, 0.2);
+            border: 1px solid rgba(0, 255, 170, 0.4);
+            border-radius: 4px;
+            color: var(--crystal-teal);
+        }
+        
+        /* State Navigation Button */
+        .state-navigation {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+        
+        .state-button {
+            background: rgba(13, 40, 24, 0.95);
+            border: 2px solid var(--accent-pink);
+            border-radius: 50px;
+            padding: 16px 32px;
+            color: var(--accent-pink);
+            font-size: var(--font-size-base);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(255, 27, 107, 0.3);
+        }
+        
+        .state-button:hover {
+            background: var(--accent-pink);
+            color: var(--primary-dark);
+            transform: scale(1.05);
+            box-shadow: 0 6px 30px rgba(255, 27, 107, 0.5);
+        }
+        
+        .state-button:active {
+            transform: scale(0.95);
+        }
+        
+        /* RGB Glitch Transition Overlay */
+        .rgb-glitch-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+        }
+        
+        .rgb-glitch-overlay.active {
+            opacity: 1;
+            animation: glitchAnimation 0.6s ease-out;
+        }
+        
+        .glitch-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            mix-blend-mode: screen;
+        }
+        
+        .glitch-layer.red {
+            background: linear-gradient(45deg, #ff004d 0%, transparent 100%);
+            animation: glitchRed 0.6s ease-out;
+        }
+        
+        .glitch-layer.green {
+            background: linear-gradient(135deg, #00ffaa 0%, transparent 100%);
+            animation: glitchGreen 0.6s ease-out;
+        }
+        
+        .glitch-layer.blue {
+            background: linear-gradient(225deg, #00d4ff 0%, transparent 100%);
+            animation: glitchBlue 0.6s ease-out;
+        }
+        
+        @keyframes glitchAnimation {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            40% { opacity: 0.8; }
+            60% { opacity: 1; }
+            80% { opacity: 0.5; }
+            100% { opacity: 0; }
+        }
+        
+        @keyframes glitchRed {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-10px) scaleX(1.1); }
+            40% { transform: translateX(5px); }
+            60% { transform: translateX(-3px) scaleY(1.05); }
+            80% { transform: translateX(2px); }
+            100% { transform: translateX(0); }
+        }
+        
+        @keyframes glitchGreen {
+            0% { transform: translateY(0); }
+            20% { transform: translateY(10px) scaleY(1.1); }
+            40% { transform: translateY(-5px); }
+            60% { transform: translateY(3px) scaleX(1.05); }
+            80% { transform: translateY(-2px); }
+            100% { transform: translateY(0); }
+        }
+        
+        @keyframes glitchBlue {
+            0% { transform: translate(0, 0); }
+            20% { transform: translate(10px, -10px) scale(1.1); }
+            40% { transform: translate(-5px, 5px); }
+            60% { transform: translate(3px, -3px) scale(1.05); }
+            80% { transform: translate(-2px, 2px); }
+            100% { transform: translate(0, 0); }
+        }
+        
+        /* Polytopal Background Visualizer */
+        .polytopal-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+            transition: opacity 0.6s ease;
+        }
+        
+        /* Touch Feedback */
+        .touch-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 255, 170, 0.6) 0%, transparent 70%);
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* Performance indicator */
+        .performance-indicator {
+            position: fixed;
+            top: 70px;
+            right: 10px;
+            font-size: 10px;
+            color: rgba(0, 255, 170, 0.5);
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4px 8px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .performance-indicator.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Polytopal Background -->
+    <canvas class="polytopal-background" id="polytopBackground"></canvas>
+    
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <div class="header-title">📱 Visual Codex</div>
+        <div class="state-indicator" id="stateIndicator">
+            State <span id="currentState">1</span> of 7
+        </div>
+    </header>
+    
+    <!-- Performance Indicator -->
+    <div class="performance-indicator" id="performanceIndicator">
+        <span id="fpsCounter">60 FPS</span>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="mobile-content">
+        <div class="card-grid" id="cardGrid">
+            <!-- 6 cards will be created here -->
+        </div>
+    </main>
+    
+    <!-- State Navigation -->
+    <div class="state-navigation">
+        <button class="state-button" id="stateButton">
+            <span class="state-label">Next Dimension</span>
+            <span class="state-number" id="stateNumber">→ 2</span>
+        </button>
+    </div>
+    
+    <!-- RGB Glitch Transition Overlay -->
+    <div class="rgb-glitch-overlay" id="glitchOverlay">
+        <div class="glitch-layer red"></div>
+        <div class="glitch-layer green"></div>
+        <div class="glitch-layer blue"></div>
+    </div>
+    
+    <script>
+        console.log('📱 Visual Codex Mobile 6×7 State System Initializing...');
+        
+        // Mobile 6x7 State System
+        class Mobile6x7Gallery {
+            constructor() {
+                this.currentState = 0; // 0-6 for 7 states
+                this.isTransitioning = false;
+                this.scrollAccumulator = 0;
+                this.scrollThreshold = 100;
+                this.lastScrollTime = 0;
+                this.touchStartY = 0;
+                
+                // All 42 demos organized as 7 states × 6 cards
+                this.allContent = [
+                    // State 1: Holographic Genesis
+                    [
+                        { title: "Neoskeuomorphic Cards", description: "Modern depth-based card design with advanced shadow systems", tags: ["CSS", "Design", "Cards"], url: "demos/neoskeuomorphic-cards-demo.html?mobile=1" },
+                        { title: "Glassmorphism UI", description: "Translucent glass-like interface elements with backdrop blur", tags: ["CSS", "Glass", "Modern"], url: "demos/css-glassmorphism-demo.html?mobile=1" },
+                        { title: "Holographic Progress", description: "Futuristic progress indicators with neon glow effects", tags: ["CSS", "Progress", "Neon"], url: "demos/holographic-progress-indicators-demo.html?mobile=1" },
+                        { title: "State Control Dots", description: "Interactive navigation dot systems with smooth transitions", tags: ["CSS", "Controls", "Interactive"], url: "demos/state-control-dots-demo.html?mobile=1" },
+                        { title: "Vaporwave Aesthetics", description: "Retro-futuristic aesthetic elements with classic 80s styling", tags: ["CSS", "Retro", "Aesthetic"], url: "demos/css-vaporwave-aesthetics-demo.html?mobile=1" },
+                        { title: "Animated Grid Overlay", description: "Dynamic grid pattern animations with morphing structures", tags: ["CSS", "Grid", "Animation"], url: "demos/animated-grid-overlay-demo.html?mobile=1" }
+                    ],
+                    // State 2: Plasma Emergence
+                    [
+                        { title: "Holographic Visualizer", description: "Multi-layer WebGL blend mode system with depth effects", tags: ["WebGL", "Holographic", "Blend"], url: "effects/holographic-visualizer.html?mobile=1" },
+                        { title: "Cyberpunk UI", description: "Futuristic interface design with neon highlights", tags: ["CSS", "Cyberpunk", "Interface"], url: "demos/css-cyberpunk-ui-demo.html?mobile=1" },
+                        { title: "Particle System", description: "Advanced particle physics with 3D depth and movement", tags: ["WebGL", "Particles", "Physics"], url: "demos/holographic-particle-system-demo.html?mobile=1" },
+                        { title: "Glitch Effects", description: "Digital corruption effects with RGB channel separation", tags: ["CSS", "Glitch", "Digital"], url: "demos/css-glitch-effects-demo.html?mobile=1" },
+                        { title: "Depth Layers", description: "Multi-dimensional depth with parallax scrolling", tags: ["CSS", "Depth", "Layers"], url: "demos/holographic-depth-layers-demo.html?mobile=1" },
+                        { title: "VIB34D Adaptive Cards", description: "Dynamic responsive system with intelligent adaptation", tags: ["CSS", "Adaptive", "Responsive"], url: "demos/vib34d-adaptive-cards-demo.html?mobile=1" }
+                    ],
+                    // State 3: Neural Awakening
+                    [
+                        { title: "MVEP Hypercube", description: "4D hypercube with interference patterns", tags: ["WebGL", "4D", "Hypercube"], url: "effects/mvep-moire-hypercube.html?mobile=1" },
+                        { title: "Hypercube Codex", description: "Advanced 4D mathematical visualization", tags: ["WebGL", "Math", "4D"], url: "demos/moire-hypercube-codex-demo.html?mobile=1" },
+                        { title: "Lattice Visualizer", description: "Geometric lattice structure system", tags: ["WebGL", "Lattice", "Geometry"], url: "demos/hypercube-lattice-visualizer-demo.html?mobile=1" },
+                        { title: "Chaos Overlay", description: "Digital interference and chaos patterns", tags: ["WebGL", "Chaos", "Interference"], url: "demos/chaos-overlay-effects-demo.html?mobile=1" },
+                        { title: "System Orchestration", description: "Coordinated multi-system visualization", tags: ["WebGL", "System", "Orchestra"], url: "demos/system-orchestration-engine-demo.html?mobile=1" },
+                        { title: "VIB3Code Reactive Core", description: "Reactive state management system", tags: ["WebGL", "Reactive", "Core"], url: "demos/vib3code-reactive-core-demo.html?mobile=1" }
+                    ],
+                    // State 4: Crystal Resonance
+                    [
+                        { title: "VIB34D Complete System", description: "Revolutionary 4D framework with 8+ geometric systems", tags: ["WebGL", "VIB34D", "Framework"], url: "effects/vib34d-complete-system.html?mobile=1" },
+                        { title: "4D HyperAV", description: "Proven 4D audiovisual system", tags: ["WebGL", "4D", "Audio"], url: "effects/working-4d-hyperav.html?mobile=1" },
+                        { title: "Hypercube Core Framework", description: "Core 4D mathematics framework", tags: ["WebGL", "Core", "Math"], url: "effects/hypercube-core-framework.html?mobile=1" },
+                        { title: "Polytopal Consciousness", description: "N-dimensional consciousness visualization", tags: ["WebGL", "Polytopal", "Consciousness"], url: "demos/polytopal-consciousness-shader-demo.html?mobile=1" },
+                        { title: "Elegant 4D Flow", description: "Graceful 4D particle systems", tags: ["WebGL", "4D", "Flow"], url: "effects/elegant-4d-flow-visualizer.html?mobile=1" },
+                        { title: "Holographic Pulse", description: "Rhythmic holographic pulse system", tags: ["WebGL", "Holographic", "Pulse"], url: "effects/holographic-pulse-system.html?mobile=1" }
+                    ],
+                    // State 5: Quantum Chaos
+                    [
+                        { title: "Hyperdimensional Matrix", description: "8D+ chaos visualization with fractal tessellations", tags: ["WebGL", "8D", "Chaos"], url: "effects/insane-hyperdimensional-matrix.html?mobile=1" },
+                        { title: "VIB34D Card Bending", description: "Advanced 3D CSS transform morphing", tags: ["CSS", "3D", "Morphing"], url: "effects/vib34d-advanced-card-bending-system.html?mobile=1" },
+                        { title: "Enhanced Color Shift", description: "Extreme filter effects with contrast shifts", tags: ["CSS", "Color", "Filters"], url: "effects/enhanced-color-shift-contrast-system.html?mobile=1" },
+                        { title: "Millzmaleficarum Codex", description: "Advanced magical interface system", tags: ["WebGL", "Magic", "Interface"], url: "demos/millzmaleficarum-codex-demo.html?mobile=1" },
+                        { title: "VIB34D Morphing Blog", description: "Dynamic content morphing system", tags: ["WebGL", "Morphing", "Blog"], url: "demos/vib34d-morphing-blog-demo.html?mobile=1" },
+                        { title: "Multi Canvas System", description: "Multiple synchronized visualizer instances", tags: ["WebGL", "Multi", "Canvas"], url: "effects/multi-canvas-visualizer-system.html?mobile=1" }
+                    ],
+                    // State 6: Fractal Storm
+                    [
+                        { title: "Narrative Choreography", description: "JSON-driven scroll transformations", tags: ["WebGL", "Narrative", "Choreography"], url: "effects/narrative-choreography-engine.html?mobile=1" },
+                        { title: "Tabbed Visualizer", description: "Advanced WebGL tab management", tags: ["WebGL", "Tabs", "Management"], url: "effects/tabbed-visualizer-system.html?mobile=1" },
+                        { title: "WebGL Framework", description: "High-performance shader framework", tags: ["WebGL", "Framework", "Performance"], url: "effects/hypercube-core-webgl-framework.html?mobile=1" },
+                        { title: "VIB3Code Digital Magazine", description: "Interactive digital publication", tags: ["WebGL", "Magazine", "Interactive"], url: "demos/vib3code-digital-magazine-demo.html?mobile=1" },
+                        { title: "Tech Layout Active", description: "Advanced layout with active systems", tags: ["WebGL", "Layout", "Tech"], url: "demos/tech-layout-active-holographic-demo.html?mobile=1" },
+                        { title: "Holographic Parallax", description: "Advanced parallax visualization", tags: ["WebGL", "Parallax", "System"], url: "demos/holographic-parallax-systems-mega-demo.html?mobile=1" }
+                    ],
+                    // State 7: Dimensional Collapse
+                    [
+                        { title: "Active Holographic Mega", description: "125 WebGL visualizers mega-demo", tags: ["WebGL", "Mega", "Active"], url: "demos/active-holographic-systems-mega-demo.html?mobile=1" },
+                        { title: "VIB34D Complete", description: "Revolutionary 4D framework", tags: ["WebGL", "VIB34D", "Complete"], url: "effects/vib34d-complete-system.html?mobile=1" },
+                        { title: "Working 4D HyperAV", description: "Proven audiovisual 4D system", tags: ["WebGL", "4D", "Audio"], url: "effects/working-4d-hyperav.html?mobile=1" },
+                        { title: "Hypercube Core", description: "Core hypercube framework", tags: ["WebGL", "Hypercube", "Core"], url: "effects/hypercube-core-framework.html?mobile=1" },
+                        { title: "Hyperdimensional Matrix", description: "8D+ hyperdimensional chaos", tags: ["WebGL", "8D", "Matrix"], url: "effects/insane-hyperdimensional-matrix.html?mobile=1" },
+                        { title: "MVEP Moire Hypercube", description: "Production MVEP system", tags: ["WebGL", "MVEP", "Hypercube"], url: "effects/mvep-moire-hypercube.html?mobile=1" }
+                    ]
+                ];
+                
+                // State themes for background visualizer
+                this.stateThemes = [
+                    { name: 'Holographic Genesis', color: '#ff00ff', rotation: [0.3, 0.2, 0.4, 0.1] },
+                    { name: 'Plasma Emergence', color: '#00ffff', rotation: [0.4, 0.3, 0.2, 0.5] },
+                    { name: 'Neural Awakening', color: '#ffff00', rotation: [0.2, 0.5, 0.3, 0.4] },
+                    { name: 'Crystal Resonance', color: '#00ff00', rotation: [0.5, 0.1, 0.6, 0.2] },
+                    { name: 'Quantum Chaos', color: '#ff8800', rotation: [0.6, 0.4, 0.1, 0.7] },
+                    { name: 'Fractal Storm', color: '#8800ff', rotation: [0.7, 0.6, 0.5, 0.3] },
+                    { name: 'Dimensional Collapse', color: '#ff0000', rotation: [0.8, 0.7, 0.6, 0.8] }
+                ];
+                
+                this.initialize();
+            }
+            
+            initialize() {
+                console.log('✨ Initializing 6×7 State System...');
+                
+                this.createCards();
+                this.updateCards();
+                this.setupInteractions();
+                this.initializeBackground();
+                this.startPerformanceMonitoring();
+                
+                console.log('🚀 Mobile gallery ready - 6 cards × 7 states = 42 demos!');
+            }
+            
+            createCards() {
+                const grid = document.getElementById('cardGrid');
+                
+                // Create 6 cards
+                for (let i = 0; i < 6; i++) {
+                    const card = document.createElement('div');
+                    card.className = 'mobile-card';
+                    card.dataset.index = i;
+                    
+                    card.innerHTML = `
+                        <div>
+                            <div class="card-title"></div>
+                            <div class="card-description"></div>
+                        </div>
+                        <div class="card-tags"></div>
+                    `;
+                    
+                    card.addEventListener('click', () => this.handleCardClick(i));
+                    card.addEventListener('touchstart', (e) => this.handleTouchStart(e, card), { passive: true });
+                    
+                    grid.appendChild(card);
+                }
+            }
+            
+            updateCards() {
+                const cards = document.querySelectorAll('.mobile-card');
+                const currentContent = this.allContent[this.currentState];
+                
+                cards.forEach((card, index) => {
+                    const content = currentContent[index];
+                    const title = card.querySelector('.card-title');
+                    const description = card.querySelector('.card-description');
+                    const tags = card.querySelector('.card-tags');
+                    
+                    title.textContent = content.title;
+                    description.textContent = content.description;
+                    
+                    // Update tags
+                    tags.innerHTML = '';
+                    content.tags.forEach(tag => {
+                        const tagEl = document.createElement('span');
+                        tagEl.className = 'card-tag';
+                        tagEl.textContent = tag;
+                        tags.appendChild(tagEl);
+                    });
+                    
+                    // Store URL for click handler
+                    card.dataset.url = content.url;
+                });
+                
+                // Update state indicators
+                document.getElementById('currentState').textContent = this.currentState + 1;
+                document.getElementById('stateNumber').textContent = `→ ${((this.currentState + 1) % 7) + 1}`;
+                
+                // Update background theme
+                this.updateBackground();
+            }
+            
+            setupInteractions() {
+                const button = document.getElementById('stateButton');
+                button.addEventListener('click', () => this.changeState(1));
+                
+                // Touch swipe for state change
+                let startY = 0;
+                const content = document.querySelector('.mobile-content');
+                
+                content.addEventListener('touchstart', (e) => {
+                    startY = e.touches[0].clientY;
+                    this.touchStartY = startY;
+                    this.lastScrollTime = Date.now();
+                }, { passive: true });
+                
+                content.addEventListener('touchmove', (e) => {
+                    const currentY = e.touches[0].clientY;
+                    const diff = startY - currentY;
+                    
+                    // Accumulate scroll
+                    this.scrollAccumulator += Math.abs(diff);
+                    
+                    // Check if we've scrolled enough to change state
+                    if (Math.abs(this.scrollAccumulator) > this.scrollThreshold && !this.isTransitioning) {
+                        if (diff > 0) {
+                            this.changeState(1); // Scroll up = next state
+                        } else {
+                            this.changeState(-1); // Scroll down = previous state
+                        }
+                        this.scrollAccumulator = 0;
+                    }
+                }, { passive: true });
+                
+                content.addEventListener('touchend', () => {
+                    this.scrollAccumulator = 0;
+                }, { passive: true });
+                
+                // Keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight' || e.key === ' ') {
+                        this.changeState(1);
+                    } else if (e.key === 'ArrowLeft') {
+                        this.changeState(-1);
+                    }
+                });
+            }
+            
+            changeState(direction) {
+                if (this.isTransitioning) return;
+                
+                const newState = (this.currentState + direction + 7) % 7;
+                this.transitionToState(newState);
+            }
+            
+            transitionToState(newState) {
+                this.isTransitioning = true;
+                
+                // Trigger RGB glitch effect
+                const glitchOverlay = document.getElementById('glitchOverlay');
+                glitchOverlay.classList.add('active');
+                
+                // Haptic feedback
+                if (navigator.vibrate) {
+                    navigator.vibrate([50, 30, 50]);
+                }
+                
+                // Change state after glitch starts
+                setTimeout(() => {
+                    this.currentState = newState;
+                    this.updateCards();
+                }, 300);
+                
+                // Remove glitch effect
+                setTimeout(() => {
+                    glitchOverlay.classList.remove('active');
+                    this.isTransitioning = false;
+                }, 600);
+            }
+            
+            handleCardClick(index) {
+                const card = document.querySelector(`[data-index="${index}"]`);
+                const url = card.dataset.url;
+                
+                // Add active state
+                card.classList.add('active');
+                
+                // Haptic feedback
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+                
+                // Create ripple effect
+                this.createRipple(event, card);
+                
+                // Navigate to demo
+                setTimeout(() => {
+                    window.location.href = url;
+                }, 300);
+            }
+            
+            handleTouchStart(event, card) {
+                card.classList.add('active');
+                this.createRipple(event, card);
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate(5);
+                }
+            }
+            
+            createRipple(event, card) {
+                const ripple = document.createElement('div');
+                ripple.className = 'touch-ripple';
+                
+                const rect = card.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = (event.touches ? event.touches[0].clientX : event.clientX) - rect.left - size / 2;
+                const y = (event.touches ? event.touches[0].clientY : event.clientY) - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                
+                card.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            }
+            
+            initializeBackground() {
+                const canvas = document.getElementById('polytopBackground');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                
+                if (!gl) {
+                    console.warn('WebGL not supported, falling back to CSS animation');
+                    return;
+                }
+                
+                this.backgroundGL = gl;
+                this.setupBackgroundShaders();
+                this.animateBackground();
+            }
+            
+            setupBackgroundShaders() {
+                // Simplified mobile-optimized shaders
+                const vertexShader = `
+                    attribute vec2 a_position;
+                    void main() {
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                    }
+                `;
+                
+                const fragmentShader = `
+                    precision mediump float;
+                    uniform vec2 u_resolution;
+                    uniform float u_time;
+                    uniform vec3 u_color;
+                    uniform vec4 u_rotation;
+                    
+                    void main() {
+                        vec2 st = gl_FragCoord.xy / u_resolution;
+                        
+                        // Simple 4D rotation projection
+                        float angle = u_time * 0.5;
+                        vec2 center = vec2(0.5);
+                        vec2 pos = st - center;
+                        
+                        float s = sin(angle * u_rotation.x);
+                        float c = cos(angle * u_rotation.y);
+                        pos = mat2(c, -s, s, c) * pos;
+                        
+                        // Create polytopal pattern
+                        float d = length(pos) * 2.0;
+                        float pattern = sin(d * 10.0 - u_time * 2.0) * 0.5 + 0.5;
+                        pattern *= sin(pos.x * 20.0 + u_time) * sin(pos.y * 20.0 - u_time);
+                        
+                        vec3 color = u_color * pattern;
+                        gl_FragColor = vec4(color * 0.3, 1.0);
+                    }
+                `;
+                
+                // Compile shaders (simplified for brevity)
+                this.backgroundProgram = this.createShaderProgram(vertexShader, fragmentShader);
+            }
+            
+            createShaderProgram(vertexSource, fragmentSource) {
+                const gl = this.backgroundGL;
+                
+                const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+                gl.shaderSource(vertexShader, vertexSource);
+                gl.compileShader(vertexShader);
+                
+                const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+                gl.shaderSource(fragmentShader, fragmentSource);
+                gl.compileShader(fragmentShader);
+                
+                const program = gl.createProgram();
+                gl.attachShader(program, vertexShader);
+                gl.attachShader(program, fragmentShader);
+                gl.linkProgram(program);
+                
+                return program;
+            }
+            
+            updateBackground() {
+                const theme = this.stateThemes[this.currentState];
+                document.documentElement.style.setProperty('--current-theme-color', theme.color);
+            }
+            
+            animateBackground() {
+                // Simplified animation for mobile performance
+                requestAnimationFrame(() => this.animateBackground());
+            }
+            
+            startPerformanceMonitoring() {
+                let frameCount = 0;
+                let lastTime = performance.now();
+                
+                const monitor = () => {
+                    frameCount++;
+                    const now = performance.now();
+                    
+                    if (now - lastTime >= 1000) {
+                        const fps = Math.round(frameCount * 1000 / (now - lastTime));
+                        document.getElementById('fpsCounter').textContent = `${fps} FPS`;
+                        
+                        const indicator = document.getElementById('performanceIndicator');
+                        if (fps < 45) {
+                            indicator.classList.add('visible');
+                        } else {
+                            indicator.classList.remove('visible');
+                        }
+                        
+                        frameCount = 0;
+                        lastTime = now;
+                    }
+                    
+                    requestAnimationFrame(monitor);
+                };
+                
+                requestAnimationFrame(monitor);
+            }
+        }
+        
+        // Initialize gallery when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                new Mobile6x7Gallery();
+            });
+        } else {
+            new Mobile6x7Gallery();
+        }
+    </script>
+</body>
+</html>

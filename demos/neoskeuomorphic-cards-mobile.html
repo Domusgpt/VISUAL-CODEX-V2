@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neoskeuomorphic Cards - Mobile Optimized</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        :root {
+            /* Mobile-optimized color system */
+            --primary-dark: #1a0033;
+            --secondary-dark: #000000;
+            --neon-cyan: #00ffff;
+            --neon-magenta: #ff00ff;
+            --neon-yellow: #ffff00;
+            --glass-white: rgba(255, 255, 255, 0.1);
+            --shadow-dark: rgba(0, 0, 0, 0.4);
+            
+            /* Touch-optimized spacing */
+            --touch-target: 44px;
+            --card-padding: 24px;
+            --grid-gap: 20px;
+            
+            /* Performance-optimized shadows */
+            --shadow-light: 0 4px 16px rgba(0, 0, 0, 0.2);
+            --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --shadow-heavy: 0 16px 48px rgba(0, 0, 0, 0.4);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        html {
+            font-size: 16px; /* Prevent iOS zoom */
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            background: radial-gradient(ellipse at center, var(--primary-dark) 0%, var(--secondary-dark) 70%);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            
+            /* Mobile scroll optimization */
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: y proximity;
+        }
+        
+        .demo-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding-bottom: 60px; /* Space for mobile bottom UI */
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 32px;
+            scroll-snap-align: start;
+        }
+        
+        .demo-title {
+            font-size: 1.75rem; /* Reduced for mobile */
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-magenta), var(--neon-yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+        
+        .demo-subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 400;
+            margin-bottom: 16px;
+        }
+        
+        .mobile-instructions {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--neon-cyan);
+            margin-bottom: 8px;
+        }
+        
+        /* Mobile-First Grid System */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Single column for mobile */
+            gap: var(--grid-gap);
+            margin-bottom: 32px;
+        }
+        
+        /* Responsive breakpoints */
+        @media (min-width: 480px) {
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .cards-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 24px;
+            }
+        }
+        
+        /* TOUCH-OPTIMIZED NEOSKEUOMORPHIC CARDS */
+        .neomorphic-card {
+            position: relative;
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            min-height: 280px; /* Increased for touch targets */
+            
+            /* Touch-optimized transitions */
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: translateZ(0); /* GPU acceleration */
+            
+            /* Mobile-optimized shadows */
+            box-shadow: 
+                var(--shadow-medium),
+                inset 0 1px 2px var(--glass-white),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(0, 255, 255, 0.2);
+            
+            /* Touch interaction */
+            touch-action: manipulation;
+            cursor: pointer;
+            scroll-snap-align: start;
+        }
+        
+        /* Touch States (replacing hover) */
+        .neomorphic-card:active,
+        .neomorphic-card.touch-active {
+            transform: scale(0.98) translateZ(0);
+            box-shadow: 
+                var(--shadow-light),
+                inset 0 2px 4px rgba(255, 255, 255, 0.15),
+                inset 0 -2px 2px rgba(0, 0, 0, 0.15),
+                0 0 0 2px rgba(0, 255, 255, 0.4),
+                0 0 30px rgba(0, 255, 255, 0.2);
+        }
+        
+        .neomorphic-card.touch-selected {
+            transform: scale(1.02) translateY(-4px) translateZ(0);
+            box-shadow: 
+                var(--shadow-heavy),
+                inset 0 3px 6px rgba(255, 255, 255, 0.2),
+                inset 0 -3px 3px rgba(0, 0, 0, 0.2),
+                0 0 0 3px rgba(255, 255, 0, 0.6),
+                0 0 40px rgba(255, 255, 0, 0.3);
+        }
+        
+        /* Card Content */
+        .card-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 25;
+            padding: var(--card-padding);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .card-header {
+            text-align: center;
+        }
+        
+        .card-title {
+            font-size: 1.25rem; /* Touch-optimized size */
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .card-subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 400;
+            line-height: 1.4;
+        }
+        
+        .card-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .card-action {
+            padding: 12px 24px; /* Touch-optimized padding */
+            min-width: var(--touch-target);
+            min-height: var(--touch-target);
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 22px;
+            color: var(--neon-cyan);
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+            
+            transition: all 0.2s ease;
+            transform: translateZ(0);
+            touch-action: manipulation;
+        }
+        
+        .card-action:active {
+            transform: scale(0.95) translateZ(0);
+            background: rgba(0, 255, 255, 0.2);
+            border-color: var(--neon-cyan);
+        }
+        
+        /* Background Pattern System */
+        .card-bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        /* Individual Card Backgrounds (Mobile-Optimized) */
+        .card-1 {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.15) 0%, 
+                rgba(0, 128, 255, 0.1) 50%, 
+                rgba(128, 0, 255, 0.05) 100%);
+        }
+        
+        .card-1 .card-bg-pattern {
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(0, 255, 255, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 128, 255, 0.2) 0%, transparent 50%);
+        }
+        
+        .card-2 {
+            background: linear-gradient(135deg, 
+                rgba(255, 0, 255, 0.15) 0%, 
+                rgba(255, 0, 128, 0.1) 50%, 
+                rgba(128, 0, 128, 0.05) 100%);
+        }
+        
+        .card-2 .card-bg-pattern {
+            background: 
+                radial-gradient(circle at 30% 70%, rgba(255, 0, 255, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(255, 0, 128, 0.2) 0%, transparent 50%);
+        }
+        
+        .card-3 {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 0, 0.15) 0%, 
+                rgba(255, 128, 0, 0.1) 50%, 
+                rgba(255, 64, 0, 0.05) 100%);
+        }
+        
+        .card-3 .card-bg-pattern {
+            background: 
+                radial-gradient(circle at 50% 20%, rgba(255, 255, 0, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(255, 128, 0, 0.2) 0%, transparent 50%);
+        }
+        
+        .card-4 {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 128, 0.15) 0%, 
+                rgba(0, 255, 255, 0.1) 50%, 
+                rgba(0, 128, 255, 0.05) 100%);
+        }
+        
+        .card-4 .card-bg-pattern {
+            background: 
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 128, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.2) 0%, transparent 50%);
+        }
+        
+        /* Touch Feedback System */
+        .touch-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* Performance Optimizations */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* High DPI optimizations */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .neomorphic-card {
+                border-width: 0.5px;
+            }
+        }
+        
+        /* Landscape mode adjustments */
+        @media (orientation: landscape) and (max-height: 600px) {
+            .neomorphic-card {
+                min-height: 240px;
+            }
+            
+            .demo-title {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Large mobile screens */
+        @media (min-width: 414px) {
+            .card-title {
+                font-size: 1.4rem;
+            }
+            
+            .card-subtitle {
+                font-size: 1rem;
+            }
+            
+            .neomorphic-card {
+                min-height: 320px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1 class="demo-title">Neoskeuomorphic Cards</h1>
+            <p class="demo-subtitle">Touch-optimized depth-based design with advanced shadow systems</p>
+            <div class="mobile-instructions">👆 Tap cards to interact</div>
+        </div>
+        
+        <div class="cards-grid">
+            <div class="neomorphic-card card-1" data-card="1">
+                <div class="card-bg-pattern"></div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <h3 class="card-title">Holographic Depth</h3>
+                        <p class="card-subtitle">Multi-layered shadow system with glass morphism effects</p>
+                    </div>
+                    <div class="card-footer">
+                        <button class="card-action">Explore</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="neomorphic-card card-2" data-card="2">
+                <div class="card-bg-pattern"></div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <h3 class="card-title">Touch Reactive</h3>
+                        <p class="card-subtitle">Optimized for mobile with haptic-like feedback</p>
+                    </div>
+                    <div class="card-footer">
+                        <button class="card-action">Interact</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="neomorphic-card card-3" data-card="3">
+                <div class="card-bg-pattern"></div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <h3 class="card-title">Modern UI</h3>
+                        <p class="card-subtitle">Contemporary design with performance optimization</p>
+                    </div>
+                    <div class="card-footer">
+                        <button class="card-action">Discover</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="neomorphic-card card-4" data-card="4">
+                <div class="card-bg-pattern"></div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <h3 class="card-title">Accessibility</h3>
+                        <p class="card-subtitle">WCAG compliant with screen reader support</p>
+                    </div>
+                    <div class="card-footer">
+                        <button class="card-action">Learn More</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        console.log('📱 Neoskeuomorphic Cards Mobile - Touch Optimized');
+        
+        class MobileNeomorphicCards {
+            constructor() {
+                this.cards = document.querySelectorAll('.neomorphic-card');
+                this.activeCard = null;
+                this.touchStartTime = 0;
+                this.longPressTimeout = null;
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupTouchEvents();
+                this.setupAccessibility();
+                console.log('✅ Mobile neomorphic cards initialized');
+            }
+            
+            setupTouchEvents() {
+                this.cards.forEach((card, index) => {
+                    // Touch start - immediate feedback
+                    card.addEventListener('touchstart', (e) => {
+                        this.handleTouchStart(e, card, index);
+                    }, { passive: true });
+                    
+                    // Touch end - complete interaction
+                    card.addEventListener('touchend', (e) => {
+                        this.handleTouchEnd(e, card, index);
+                    }, { passive: true });
+                    
+                    // Touch cancel - cleanup
+                    card.addEventListener('touchcancel', (e) => {
+                        this.handleTouchCancel(e, card);
+                    });
+                    
+                    // Mouse events for desktop compatibility
+                    card.addEventListener('mousedown', (e) => {
+                        this.handleTouchStart(e, card, index);
+                    });
+                    
+                    card.addEventListener('mouseup', (e) => {
+                        this.handleTouchEnd(e, card, index);
+                    });
+                    
+                    // Action button events
+                    const actionBtn = card.querySelector('.card-action');
+                    actionBtn.addEventListener('touchstart', (e) => {
+                        e.stopPropagation();
+                        this.handleActionTap(card, index);
+                    }, { passive: true });
+                });
+            }
+            
+            handleTouchStart(event, card, index) {
+                this.touchStartTime = Date.now();
+                
+                // Visual feedback
+                card.classList.add('touch-active');
+                
+                // Create ripple effect
+                this.createRipple(event, card);
+                
+                // Haptic feedback if available
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+                
+                // Long press detection
+                this.longPressTimeout = setTimeout(() => {
+                    this.handleLongPress(card, index);
+                }, 500);
+                
+                console.log(`👆 Touch start on card ${index + 1}`);
+            }
+            
+            handleTouchEnd(event, card, index) {
+                const touchDuration = Date.now() - this.touchStartTime;
+                
+                // Clear long press timeout
+                if (this.longPressTimeout) {
+                    clearTimeout(this.longPressTimeout);
+                    this.longPressTimeout = null;
+                }
+                
+                // Remove active state
+                card.classList.remove('touch-active');
+                
+                // Handle tap vs long press
+                if (touchDuration < 500) {
+                    this.handleTap(card, index);
+                }
+                
+                // Reset after animation
+                setTimeout(() => {
+                    card.classList.remove('touch-selected');
+                }, 300);
+                
+                console.log(`👆 Touch end on card ${index + 1} (${touchDuration}ms)`);
+            }
+            
+            handleTouchCancel(event, card) {
+                card.classList.remove('touch-active', 'touch-selected');
+                
+                if (this.longPressTimeout) {
+                    clearTimeout(this.longPressTimeout);
+                    this.longPressTimeout = null;
+                }
+            }
+            
+            handleTap(card, index) {
+                // Visual feedback
+                card.classList.add('touch-selected');
+                
+                // Haptic feedback
+                if (navigator.vibrate) {
+                    navigator.vibrate([30, 10, 30]);
+                }
+                
+                // Custom tap logic
+                this.onCardTap(card, index);
+            }
+            
+            handleLongPress(card, index) {
+                // Stronger haptic feedback for long press
+                if (navigator.vibrate) {
+                    navigator.vibrate([50, 25, 50, 25, 50]);
+                }
+                
+                // Long press specific styling
+                card.style.transform = 'scale(1.05) translateY(-8px) translateZ(0)';
+                card.style.boxShadow = `
+                    0 20px 60px rgba(0, 0, 0, 0.5),
+                    0 0 0 4px rgba(255, 255, 255, 0.3),
+                    0 0 60px rgba(255, 255, 255, 0.2)
+                `;
+                
+                // Reset after delay
+                setTimeout(() => {
+                    card.style.transform = '';
+                    card.style.boxShadow = '';
+                }, 1000);
+                
+                this.onCardLongPress(card, index);
+                
+                console.log(`🔄 Long press on card ${index + 1}`);
+            }
+            
+            createRipple(event, card) {
+                const rect = card.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = (event.touches ? event.touches[0].clientX : event.clientX) - rect.left - size / 2;
+                const y = (event.touches ? event.touches[0].clientY : event.clientY) - rect.top - size / 2;
+                
+                const ripple = document.createElement('div');
+                ripple.className = 'touch-ripple';
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                
+                card.appendChild(ripple);
+                
+                // Remove ripple after animation
+                setTimeout(() => {
+                    if (ripple.parentNode) {
+                        ripple.remove();
+                    }
+                }, 600);
+            }
+            
+            handleActionTap(card, index) {
+                // Prevent card tap when action button is tapped
+                event.stopPropagation();
+                
+                // Action button specific feedback
+                if (navigator.vibrate) {
+                    navigator.vibrate(25);
+                }
+                
+                this.onActionTap(card, index);
+                
+                console.log(`🎯 Action button tapped on card ${index + 1}`);
+            }
+            
+            setupAccessibility() {
+                this.cards.forEach((card, index) => {
+                    // ARIA attributes
+                    card.setAttribute('role', 'button');
+                    card.setAttribute('tabindex', '0');
+                    card.setAttribute('aria-label', `Neomorphic card ${index + 1}. Tap to interact.`);
+                    
+                    // Keyboard support
+                    card.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            this.handleTap(card, index);
+                        }
+                    });
+                    
+                    // Focus management
+                    card.addEventListener('focus', () => {
+                        card.style.outline = '2px solid rgba(0, 255, 255, 0.6)';
+                        card.style.outlineOffset = '2px';
+                    });
+                    
+                    card.addEventListener('blur', () => {
+                        card.style.outline = '';
+                        card.style.outlineOffset = '';
+                    });
+                });
+                
+                console.log('♿ Accessibility features enabled');
+            }
+            
+            // Custom event handlers (override these for specific functionality)
+            onCardTap(card, index) {
+                const cardData = {
+                    title: card.querySelector('.card-title').textContent,
+                    subtitle: card.querySelector('.card-subtitle').textContent,
+                    index: index
+                };
+                
+                console.log('📱 Card tapped:', cardData);
+                
+                // Example: Show a mobile-friendly modal or navigate
+                this.showCardDetails(cardData);
+            }
+            
+            onCardLongPress(card, index) {
+                console.log(`🔄 Long press detected on card ${index + 1}`);
+                
+                // Example: Show context menu or card options
+                this.showCardOptions(card, index);
+            }
+            
+            onActionTap(card, index) {
+                console.log(`🎯 Action button tapped on card ${index + 1}`);
+                
+                // Example: Perform card-specific action
+                this.performCardAction(card, index);
+            }
+            
+            showCardDetails(cardData) {
+                // Mobile-friendly detail view
+                alert(`Card: ${cardData.title}\n${cardData.subtitle}\n\nIndex: ${cardData.index + 1}`);
+            }
+            
+            showCardOptions(card, index) {
+                // Mobile context menu simulation
+                const options = ['Edit', 'Share', 'Delete', 'More Info'];
+                const choice = prompt(`Card ${index + 1} Options:\n${options.join('\n')}\n\nEnter option number (1-${options.length}):`);
+                
+                if (choice && choice >= 1 && choice <= options.length) {
+                    console.log(`Selected: ${options[choice - 1]}`);
+                }
+            }
+            
+            performCardAction(card, index) {
+                // Card-specific action
+                const title = card.querySelector('.card-title').textContent;
+                console.log(`Performing action for: ${title}`);
+                
+                // Example: Navigate to related content
+                // window.location.href = `/card/${index + 1}`;
+            }
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                new MobileNeomorphicCards();
+            });
+        } else {
+            new MobileNeomorphicCards();
+        }
+        
+        // Performance monitoring for mobile
+        let frameCount = 0;
+        let lastTime = performance.now();
+        
+        function monitorPerformance() {
+            frameCount++;
+            const now = performance.now();
+            
+            if (now - lastTime >= 1000) {
+                const fps = Math.round(frameCount * 1000 / (now - lastTime));
+                
+                if (fps < 30) {
+                    console.warn('⚠️ Low FPS detected:', fps);
+                    // Reduce quality if needed
+                    document.documentElement.style.setProperty('--shadow-complexity', 'reduced');
+                }
+                
+                frameCount = 0;
+                lastTime = now;
+            }
+            
+            requestAnimationFrame(monitorPerformance);
+        }
+        
+        // Start performance monitoring
+        requestAnimationFrame(monitorPerformance);
+        
+        console.log('📱 Neoskeuomorphic Cards Mobile - Ready for Touch!');
+    </script>
+</body>
+</html>

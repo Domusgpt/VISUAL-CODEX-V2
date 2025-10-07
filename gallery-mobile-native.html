@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Visual Codex Mobile - Touch-Native Gallery</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
+    
+    <!-- ZingTouch for Advanced Gesture Recognition -->
+    <script src="https://unpkg.com/zingtouch@1.0.6/dist/zingtouch.min.js"></script>
+    
+    <style>
+        /* Mobile-First CSS Framework */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        
+        :root {
+            /* Mobile-optimized color system */
+            --primary-dark: #0a0f0d;
+            --silicon-green: #0d2818;
+            --crystal-teal: #00ffaa;
+            --accent-pink: #ff1b6b;
+            --electric-blue: #00d4ff;
+            --warning-orange: #ff8c00;
+            
+            /* Touch-optimized spacing */
+            --touch-target: 44px;
+            --safe-area-top: env(safe-area-inset-top, 0);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0);
+            
+            /* Typography optimized for mobile screens */
+            --font-size-xs: 12px;
+            --font-size-sm: 14px;
+            --font-size-base: 16px; /* Prevents iOS zoom */
+            --font-size-lg: 18px;
+            --font-size-xl: 22px;
+            --font-size-2xl: 28px;
+            
+            /* Performance-optimized shadows */
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.35);
+            --shadow-glow: 0 0 20px rgba(0, 255, 170, 0.3);
+        }
+        
+        /* Global mobile-first reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        html {
+            font-size: 16px; /* Prevent iOS zoom */
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--silicon-green) 100%);
+            color: var(--crystal-teal);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-top: var(--safe-area-top);
+            padding-bottom: var(--safe-area-bottom);
+            
+            /* Smooth scrolling momentum */
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: y mandatory;
+        }
+        
+        /* Mobile Header */
+        .mobile-header {
+            position: fixed;
+            top: var(--safe-area-top);
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(10, 15, 13, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 255, 170, 0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .header-title {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            color: var(--crystal-teal);
+            text-shadow: 0 0 10px var(--crystal-teal);
+        }
+        
+        .header-stats {
+            font-size: var(--font-size-sm);
+            color: rgba(0, 255, 170, 0.7);
+        }
+        
+        /* Main Content Area */
+        .mobile-content {
+            padding-top: 60px; /* Header height */
+            padding-bottom: 100px; /* Bottom nav height */
+            min-height: 100vh;
+        }
+        
+        /* Mobile-First Card System */
+        .mobile-gallery {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .mobile-card {
+            width: 100%;
+            min-height: 420px;
+            background: linear-gradient(135deg, 
+                rgba(13, 40, 24, 0.95) 0%,
+                rgba(0, 255, 170, 0.05) 50%,
+                rgba(255, 27, 107, 0.03) 100%);
+            border-radius: 24px;
+            border: 2px solid rgba(0, 255, 170, 0.3);
+            backdrop-filter: blur(20px);
+            overflow: hidden;
+            position: relative;
+            
+            /* Touch-optimized transforms */
+            transform: translateZ(0);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            touch-action: manipulation;
+            scroll-snap-align: start;
+            
+            /* Performance-optimized shadows */
+            box-shadow: 
+                var(--shadow-lg),
+                0 0 0 1px rgba(0, 255, 170, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .mobile-card.touch-active {
+            transform: scale(0.98) translateZ(0);
+            border-color: var(--crystal-teal);
+            box-shadow: 
+                var(--shadow-md),
+                var(--shadow-glow),
+                inset 0 2px 0 rgba(0, 255, 170, 0.2);
+        }
+        
+        .mobile-card.loading {
+            opacity: 0.7;
+            transform: scale(0.95) translateZ(0);
+        }
+        
+        /* Card Header */
+        .card-header {
+            padding: 24px 24px 16px 24px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .card-title {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--crystal-teal);
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px rgba(0, 255, 170, 0.5);
+        }
+        
+        .card-description {
+            font-size: var(--font-size-base);
+            line-height: 1.5;
+            color: rgba(0, 255, 170, 0.8);
+            margin-bottom: 16px;
+        }
+        
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .card-tag {
+            padding: 6px 12px;
+            background: rgba(0, 255, 170, 0.1);
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            border-radius: 16px;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--crystal-teal);
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Card Preview Area */
+        .card-preview {
+            height: 240px;
+            margin: 16px 24px 24px 24px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            border: 1px solid rgba(0, 255, 170, 0.2);
+            overflow: hidden;
+            position: relative;
+            
+            /* Performance optimization */
+            contain: layout style paint;
+        }
+        
+        .card-preview iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+        
+        .card-preview iframe.loaded {
+            opacity: 1;
+        }
+        
+        .preview-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: linear-gradient(45deg, 
+                rgba(0, 255, 170, 0.1) 0%, 
+                rgba(255, 27, 107, 0.1) 100%);
+            color: var(--crystal-teal);
+            font-size: var(--font-size-sm);
+            z-index: 5;
+        }
+        
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 2px solid rgba(0, 255, 170, 0.3);
+            border-top: 2px solid var(--crystal-teal);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Mobile Bottom Navigation */
+        .mobile-nav {
+            position: fixed;
+            bottom: var(--safe-area-bottom);
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(10, 15, 13, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0, 255, 170, 0.2);
+            z-index: 1000;
+            
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 20px;
+        }
+        
+        .nav-button {
+            width: var(--touch-target);
+            height: var(--touch-target);
+            border-radius: 22px;
+            border: 2px solid rgba(0, 255, 170, 0.3);
+            background: transparent;
+            color: var(--crystal-teal);
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            transition: all 0.2s ease;
+            transform: translateZ(0);
+            touch-action: manipulation;
+        }
+        
+        .nav-button.active {
+            background: rgba(0, 255, 170, 0.2);
+            border-color: var(--crystal-teal);
+            box-shadow: var(--shadow-glow);
+        }
+        
+        .nav-button:active {
+            transform: scale(0.95) translateZ(0);
+            background: rgba(0, 255, 170, 0.1);
+        }
+        
+        /* Performance Indicator */
+        .performance-indicator {
+            position: fixed;
+            top: calc(60px + var(--safe-area-top) + 10px);
+            right: 20px;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 12px;
+            font-size: var(--font-size-xs);
+            color: var(--crystal-teal);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .performance-indicator.visible {
+            opacity: 1;
+        }
+        
+        /* Touch Feedback Overlay */
+        .touch-feedback {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            border-radius: 50%;
+            background: radial-gradient(circle, 
+                rgba(0, 255, 170, 0.3) 0%, 
+                transparent 70%);
+            transform: scale(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .touch-feedback.active {
+            transform: scale(1);
+        }
+        
+        /* Swipe Indicator */
+        .swipe-indicator {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(0, 255, 170, 0.6);
+            font-size: var(--font-size-sm);
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+        }
+        
+        .swipe-indicator.visible {
+            opacity: 1;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        /* Responsive enhancements for larger mobile screens */
+        @media (min-width: 480px) {
+            .mobile-gallery {
+                padding: 24px;
+                gap: 32px;
+            }
+            
+            .mobile-card {
+                min-height: 480px;
+            }
+            
+            .card-preview {
+                height: 280px;
+            }
+            
+            .card-title {
+                font-size: var(--font-size-2xl);
+            }
+        }
+        
+        /* Landscape mode optimizations */
+        @media (orientation: landscape) and (max-height: 600px) {
+            .mobile-card {
+                min-height: 360px;
+            }
+            
+            .card-preview {
+                height: 200px;
+            }
+            
+            .mobile-header {
+                height: 48px;
+            }
+            
+            .mobile-content {
+                padding-top: 48px;
+            }
+        }
+        
+        /* High DPI optimizations */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .mobile-card {
+                border-width: 1px; /* Prevent thick borders on high DPI */
+            }
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary-dark: #000;
+                --silicon-green: #0a1a0f;
+            }
+        }
+        
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+        
+        /* Battery optimization for low battery */
+        @media (battery: low) {
+            .mobile-card {
+                backdrop-filter: none;
+                box-shadow: var(--shadow-sm);
+            }
+            
+            .card-preview {
+                contain: strict;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <div class="header-title">📱 Visual Codex</div>
+        <div class="header-stats" id="headerStats">
+            <span id="currentSection">1</span>/<span id="totalSections">8</span>
+        </div>
+    </header>
+    
+    <!-- Performance Indicator -->
+    <div class="performance-indicator" id="performanceIndicator">
+        <span id="fpsCounter">60 FPS</span> • <span id="deviceInfo">Standard</span>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="mobile-content">
+        <div class="mobile-gallery" id="mobileGallery">
+            <!-- Cards will be dynamically generated -->
+        </div>
+    </main>
+    
+    <!-- Swipe Indicator -->
+    <div class="swipe-indicator" id="swipeIndicator">
+        ↕️ Swipe to navigate<br>
+        <small>Tap cards to explore</small>
+    </div>
+    
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-nav">
+        <button class="nav-button active" id="navHome" data-section="0">🏠</button>
+        <button class="nav-button" id="navEffects" data-section="1">✨</button>
+        <button class="nav-button" id="navWebGL" data-section="2">🔮</button>
+        <button class="nav-button" id="navInfo" data-section="3">ℹ️</button>
+    </nav>
+    
+    <!-- Touch Feedback Overlay -->
+    <div class="touch-feedback" id="touchFeedback"></div>
+    
+    <script>
+        console.log('📱 Visual Codex Mobile-Native Gallery - Loading...');
+        
+        // Mobile-First Visual Codex Gallery System
+        class MobileVisualCodex {
+            constructor() {
+                this.currentSection = 0;
+                this.totalSections = 8;
+                this.isLoading = false;
+                this.activeCards = new Map();
+                this.gestureRegion = null;
+                this.performanceMonitor = null;
+                
+                // Mobile device detection
+                this.deviceInfo = this.detectDevice();
+                this.performanceSettings = this.getPerformanceSettings();
+                
+                console.log('📊 Device detected:', this.deviceInfo);
+                console.log('⚡ Performance settings:', this.performanceSettings);
+                
+                this.initialize();
+            }
+            
+            detectDevice() {
+                const ua = navigator.userAgent;
+                const deviceMemory = navigator.deviceMemory || 4;
+                const hardwareConcurrency = navigator.hardwareConcurrency || 2;
+                const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+                
+                return {
+                    isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua),
+                    isIOS: /iPad|iPhone|iPod/.test(ua),
+                    isAndroid: /Android/.test(ua),
+                    isLowEnd: deviceMemory <= 2 || hardwareConcurrency <= 2,
+                    supportsWebGL: this.detectWebGL(),
+                    devicePixelRatio: window.devicePixelRatio || 1,
+                    viewportWidth: window.innerWidth,
+                    viewportHeight: window.innerHeight,
+                    connectionType: connection ? connection.effectiveType : 'unknown',
+                    touchSupport: 'ontouchstart' in window
+                };
+            }
+            
+            detectWebGL() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                    return !!gl;
+                } catch (e) {
+                    return false;
+                }
+            }
+            
+            getPerformanceSettings() {
+                if (this.deviceInfo.isLowEnd) {
+                    return {
+                        maxActiveCards: 2,
+                        enableAnimations: false,
+                        enableBackdropFilter: false,
+                        previewQuality: 'low',
+                        loadingStrategy: 'lazy'
+                    };
+                } else {
+                    return {
+                        maxActiveCards: 4,
+                        enableAnimations: true,
+                        enableBackdropFilter: true,
+                        previewQuality: 'high',
+                        loadingStrategy: 'progressive'
+                    };
+                }
+            }
+            
+            initialize() {
+                console.log('🚀 Initializing mobile-native gallery...');
+                
+                this.setupGestureRecognition();
+                this.setupPerformanceMonitoring();
+                this.createMobileCards();
+                this.setupNavigation();
+                this.setupTouchFeedback();
+                this.startPerformanceOptimization();
+                
+                // Show swipe indicator for first-time users
+                this.showSwipeIndicator();
+                
+                console.log('✅ Mobile gallery ready - Touch to explore!');
+            }
+            
+            setupGestureRecognition() {
+                // Initialize ZingTouch for advanced gesture recognition with fallback
+                if (typeof ZT !== 'undefined') {
+                    this.gestureRegion = new ZT.Region(document.body);
+                } else {
+                    console.warn('⚠️ ZingTouch not loaded, using fallback touch handling');
+                    this.gestureRegion = null;
+                }
+                
+                const gallery = document.getElementById('mobileGallery');
+                
+                // Vertical swipe navigation
+                if (this.gestureRegion) {
+                    this.gestureRegion.bind(gallery, 'swipe', (event) => {
+                        const direction = event.detail.data[0].currentDirection;
+                        
+                        // Vertical swipes (up/down)
+                        if (direction >= 45 && direction <= 135) {
+                            this.navigateToSection(this.currentSection - 1); // Swipe up = previous
+                        } else if (direction >= 225 && direction <= 315) {
+                            this.navigateToSection(this.currentSection + 1); // Swipe down = next
+                        }
+                    });
+                } else {
+                    // Fallback touch swipe detection
+                    let startY = 0;
+                    gallery.addEventListener('touchstart', (e) => {
+                        startY = e.touches[0].clientY;
+                    }, { passive: true });
+                    
+                    gallery.addEventListener('touchend', (e) => {
+                        const endY = e.changedTouches[0].clientY;
+                        const diffY = startY - endY;
+                        
+                        if (Math.abs(diffY) > 50) { // Minimum swipe distance
+                            if (diffY > 0) {
+                                this.navigateToSection(this.currentSection + 1); // Swipe up = next
+                            } else {
+                                this.navigateToSection(this.currentSection - 1); // Swipe down = previous
+                            }
+                        }
+                    }, { passive: true });
+                }
+                
+                // Touch feedback on all interactive elements
+                document.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
+                document.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: true });
+                
+                console.log('👆 Touch gesture recognition enabled');
+            }
+            
+            handleTouchStart(event) {
+                const touch = event.touches[0];
+                this.showTouchFeedback(touch.clientX, touch.clientY);
+                
+                // Add touch-active class to cards
+                const card = event.target.closest('.mobile-card');
+                if (card) {
+                    card.classList.add('touch-active');
+                }
+            }
+            
+            handleTouchEnd(event) {
+                // Remove touch-active class from all cards
+                document.querySelectorAll('.mobile-card.touch-active').forEach(card => {
+                    card.classList.remove('touch-active');
+                });
+                
+                this.hideTouchFeedback();
+            }
+            
+            showTouchFeedback(x, y) {
+                const feedback = document.getElementById('touchFeedback');
+                feedback.style.left = (x - 25) + 'px';
+                feedback.style.top = (y - 25) + 'px';
+                feedback.style.width = '50px';
+                feedback.style.height = '50px';
+                feedback.classList.add('active');
+            }
+            
+            hideTouchFeedback() {
+                const feedback = document.getElementById('touchFeedback');
+                feedback.classList.remove('active');
+            }
+            
+            setupPerformanceMonitoring() {
+                this.performanceMonitor = {
+                    frameCount: 0,
+                    lastFrameTime: performance.now(),
+                    fps: 60,
+                    isMonitoring: false
+                };
+                
+                this.startFPSMonitoring();
+                this.updatePerformanceIndicator();
+            }
+            
+            startFPSMonitoring() {
+                const monitor = () => {
+                    const now = performance.now();
+                    this.performanceMonitor.frameCount++;
+                    
+                    if (now - this.performanceMonitor.lastFrameTime >= 1000) {
+                        this.performanceMonitor.fps = Math.round(
+                            this.performanceMonitor.frameCount * 1000 / (now - this.performanceMonitor.lastFrameTime)
+                        );
+                        this.performanceMonitor.frameCount = 0;
+                        this.performanceMonitor.lastFrameTime = now;
+                        
+                        this.updatePerformanceIndicator();
+                        
+                        // Adjust quality based on performance
+                        if (this.performanceMonitor.fps < 30) {
+                            this.reduceQuality();
+                        }
+                    }
+                    
+                    if (this.performanceMonitor.isMonitoring) {
+                        requestAnimationFrame(monitor);
+                    }
+                };
+                
+                this.performanceMonitor.isMonitoring = true;
+                requestAnimationFrame(monitor);
+            }
+            
+            updatePerformanceIndicator() {
+                const fpsCounter = document.getElementById('fpsCounter');
+                const deviceInfo = document.getElementById('deviceInfo');
+                
+                fpsCounter.textContent = `${this.performanceMonitor.fps} FPS`;
+                deviceInfo.textContent = this.deviceInfo.isLowEnd ? 'Low-End' : 'Standard';
+                
+                // Show indicator when performance drops
+                const indicator = document.getElementById('performanceIndicator');
+                if (this.performanceMonitor.fps < 45) {
+                    indicator.classList.add('visible');
+                } else {
+                    indicator.classList.remove('visible');
+                }
+            }
+            
+            reduceQuality() {
+                console.log('⚠️ Reducing quality due to low FPS');
+                
+                // Disable backdrop filters
+                document.documentElement.style.setProperty('--backdrop-filter', 'none');
+                
+                // Reduce animation complexity
+                document.querySelectorAll('.mobile-card').forEach(card => {
+                    card.style.transition = 'all 0.1s ease';
+                });
+            }
+            
+            createMobileCards() {
+                const gallery = document.getElementById('mobileGallery');
+                
+                // COMPLETE ORIGINAL CONTENT - ALL DEMOS MOBILE-ENHANCED
+                this.mobileContentSets = [
+                    // Set 1: Holographic Genesis
+                    [
+                        { title: "Neoskeuomorphic", description: "Modern depth-based card design with advanced shadow systems and interactive hover states", tags: ["CSS", "Design", "Cards"], url: "demos/neoskeuomorphic-cards-demo.html?mobile=1", name: "Neoskeuomorphic Cards" },
+                        { title: "Glassmorphism", description: "Translucent glass-like interface elements with backdrop blur and transparency", tags: ["CSS", "Glass", "Modern"], url: "demos/css-glassmorphism-demo.html?mobile=1", name: "Glassmorphism UI" },
+                        { title: "Holographic Progress", description: "Futuristic progress indicators with neon glow effects and smooth animations", tags: ["CSS", "Progress", "Neon"], url: "demos/holographic-progress-indicators-demo.html?mobile=1", name: "Holographic Progress" },
+                        { title: "State Control", description: "Interactive navigation dot systems with smooth state transitions", tags: ["CSS", "Controls", "Interactive"], url: "demos/state-control-dots-demo.html?mobile=1", name: "State Control Dots" },
+                        { title: "Vaporwave", description: "Retro-futuristic aesthetic elements with classic 80s styling", tags: ["CSS", "Retro", "Aesthetic"], url: "demos/css-vaporwave-aesthetics-demo.html?mobile=1", name: "Vaporwave Aesthetics" },
+                        { title: "Grid Overlay", description: "Dynamic grid pattern animations with morphing geometric structures", tags: ["CSS", "Grid", "Animation"], url: "demos/animated-grid-overlay-demo.html?mobile=1", name: "Animated Grid Overlay" }
+                    ],
+                    // Set 2: Plasma Emergence
+                    [
+                        { title: "Holographic Visualizer", description: "Multi-layer WebGL blend mode system with depth-based holographic effects", tags: ["WebGL", "Holographic", "Blend"], url: "effects/holographic-visualizer.html?mobile=1", name: "Holographic Visualizer" },
+                        { title: "Cyberpunk UI", description: "Futuristic interface design elements with neon highlights and tech aesthetics", tags: ["CSS", "Cyberpunk", "Interface"], url: "demos/css-cyberpunk-ui-demo.html?mobile=1", name: "Cyberpunk UI" },
+                        { title: "Particle System", description: "Advanced particle physics visualization with 3D depth and movement", tags: ["WebGL", "Particles", "Physics"], url: "demos/holographic-particle-system-demo.html?mobile=1", name: "Particle System" },
+                        { title: "Glitch Effects", description: "Digital corruption and distortion effects with RGB channel separation", tags: ["CSS", "Glitch", "Digital"], url: "demos/css-glitch-effects-demo.html?mobile=1", name: "Glitch Effects" },
+                        { title: "Depth Layers", description: "Multi-dimensional depth visualization with parallax scrolling effects", tags: ["CSS", "Depth", "Layers"], url: "demos/holographic-depth-layers-demo.html?mobile=1", name: "Depth Layers" },
+                        { title: "Adaptive Cards", description: "Dynamic responsive card system with intelligent layout adaptation", tags: ["CSS", "Adaptive", "Responsive"], url: "demos/vib34d-adaptive-cards-demo.html?mobile=1", name: "VIB34D Adaptive Cards" }
+                    ],
+                    // Set 3: Neural Awakening
+                    [
+                        { title: "MVEP Hypercube", description: "4D hypercube with interference patterns and mathematical precision", tags: ["WebGL", "4D", "Hypercube"], url: "effects/mvep-moire-hypercube.html?mobile=1", name: "MVEP Hypercube" },
+                        { title: "Hypercube Codex", description: "Advanced 4D mathematical visualization with interactive rotation controls", tags: ["WebGL", "Math", "4D"], url: "demos/moire-hypercube-codex-demo.html?mobile=1", name: "Hypercube Codex" },
+                        { title: "Lattice Visualizer", description: "Geometric lattice structure system with crystalline formations", tags: ["WebGL", "Lattice", "Geometry"], url: "demos/hypercube-lattice-visualizer-demo.html?mobile=1", name: "Lattice Visualizer" },
+                        { title: "Chaos Overlay", description: "Digital interference and chaos patterns with algorithmic generation", tags: ["WebGL", "Chaos", "Interference"], url: "demos/chaos-overlay-effects-demo.html?mobile=1", name: "Chaos Overlay" },
+                        { title: "Orchestration Engine", description: "Coordinated multi-system visualization with synchronized behaviors", tags: ["WebGL", "System", "Orchestra"], url: "demos/system-orchestration-engine-demo.html?mobile=1", name: "System Orchestration" },
+                        { title: "Reactive Core", description: "Reactive state management system with real-time data visualization", tags: ["WebGL", "Reactive", "Core"], url: "demos/vib3code-reactive-core-demo.html?mobile=1", name: "VIB3Code Reactive Core" }
+                    ],
+                    // Set 4: Crystal Resonance  
+                    [
+                        { title: "VIB34D Complete", description: "Revolutionary 4D framework with 8+ geometric systems and advanced rendering", tags: ["WebGL", "VIB34D", "Framework"], url: "effects/vib34d-complete-system.html?mobile=1", name: "VIB34D Complete System" },
+                        { title: "4D HyperAV", description: "Proven 4D audiovisual system with synchronized sound and visuals", tags: ["WebGL", "4D", "Audio"], url: "effects/working-4d-hyperav.html?mobile=1", name: "4D HyperAV" },
+                        { title: "Core Framework", description: "Core 4D mathematics framework with optimized projection algorithms", tags: ["WebGL", "Core", "Math"], url: "effects/hypercube-core-framework.html?mobile=1", name: "Hypercube Core Framework" },
+                        { title: "Consciousness Shader", description: "N-dimensional consciousness visualization with abstract thought patterns", tags: ["WebGL", "Polytopal", "Consciousness"], url: "demos/polytopal-consciousness-shader-demo.html?mobile=1", name: "Polytopal Consciousness" },
+                        { title: "Elegant 4D Flow", description: "Graceful 4D particle systems with fluid dynamics", tags: ["WebGL", "4D", "Flow"], url: "effects/elegant-4d-flow-visualizer.html?mobile=1", name: "Elegant 4D Flow" },
+                        { title: "Holographic Pulse", description: "Rhythmic holographic pulse visualization system", tags: ["WebGL", "Holographic", "Pulse"], url: "effects/holographic-pulse-system.html?mobile=1", name: "Holographic Pulse" }
+                    ],
+                    // Set 5: Quantum Chaos
+                    [
+                        { title: "Hyperdimensional Matrix", description: "8D+ chaos visualization with fractal tessellations and infinite complexity", tags: ["WebGL", "8D", "Chaos"], url: "effects/insane-hyperdimensional-matrix.html?mobile=1", name: "Hyperdimensional Matrix" },
+                        { title: "Card Bending", description: "Advanced 3D CSS transform morphing with 6 unique bending behaviors", tags: ["CSS", "3D", "Morphing"], url: "effects/vib34d-advanced-card-bending-system.html?mobile=1", name: "VIB34D Card Bending" },
+                        { title: "Color Shift", description: "Extreme filter effects with contrast shifts and chromatic aberration", tags: ["CSS", "Color", "Filters"], url: "effects/enhanced-color-shift-contrast-system.html?mobile=1", name: "Enhanced Color Shift" },
+                        { title: "Maleficarum Codex", description: "Advanced magical interface system with spell-casting interactions", tags: ["WebGL", "Magic", "Interface"], url: "demos/millzmaleficarum-codex-demo.html?mobile=1", name: "Millzmaleficarum Codex" },
+                        { title: "Morphing Blog", description: "Dynamic content morphing system with seamless transitions", tags: ["WebGL", "Morphing", "Blog"], url: "demos/vib34d-morphing-blog-demo.html?mobile=1", name: "VIB34D Morphing Blog" },
+                        { title: "Multi Canvas", description: "Multiple synchronized visualizer instances with coordinated behaviors", tags: ["WebGL", "Multi", "Canvas"], url: "effects/multi-canvas-visualizer-system.html?mobile=1", name: "Multi Canvas System" }
+                    ],
+                    // Set 6: Fractal Storm
+                    [
+                        { title: "Narrative Choreography", description: "JSON-driven scroll transformations with story-based interactions", tags: ["WebGL", "Narrative", "Choreography"], url: "effects/narrative-choreography-engine.html?mobile=1", name: "Narrative Choreography" },
+                        { title: "Tabbed Visualizer", description: "Advanced WebGL tab management with state preservation", tags: ["WebGL", "Tabs", "Management"], url: "effects/tabbed-visualizer-system.html?mobile=1", name: "Tabbed Visualizer" },
+                        { title: "WebGL Framework", description: "High-performance shader framework with optimization algorithms", tags: ["WebGL", "Framework", "Performance"], url: "effects/hypercube-core-webgl-framework.html?mobile=1", name: "WebGL Framework" },
+                        { title: "Digital Magazine", description: "Interactive digital publication with immersive page transitions", tags: ["WebGL", "Magazine", "Interactive"], url: "demos/vib3code-digital-magazine-demo.html?mobile=1", name: "VIB3Code Digital Magazine" },
+                        { title: "Tech Layout", description: "Advanced layout with active systems and dynamic positioning", tags: ["WebGL", "Layout", "Tech"], url: "demos/tech-layout-active-holographic-demo.html?mobile=1", name: "Tech Layout Active" },
+                        { title: "Parallax Systems", description: "Advanced parallax visualization with infinite depth perception", tags: ["WebGL", "Parallax", "System"], url: "demos/holographic-parallax-systems-mega-demo.html?mobile=1", name: "Holographic Parallax" }
+                    ],
+                    // Set 7: Dimensional Collapse
+                    [
+                        { title: "Active Holographic", description: "125 WebGL visualizers in mega-demo with coordinated chaos", tags: ["WebGL", "Mega", "Active"], url: "demos/active-holographic-systems-mega-demo.html?mobile=1", name: "Active Holographic Mega", isHeavy: true },
+                        { title: "VIB34D Complete", description: "Revolutionary 4D framework with all geometric systems enabled", tags: ["WebGL", "VIB34D", "Complete"], url: "effects/vib34d-complete-system.html?mobile=1", name: "VIB34D Complete" },
+                        { title: "Working 4D HyperAV", description: "Proven audiovisual 4D system with synchronized rendering", tags: ["WebGL", "4D", "Audio"], url: "effects/working-4d-hyperav.html?mobile=1", name: "Working 4D HyperAV" },
+                        { title: "Hypercube Core", description: "Core hypercube framework with mathematical precision", tags: ["WebGL", "Hypercube", "Core"], url: "effects/hypercube-core-framework.html?mobile=1", name: "Hypercube Core" },
+                        { title: "Insane Matrix", description: "8D+ hyperdimensional chaos with infinite complexity", tags: ["WebGL", "8D", "Matrix"], url: "effects/insane-hyperdimensional-matrix.html?mobile=1", name: "Hyperdimensional Matrix" },
+                        { title: "MVEP Hypercube", description: "Production MVEP system with moire interference patterns", tags: ["WebGL", "MVEP", "Hypercube"], url: "effects/mvep-moire-hypercube.html?mobile=1", name: "MVEP Moire Hypercube" }
+                    ]
+                ];
+                
+                // Create cards for current section
+                this.createCardsForSection(this.currentSection, this.mobileContentSets);
+                
+                console.log(`📱 Created mobile cards for section ${this.currentSection}`);
+            }
+            
+            createCardsForSection(sectionIndex, contentSets) {
+                const gallery = document.getElementById('mobileGallery');
+                gallery.innerHTML = ''; // Clear existing cards
+                
+                const currentSet = contentSets[sectionIndex] || contentSets[0];
+                
+                currentSet.forEach((content, index) => {
+                    const card = this.createMobileCard(content, index);
+                    gallery.appendChild(card);
+                    
+                    // Progressive loading based on performance
+                    if (this.performanceSettings.loadingStrategy === 'progressive') {
+                        setTimeout(() => this.loadCardPreview(content, index), index * 300);
+                    } else {
+                        this.loadCardPreview(content, index);
+                    }
+                });
+            }
+            
+            createMobileCard(content, index) {
+                const card = document.createElement('div');
+                card.className = 'mobile-card';
+                card.id = `mobile-card-${index}`;
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h2 class="card-title">${content.title}</h2>
+                        <p class="card-description">${content.description}</p>
+                        <div class="card-tags">
+                            ${content.tags.map(tag => `<span class="card-tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="card-preview" id="preview-${index}">
+                        <div class="preview-placeholder">
+                            <div class="loading-spinner"></div>
+                            <div>Loading ${content.title}...</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add touch interaction
+                card.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.handleCardTouch(content, index);
+                }, { passive: false });
+                
+                return card;
+            }
+            
+            loadCardPreview(content, index) {
+                const preview = document.getElementById(`preview-${index}`);
+                const placeholder = preview.querySelector('.preview-placeholder');
+                
+                // Check if we should load based on performance
+                if (this.activeCards.size >= this.performanceSettings.maxActiveCards) {
+                    // Remove oldest card from memory
+                    const oldestCard = this.activeCards.keys().next().value;
+                    this.unloadCard(oldestCard);
+                }
+                
+                const iframe = document.createElement('iframe');
+                iframe.src = content.url;
+                iframe.loading = 'lazy';
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+                
+                iframe.onload = () => {
+                    iframe.classList.add('loaded');
+                    placeholder.style.opacity = '0';
+                    setTimeout(() => {
+                        if (placeholder.parentNode) {
+                            placeholder.remove();
+                        }
+                    }, 600);
+                };
+                
+                iframe.onerror = () => {
+                    placeholder.innerHTML = `
+                        <div style="color: var(--warning-orange);">
+                            ⚠️ Preview unavailable<br>
+                            <small>Tap to open full demo</small>
+                        </div>
+                    `;
+                };
+                
+                preview.appendChild(iframe);
+                this.activeCards.set(index, iframe);
+                
+                console.log(`📱 Loaded preview for card ${index}: ${content.title}`);
+            }
+            
+            unloadCard(index) {
+                const card = this.activeCards.get(index);
+                if (card) {
+                    card.remove();
+                    this.activeCards.delete(index);
+                    console.log(`🗑️ Unloaded card ${index} to free memory`);
+                }
+            }
+            
+            handleCardTouch(content, index) {
+                console.log(`👆 Touched card: ${content.title}`);
+                
+                // Haptic feedback if available
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+                
+                // Open demo in new tab optimized for mobile
+                const mobileUrl = content.url + (content.url.includes('?') ? '&' : '?') + 'mobile=1';
+                window.open(mobileUrl, '_blank', 'noopener,noreferrer');
+            }
+            
+            setupNavigation() {
+                const navButtons = document.querySelectorAll('.nav-button');
+                
+                navButtons.forEach((button, index) => {
+                    button.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.navigateToSection(index);
+                        
+                        // Haptic feedback
+                        if (navigator.vibrate) {
+                            navigator.vibrate([30, 10, 30]);
+                        }
+                    }, { passive: false });
+                });
+                
+                console.log('🧭 Mobile navigation configured');
+            }
+            
+            navigateToSection(sectionIndex) {
+                if (sectionIndex < 0 || sectionIndex >= this.totalSections || sectionIndex === this.currentSection) {
+                    return;
+                }
+                
+                console.log(`🧭 Navigating to section ${sectionIndex}`);
+                
+                // Update navigation UI
+                document.querySelectorAll('.nav-button').forEach((btn, i) => {
+                    btn.classList.toggle('active', i === sectionIndex);
+                });
+                
+                // Update header stats
+                document.getElementById('currentSection').textContent = sectionIndex + 1;
+                
+                this.currentSection = sectionIndex;
+                
+                // Recreate cards for new section (simplified for demo)
+                // In a full implementation, this would load different content sets
+                this.createMobileCards();
+            }
+            
+            setupTouchFeedback() {
+                // Add touch feedback to all interactive elements
+                const interactiveElements = document.querySelectorAll('button, .mobile-card, .nav-button');
+                
+                interactiveElements.forEach(element => {
+                    element.style.touchAction = 'manipulation';
+                });
+                
+                console.log('👆 Touch feedback system active');
+            }
+            
+            showSwipeIndicator() {
+                const indicator = document.getElementById('swipeIndicator');
+                indicator.classList.add('visible');
+                
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    indicator.classList.remove('visible');
+                }, 5000);
+            }
+            
+            startPerformanceOptimization() {
+                // Monitor battery level if available
+                if ('getBattery' in navigator) {
+                    navigator.getBattery().then((battery) => {
+                        if (battery.level < 0.2) {
+                            console.log('🔋 Low battery detected - reducing animations');
+                            this.enableBatterySaver();
+                        }
+                        
+                        battery.addEventListener('levelchange', () => {
+                            if (battery.level < 0.2) {
+                                this.enableBatterySaver();
+                            }
+                        });
+                    });
+                }
+                
+                // Monitor memory pressure
+                if ('memory' in performance) {
+                    const memInfo = performance.memory;
+                    const memoryPressure = memInfo.usedJSHeapSize / memInfo.jsHeapSizeLimit;
+                    
+                    if (memoryPressure > 0.8) {
+                        console.log('🧠 Memory pressure detected - optimizing');
+                        this.optimizeMemoryUsage();
+                    }
+                }
+            }
+            
+            enableBatterySaver() {
+                console.log('🔋 Battery saver mode enabled');
+                
+                // Reduce animation complexity
+                document.documentElement.style.setProperty('--animation-duration', '0.1s');
+                
+                // Disable backdrop filters
+                document.documentElement.style.setProperty('--backdrop-filter', 'none');
+                
+                // Reduce update frequency
+                this.performanceMonitor.isMonitoring = false;
+            }
+            
+            optimizeMemoryUsage() {
+                console.log('🧠 Optimizing memory usage');
+                
+                // Unload inactive cards
+                if (this.activeCards.size > 2) {
+                    const cardsToRemove = Array.from(this.activeCards.keys()).slice(0, -2);
+                    cardsToRemove.forEach(index => this.unloadCard(index));
+                }
+                
+                // Force garbage collection if available
+                if ('gc' in window) {
+                    window.gc();
+                }
+            }
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                new MobileVisualCodex();
+            });
+        } else {
+            new MobileVisualCodex();
+        }
+        
+        // Service Worker registration for PWA capabilities
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(() => console.log('📱 Service Worker registered'))
+                    .catch(() => console.log('📱 Service Worker registration failed'));
+            });
+        }
+        
+        console.log('📱 Visual Codex Mobile-Native Gallery - System Ready');
+    </script>
+</body>
+</html>

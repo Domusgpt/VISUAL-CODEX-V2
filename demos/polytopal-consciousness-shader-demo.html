@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polytopal Consciousness Shader Demo</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        .controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        
+        .controls.collapsed {
+            width: 40px;
+            height: 40px;
+            padding: 8px;
+            overflow: hidden;
+        }
+        
+        .controls-toggle {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            cursor: pointer;
+            padding: 3px 6px;
+            font-size: 10px;
+            z-index: 101;
+        }
+        
+        .controls-toggle:hover {
+            background: rgba(0, 255, 255, 0.4);
+        }
+        
+        .controls-content {
+            transition: opacity 0.3s ease;
+        }
+        
+        .controls.collapsed .controls-content {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .controls label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .controls input[type="range"] {
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="glCanvas"></canvas>
+    <div class="controls collapsed" id="controlsPanel">
+        <button class="controls-toggle" onclick="toggleControls()">▼</button>
+        <div class="controls-content">
+        <label>Dimension: <span id="dimensionValue">3.5</span></label>
+        <input type="range" id="dimension" min="3.0" max="4.5" step="0.01" value="3.5">
+
+        <label>Integration Force: <span id="integrationForceValue">0.5</span></label>
+        <input type="range" id="integrationForce" min="0.0" max="1.0" step="0.01" value="0.5">
+
+        <label>Dispersion Force: <span id="dispersionForceValue">0.5</span></label>
+        <input type="range" id="dispersionForce" min="0.0" max="1.0" step="0.01" value="0.5">
+
+        <label>Quantum Coherence: <span id="quantumCoherenceValue">0.5</span></label>
+        <input type="range" id="quantumCoherence" min="0.0" max="1.0" step="0.01" value="0.5">
+
+        <label>Reality Dissolution: <span id="realityDissolutionValue">0.0</span></label>
+        <input type="range" id="realityDissolution" min="0.0" max="1.0" step="0.01" value="0.0">
+
+        <label>Consciousness Field: <span id="consciousnessFieldValue">0.5</span></label>
+        <input type="range" id="consciousnessField" min="0.0" max="1.0" step="0.01" value="0.5">
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('glCanvas');
+        const gl = canvas.getContext('webgl');
+
+        if (!gl) {
+            alert('WebGL not supported, please use a modern browser.');
+        }
+
+        // Vertex Shader Source
+        const vsSource = `
+            attribute vec3 position;
+            attribute vec2 uv;
+            attribute float consciousness;
+
+            uniform mat4 projectionMatrix;
+            uniform mat4 modelViewMatrix;
+            uniform float time;
+            uniform vec3 cameraPosition;
+
+            uniform float dimension;
+            uniform vec3 rotationAngles[7];
+            uniform float consciousnessField;
+            uniform float realityPhase;
+
+            varying vec2 vUv;
+            varying vec3 vPosition;
+            varying float vConsciousness;
+            varying vec3 vPolytopalCoord;
+            varying float vDimensionalPhase;
+            varying vec3 vColor;
+
+            mat4 rotate7D(float angle, int axis1, int axis2) {
+                mat4 m = mat4(1.0);
+                float c = cos(angle);
+                float s = sin(angle);
+                
+                if (axis1 < 4 && axis2 < 4) {
+                    m[axis1][axis1] = c;
+                    m[axis1][axis2] = -s;
+                    m[axis2][axis1] = s;
+                    m[axis2][axis2] = c;
+                }
+                return m;
+            }
+
+            vec3 projectPolytope(vec3 pos, float phase) {
+                vec4 p7d = vec4(pos, 1.0);
+                
+                for (int i = 0; i < 6; i++) {
+                    float angle = rotationAngles[i].x * time + phase;
+                    p7d = rotate7D(angle, i, (i + 1) % 7) * p7d;
+                }
+                
+                float consciousnessDist = length(pos - cameraPosition) * 0.1;
+                float fieldStrength = exp(-consciousnessDist * consciousnessDist) * consciousnessField;
+                
+                vec3 p5d = p7d.xyz * (1.0 + fieldStrength);
+                
+                float simplexPhase = dot(p5d, vec3(1.0)) * 0.1;
+                p5d *= 1.0 + sin(simplexPhase + time) * 0.2;
+                
+                vec3 p3d = p5d;
+                p3d += normalize(p5d) * sin(length(p5d) * 3.0 + time * 2.0) * fieldStrength;
+                
+                return p3d;
+            }
+
+            vec3 getPolytopalColor(vec3 coord, float dim) {
+                float hue = atan(coord.y, coord.x) + dim * 0.5 + time * 0.1;
+                float sat = 0.7 + sin(length(coord) * 2.0) * 0.3;
+                float val = 0.5 + consciousness * 0.5;
+                
+                vec3 c = vec3(hue, sat, val);
+                vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+                vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+                return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+            }
+
+            void main() {
+                vUv = uv;
+                vConsciousness = consciousness + sin(time + position.x) * 0.1;
+                
+                vec3 polytopalPos = projectPolytope(position, realityPhase);
+                
+                float vertexPhase = dot(position, vec3(1.0)) + time;
+                vec3 displacement = normalize(position) * sin(vertexPhase * 3.0) * consciousnessField * 0.1;
+                
+                vec3 finalPos = polytopalPos + displacement;
+                
+                vPosition = finalPos;
+                vPolytopalCoord = polytopalPos;
+                vDimensionalPhase = dimension + sin(length(polytopalPos) + time) * 0.5;
+                vColor = getPolytopalColor(polytopalPos, dimension);
+                
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(finalPos, 1.0);
+            }
+        `;
+
+        // Fragment Shader Source
+        const fsSource = `
+            precision highp float;
+
+            uniform float time;
+            uniform vec2 resolution;
+            uniform vec3 cameraPosition;
+            uniform sampler2D consciousnessTexture;
+
+            uniform float dimension;
+            uniform float integrationForce;
+            uniform float dispersionForce;
+            uniform float quantumCoherence;
+            uniform float realityDissolution;
+            uniform vec3 singularityPosition;
+
+            varying vec2 vUv;
+            varying vec3 vPosition;
+            varying float vConsciousness;
+            varying vec3 vPolytopalCoord;
+            varying float vDimensionalPhase;
+            varying vec3 vColor;
+
+            float consciousnessField(vec3 p) {
+                float dist = length(p - singularityPosition);
+                return exp(-dist * dist * 0.5) * quantumCoherence;
+            }
+
+            vec2 penroseTiling(vec2 p) {
+                const float phi = 1.61803398875;
+                vec2 a = vec2(1.0, 0.0);
+                vec2 b = vec2(cos(2.0 * 3.14159 / 5.0), sin(2.0 * 3.14159 / 5.0));
+                
+                float r = length(p);
+                float theta = atan(p.y, p.x) + time * 0.1;
+                
+                theta = mod(theta, 2.0 * 3.14159 / 5.0);
+                
+                return vec2(r * cos(theta * phi), r * sin(theta * phi));
+            }
+
+            vec3 kleinBottleSurface(vec2 uv, float w) {
+                float u = uv.x * 4.0 * 3.14159;
+                float v = uv.y * 2.0 * 3.14159;
+                
+                float r = 4.0 * (1.0 - cos(u) / 2.0);
+                float x, y, z;
+                
+                if (u < 3.14159) {
+                    x = 6.0 * cos(u) * (1.0 + sin(u)) + r * cos(v + 3.14159);
+                    y = 16.0 * sin(u);
+                    z = r * sin(v);
+                } else {
+                    x = 6.0 * cos(u) * (1.0 + sin(u)) + r * cos(v);
+                    y = 16.0 * sin(u);
+                    z = r * sin(v);
+                }
+                
+                float w4 = w * 2.0 * 3.14159;
+                vec3 rotated = vec3(
+                    x * cos(w4) - z * sin(w4),
+                    y,
+                    x * sin(w4) + z * cos(w4)
+                );
+                
+                return rotated * 0.05;
+            }
+
+            vec3 hopfFibration(vec3 p, float phase) {
+                vec4 q = normalize(vec4(p, 1.0 - length(p)));
+                
+                float x = 2.0 * (q.x * q.z + q.y * q.w);
+                float y = 2.0 * (q.y * q.z - q.x * q.w);
+                float z = q.x * q.x + q.y * q.y - q.z * q.z - q.w * q.w;
+                
+                float c = cos(phase);
+                float s = sin(phase);
+                return vec3(
+                    x * c - y * s,
+                    x * s + y * c,
+                    z
+                );
+            }
+
+            float gosperCurve(vec2 p, int iterations) {
+                vec2 a = vec2(1.0, 0.0);
+                vec2 b = vec2(-0.5, 0.866025);
+                
+                float scale = 1.0;
+                vec2 offset = vec2(0.0);
+                
+                for (int i = 0; i < 5; i++) {
+                    if (i >= iterations) break;
+                    
+                    vec2 pp = p - offset;
+                    float d1 = dot(pp, a);
+                    float d2 = dot(pp, b);
+                    
+                    if (abs(d1) < abs(d2)) {
+                        p = vec2(d1, dot(pp, vec2(-a.y, a.x))) / dot(a, a);
+                        offset += a * scale;
+                    } else {
+                        p = vec2(d2, dot(pp, vec2(-b.y, b.x))) / dot(b, b);
+                        offset += b * scale;
+                    }
+                    
+                    scale /= sqrt(7.0);
+                }
+                
+                return length(p);
+            }
+
+            void main() {
+                vec2 uv = vUv;
+                vec3 pos = vPosition;
+                
+                float consciousness = consciousnessField(pos);
+                consciousness += texture2D(consciousnessTexture, uv).r * 0.5;
+                
+                vec2 penrose = penroseTiling(uv * 5.0);
+                float tilingPattern = sin(penrose.x * 10.0) * cos(penrose.y * 10.0);
+                
+                vec3 kleinPos = kleinBottleSurface(uv, vDimensionalPhase);
+                float kleinDist = length(kleinPos - pos);
+                
+                vec3 hopfColor = hopfFibration(vPolytopalCoord, time * 0.5);
+                hopfColor = normalize(hopfColor) * 0.5 + 0.5;
+                
+                float gosper = gosperCurve(uv * 3.0, 4);
+                float density = 1.0 / (1.0 + gosper * gosper);
+                
+                vec3 baseColor = vColor;
+                vec3 consciousnessColor = vec3(
+                    0.5 + 0.5 * sin(consciousness * 3.14159),
+                    0.3 + 0.7 * consciousness,
+                    0.8 + 0.2 * cos(consciousness * 6.28318)
+                );
+                
+                float dissolution = realityDissolution * sin(kleinDist * 10.0 + time);
+                vec3 dissolvedColor = mix(baseColor, hopfColor, dissolution);
+                
+                float fieldBalance = integrationForce - dispersionForce;
+                vec3 fieldColor = fieldBalance > 0.0 
+                    ? vec3(0.2, 0.8, 0.4) * fieldBalance
+                    : vec3(0.8, 0.2, 0.3) * -fieldBalance;
+                
+                float interference = sin(length(pos) * 20.0 + time * 2.0) 
+                                   * cos(dot(pos, vec3(1.0)) * 15.0 - time);
+                interference *= quantumCoherence;
+                
+                vec3 finalColor = dissolvedColor;
+                finalColor = mix(finalColor, consciousnessColor, consciousness * 0.6);
+                finalColor += fieldColor * 0.3;
+                finalColor += vec3(tilingPattern * 0.1 * density);
+                finalColor += vec3(interference * 0.2);
+                
+                float glow = exp(-kleinDist * 2.0) * vConsciousness;
+                finalColor += vec3(0.9, 0.7, 1.0) * glow * 0.5;
+                
+                float shimmer = sin(vDimensionalPhase * 10.0 + time * 3.0) * 0.1;
+                finalColor += vec3(shimmer);
+                
+                finalColor = pow(finalColor, vec3(0.4545));
+                
+                gl_FragColor = vec4(finalColor, 1.0);
+            }
+        `;
+
+        // Shader compilation and linking
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Shader compilation error:', gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+            return shader;
+        }
+
+        function createProgram(gl, vsSource, fsSource) {
+            const vertexShader = createShader(gl, gl.VERTEX_SHADER, vsSource);
+            const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+            if (!vertexShader || !fragmentShader) return null;
+
+            const program = gl.createProgram();
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                console.error('Shader program linking error:', gl.getProgramInfoLog(program));
+                gl.deleteProgram(program);
+                return null;
+            }
+            return program;
+        }
+
+        const shaderProgram = createProgram(gl, vsSource, fsSource);
+        gl.useProgram(shaderProgram);
+
+        // Get attribute and uniform locations
+        const positionAttributeLocation = gl.getAttribLocation(shaderProgram, 'position');
+        const uvAttributeLocation = gl.getAttribLocation(shaderProgram, 'uv');
+        const consciousnessAttributeLocation = gl.getAttribLocation(shaderProgram, 'consciousness');
+
+        const uniforms = {
+            projectionMatrix: gl.getUniformLocation(shaderProgram, 'projectionMatrix'),
+            modelViewMatrix: gl.getUniformLocation(shaderProgram, 'modelViewMatrix'),
+            time: gl.getUniformLocation(shaderProgram, 'time'),
+            resolution: gl.getUniformLocation(shaderProgram, 'resolution'),
+            cameraPosition: gl.getUniformLocation(shaderProgram, 'cameraPosition'),
+            dimension: gl.getUniformLocation(shaderProgram, 'dimension'),
+            integrationForce: gl.getUniformLocation(shaderProgram, 'integrationForce'),
+            dispersionForce: gl.getUniformLocation(shaderProgram, 'dispersionForce'),
+            quantumCoherence: gl.getUniformLocation(shaderProgram, 'quantumCoherence'),
+            realityDissolution: gl.getUniformLocation(shaderProgram, 'realityDissolution'),
+            singularityPosition: gl.getUniformLocation(shaderProgram, 'singularityPosition'),
+            rotationAngles: gl.getUniformLocation(shaderProgram, 'rotationAngles'),
+            consciousnessField: gl.getUniformLocation(shaderProgram, 'consciousnessField'),
+            realityPhase: gl.getUniformLocation(shaderProgram, 'realityPhase'),
+            consciousnessTexture: gl.getUniformLocation(shaderProgram, 'consciousnessTexture')
+        };
+
+        // Create buffers
+        const positions = [];
+        const uvs = [];
+        const consciousnessValues = [];
+        const indices = [];
+
+        // Generate 7D hypercube vertices (simplified for demo)
+        const dim = 2; // Simplified dimension for visual clarity in demo
+        for (let x = 0; x < dim; x++) {
+            for (let y = 0; y < dim; y++) {
+                for (let z = 0; z < dim; z++) {
+                    positions.push(x * 2 - 1, y * 2 - 1, z * 2 - 1);
+                    uvs.push(x, y);
+                    consciousnessValues.push(Math.random());
+                }
+            }
+        }
+
+        // Create indices for a simple cube (connecting vertices)
+        // This is a basic cube, not a 7D hypercube for simplicity in demo
+        const cubeIndices = [
+            0, 1, 2, 0, 2, 3, // Front face
+            4, 5, 6, 4, 6, 7, // Back face
+            0, 1, 5, 0, 5, 4, // Bottom face
+            2, 3, 7, 2, 7, 6, // Top face
+            0, 2, 6, 0, 6, 4, // Left face
+            1, 3, 7, 1, 7, 5  // Right face
+        ];
+        indices.push(...cubeIndices);
+
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+        const uvBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STATIC_DRAW);
+
+        const consciousnessBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, consciousnessBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(consciousnessValues), gl.STATIC_DRAW);
+
+        const indexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+        // Setup texture (dummy for now)
+        const consciousnessTexture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, consciousnessTexture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+                      new Uint8Array([0, 0, 255, 255])); // blue
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+        // Set initial uniform values
+        let params = {
+            dimension: 3.5,
+            integrationForce: 0.5,
+            dispersionForce: 0.5,
+            quantumCoherence: 0.5,
+            realityDissolution: 0.0,
+            consciousnessField: 0.5,
+            singularityPosition: [0.0, 0.0, 0.0],
+            cameraPosition: [0.0, 0.0, 5.0],
+            rotationAngles: Array(7).fill([0,0,0]) // Dummy for now
+        };
+
+        // Update uniforms from controls
+        function updateUniformsFromControls() {
+            params.dimension = parseFloat(document.getElementById('dimension').value);
+            params.integrationForce = parseFloat(document.getElementById('integrationForce').value);
+            params.dispersionForce = parseFloat(document.getElementById('dispersionForce').value);
+            params.quantumCoherence = parseFloat(document.getElementById('quantumCoherence').value);
+            params.realityDissolution = parseFloat(document.getElementById('realityDissolution').value);
+            params.consciousnessField = parseFloat(document.getElementById('consciousnessField').value);
+
+            document.getElementById('dimensionValue').textContent = params.dimension.toFixed(2);
+            document.getElementById('integrationForceValue').textContent = params.integrationForce.toFixed(2);
+            document.getElementById('dispersionForceValue').textContent = params.dispersionForce.toFixed(2);
+            document.getElementById('quantumCoherenceValue').textContent = params.quantumCoherence.toFixed(2);
+            document.getElementById('realityDissolutionValue').textContent = params.realityDissolution.toFixed(2);
+            document.getElementById('consciousnessFieldValue').textContent = params.consciousnessField.toFixed(2);
+        }
+
+        // Attach event listeners to controls
+        document.querySelectorAll('.controls input[type="range"]').forEach(input => {
+            input.addEventListener('input', updateUniformsFromControls);
+        });
+
+        // Initial update
+        updateUniformsFromControls();
+
+        // Animation loop
+        let startTime = performance.now();
+
+        function animate(currentTime) {
+            const elapsedTime = (currentTime - startTime) * 0.001;
+
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            gl.useProgram(shaderProgram);
+
+            // Update uniforms
+            gl.uniform1f(uniforms.time, elapsedTime);
+            gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
+            gl.uniform3fv(uniforms.cameraPosition, new Float32Array(params.cameraPosition));
+            gl.uniform1f(uniforms.dimension, params.dimension);
+            gl.uniform1f(uniforms.integrationForce, params.integrationForce);
+            gl.uniform1f(uniforms.dispersionForce, params.dispersionForce);
+            gl.uniform1f(uniforms.quantumCoherence, params.quantumCoherence);
+            gl.uniform1f(uniforms.realityDissolution, params.realityDissolution);
+            gl.uniform3fv(uniforms.singularityPosition, new Float32Array(params.singularityPosition));
+            gl.uniform3fv(uniforms.rotationAngles, new Float32Array(params.rotationAngles.flat()));
+            gl.uniform1f(uniforms.consciousnessField, params.consciousnessField);
+            gl.uniform1f(uniforms.realityPhase, elapsedTime * 0.1);
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, consciousnessTexture);
+            gl.uniform1i(uniforms.consciousnessTexture, 0);
+
+            // Create a simple perspective matrix
+            const fieldOfView = 45 * Math.PI / 180; // in radians
+            const aspect = canvas.width / canvas.height;
+            const zNear = 0.1;
+            const zFar = 100.0;
+            const projectionMatrix = mat4.create();
+            mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+
+            // Create a model view matrix
+            const modelViewMatrix = mat4.create();
+            mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0]);
+            mat4.rotate(modelViewMatrix, modelViewMatrix, elapsedTime * 0.7, [0, 1, 0]);
+            mat4.rotate(modelViewMatrix, modelViewMatrix, elapsedTime * 0.3, [1, 0, 0]);
+
+            gl.uniformMatrix4fv(uniforms.projectionMatrix, false, projectionMatrix);
+            gl.uniformMatrix4fv(uniforms.modelViewMatrix, false, modelViewMatrix);
+
+            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+
+            requestAnimationFrame(animate);
+        }
+
+        // Basic mat4 polyfill for demo (replace with gl-matrix if needed)
+        const mat4 = {
+            create: function() { return new Float32Array(16); },
+            perspective: function(out, fovy, aspect, near, far) {
+                const f = 1.0 / Math.tan(fovy / 2);
+                out[0] = f / aspect;
+                out[1] = 0;
+                out[2] = 0;
+                out[3] = 0;
+                out[4] = 0;
+                out[5] = f;
+                out[6] = 0;
+                out[7] = 0;
+                out[8] = 0;
+                out[9] = 0;
+                out[10] = (near + far) / (near - far);
+                out[11] = -1;
+                out[12] = 0;
+                out[13] = 0;
+                out[14] = (2 * far * near) / (near - far);
+                out[15] = 0;
+                return out;
+            },
+            translate: function(out, a, v) {
+                let x = v[0], y = v[1], z = v[2];
+                let a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
+                let a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
+                let a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
+                let a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+
+                out[0] = a00;
+                out[1] = a01;
+                out[2] = a02;
+                out[3] = a03;
+                out[4] = a10;
+                out[5] = a11;
+                out[6] = a12;
+                out[7] = a13;
+                out[8] = a20;
+                out[9] = a21;
+                out[10] = a22;
+                out[11] = a23;
+
+                out[12] = a00 * x + a10 * y + a20 * z + a30;
+                out[13] = a01 * x + a11 * y + a21 * z + a31;
+                out[14] = a02 * x + a12 * y + a22 * z + a32;
+                out[15] = a03 * x + a13 * y + a23 * z + a33;
+                return out;
+            },
+            rotate: function(out, a, rad, axis) {
+                let x = axis[0], y = axis[1], z = axis[2];
+                let len = Math.sqrt(x * x + y * y + z * z);
+                let s, c, t;
+                let a00, a01, a02, a03;
+                let a10, a11, a12, a13;
+                let a20, a21, a22, a23;
+                let b00, b01, b02;
+                let b10, b11, b12;
+                let b20, b21, b22;
+
+                if (len < 0.000001) { return null; }
+
+                len = 1 / len;
+                x *= len;
+                y *= len;
+                z *= len;
+
+                s = Math.sin(rad);
+                c = Math.cos(rad);
+                t = 1 - c;
+
+                a00 = a[0]; a01 = a[1]; a02 = a[2]; a03 = a[3];
+                a10 = a[4]; a11 = a[5]; a12 = a[6]; a13 = a[7];
+                a20 = a[8]; a21 = a[9]; a22 = a[10]; a23 = a[11];
+
+                // Construct the rotation matrix
+                b00 = x * x * t + c;
+                b01 = y * x * t + z * s;
+                b02 = z * x * t - y * s;
+                b10 = x * y * t - z * s;
+                b11 = y * y * t + c;
+                b12 = z * y * t + x * s;
+                b20 = x * z * t + y * s;
+                b21 = y * z * t - x * s;
+                b22 = z * z * t + c;
+
+                // Perform rotation
+                out[0] = a00 * b00 + a10 * b01 + a20 * b02;
+                out[1] = a01 * b00 + a11 * b01 + a21 * b02;
+                out[2] = a02 * b00 + a12 * b01 + a22 * b02;
+                out[3] = a03 * b00 + a13 * b01 + a23 * b02;
+                out[4] = a00 * b10 + a10 * b11 + a20 * b12;
+                out[5] = a01 * b10 + a11 * b11 + a21 * b12;
+                out[6] = a02 * b10 + a12 * b11 + a22 * b12;
+                out[7] = a03 * b10 + a13 * b11 + a23 * b12;
+                out[8] = a00 * b20 + a10 * b21 + a20 * b22;
+                out[9] = a01 * b20 + a11 * b21 + a21 * b22;
+                out[10] = a02 * b20 + a12 * b21 + a22 * b22;
+                out[11] = a03 * b20 + a13 * b21 + a23 * b22;
+                out[12] = a[12];
+                out[13] = a[13];
+                out[14] = a[14];
+                out[15] = a[15];
+                return out;
+            }
+        };
+
+        requestAnimationFrame(animate);
+
+        // Controls toggle function
+        function toggleControls() {
+            const controls = document.getElementById('controlsPanel');
+            const toggle = controls.querySelector('.controls-toggle');
+            
+            controls.classList.toggle('collapsed');
+            toggle.textContent = controls.classList.contains('collapsed') ? '▼' : '▲';
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        });
+    </script>
+</body>
+</html>

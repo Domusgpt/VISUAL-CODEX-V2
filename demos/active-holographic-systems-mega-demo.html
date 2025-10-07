@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Holographic Systems - 30 Variations</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: white;
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+            cursor: crosshair;
+            background: radial-gradient(ellipse at center, #1a0033 0%, #000000 70%);
+        }
+
+        .header {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 2000;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 1rem;
+        }
+
+        .tab-navigation {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1500;
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 15px;
+            border: 1px solid #00ffff;
+            backdrop-filter: blur(10px);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .tab-button {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .tab-button:hover {
+            background: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+        }
+        
+        .tab-button.active {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+        }
+
+        .holographic-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 95vw;
+            height: 70vh;
+            position: fixed;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .holographic-instance {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .visualizer-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .instance-overlay {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            color: #00ffff;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ACTIVE HOLOGRAPHIC SYSTEMS</h1>
+        <p>30 Variations | 10 Tabs | 3 Canvases</p>
+    </div>
+
+    <div class="tab-navigation" id="tabNavigation"></div>
+
+    <div class="holographic-grid" id="holographicGrid"></div>
+
+    <script>
+        // ENHANCED HOLOGRAPHIC VISUALIZER (Copied from tech-layout-active-holographic-demo.html)
+        class HolographicVisualizer {
+            constructor(canvas, config) {
+                this.canvas = canvas;
+                this.gl = this.canvas.getContext('webgl');
+                
+                if (!this.gl) {
+                    console.error("WebGL not supported");
+                    return;
+                }
+                
+                this.config = config;
+                this.mouseX = 0.5;
+                this.mouseY = 0.5;
+                this.mouseIntensity = 0.0;
+                this.clickIntensity = 0.0;
+                this.clickDecay = 0.95;
+                this.densityTarget = 0.0;
+                this.densityVariation = 0.0;
+
+                this.startTime = Date.now();
+                this.initShaders();
+                this.initBuffers();
+                this.resize();
+            }
+            
+            initShaders() {
+                const vertexShaderSource = `
+                    attribute vec2 a_position;
+                    void main() {
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                    }
+                `;
+                
+                const fragmentShaderSource = `
+                    precision highp float;
+                    
+                    uniform vec2 u_resolution;
+                    uniform float u_time;
+                    uniform vec2 u_mouse;
+                    uniform float u_density;
+                    uniform float u_speed;
+                    uniform vec3 u_color;
+                    uniform float u_mouseIntensity;
+                    uniform float u_clickIntensity;
+                    uniform float u_densityVariation;
+                    uniform float u_geometryType; // New uniform for geometry type
+                    
+                    mat4 rotateXW(float theta) {
+                        float c = cos(theta); float s = sin(theta);
+                        return mat4(c, 0, 0, -s, 0, 1, 0, 0, 0, 0, 1, 0, s, 0, 0, c);
+                    }
+                    
+                    mat4 rotateYW(float theta) {
+                        float c = cos(theta); float s = sin(theta);
+                        return mat4(1, 0, 0, 0, 0, c, 0, -s, 0, 0, 1, 0, 0, s, 0, c);
+                    }
+                    
+                    mat4 rotateZW(float theta) {
+                        float c = cos(theta); float s = sin(theta);
+                        return mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, c, -s, 0, 0, s, c);
+                    }
+                    
+                    vec3 project4Dto3D(vec4 p) {
+                        float w = 2.5 / (2.5 + p.w);
+                        return vec3(p.x * w, p.y * w, p.z * w);
+                    }
+                    
+                    // Generic lattice function based on geometry type
+                    float getLattice(vec3 p, float gridSize, float type) {
+                        vec3 q = fract(p * gridSize) - 0.5;
+                        float dist = 0.0;
+
+                        if (type < 0.5) { // Tetrahedron
+                            dist = max(max(-q.x-q.y-q.z, q.x+q.y-q.z), max(-q.x+q.y+q.z, q.x-q.y+q.z));
+                            return 1.0 - smoothstep(0.3, 0.4, dist);
+                        } else if (type < 1.5) { // Cube
+                            dist = max(max(abs(q.x), abs(q.y)), abs(q.z));
+                            return 1.0 - smoothstep(0.4, 0.5, dist);
+                        } else if (type < 2.5) { // Sphere
+                            dist = length(q);
+                            return 1.0 - smoothstep(0.3, 0.35, dist);
+                        } else if (type < 3.5) { // Torus
+                            vec2 t = vec2(length(q.xz) - 0.3, q.y);
+                            dist = length(t);
+                            return 1.0 - smoothstep(0.15, 0.2, dist);
+                        } else if (type < 4.5) { // Wave
+                            dist = sin(q.x * 10.0) * sin(q.y * 10.0) * sin(q.z * 10.0) * 0.5 + 0.5;
+                            return dist;
+                        } else if (type < 5.5) { // Crystal
+                            dist = max(max(abs(q.x), abs(q.y)), abs(q.z));
+                            return 1.0 - smoothstep(0.2, 0.3, dist);
+                        } else { // Default to Tetrahedron
+                            dist = max(max(-q.x-q.y-q.z, q.x+q.y-q.z), max(-q.x+q.y+q.z, q.x-q.y+q.z));
+                            return 1.0 - smoothstep(0.3, 0.4, dist);
+                        }
+                    }
+                    
+                    vec3 hsv2rgb(vec3 c) {
+                        vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+                        vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+                        return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+                    }
+                    
+                    void main() {
+                        vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+                        float aspectRatio = u_resolution.x / u_resolution.y;
+                        uv.x *= aspectRatio;
+                        uv -= 0.5;
+                        
+                        float time = u_time * 0.0004 * u_speed;
+                        
+                        float mouseInfluence = u_mouseIntensity * 0.5;
+                        vec2 mouseOffset = (u_mouse - 0.5) * mouseInfluence;
+                        
+                        vec4 p4d = vec4(uv + mouseOffset * 0.1, sin(time * 0.1) * 0.15, cos(time * 0.08) * 0.15);
+                        
+                        p4d = rotateXW(time * 0.2 + mouseOffset.y * 0.5) * p4d;
+                        p4d = rotateYW(time * 0.15 + mouseOffset.x * 0.5) * p4d;
+                        p4d = rotateZW(time * 0.25 + u_clickIntensity * 0.3) * p4d;
+                        
+                        vec3 p = project4Dto3D(p4d);
+                        
+                        float density = u_density + u_densityVariation;
+                        float lattice = getLattice(p, density, u_geometryType);
+                        
+                        float hue = atan(u_color.r, u_color.g) + u_mouseIntensity * 0.2;
+                        float saturation = 0.8 + lattice * 0.2 + u_clickIntensity * 0.1;
+                        float brightness = 0.2 + lattice * 0.8 + u_mouseIntensity * 0.15;
+                        
+                        vec3 color = hsv2rgb(vec3(hue, saturation, brightness));
+                        
+                        gl_FragColor = vec4(color, 1.0);
+                    }
+                `;
+                
+                this.program = this.createProgram(vertexShaderSource, fragmentShaderSource);
+                this.uniforms = {
+                    resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
+                    time: this.gl.getUniformLocation(this.program, 'u_time'),
+                    mouse: this.gl.getUniformLocation(this.program, 'u_mouse'),
+                    density: this.gl.getUniformLocation(this.program, 'u_density'),
+                    speed: this.gl.getUniformLocation(this.program, 'u_speed'),
+                    color: this.gl.getUniformLocation(this.program, 'u_color'),
+                    mouseIntensity: this.gl.getUniformLocation(this.program, 'u_mouseIntensity'),
+                    clickIntensity: this.gl.getUniformLocation(this.program, 'u_clickIntensity'),
+                    densityVariation: this.gl.getUniformLocation(this.program, 'u_densityVariation'),
+                    geometryType: this.gl.getUniformLocation(this.program, 'u_geometryType')
+                };
+            }
+
+            createProgram(vertexSource, fragmentSource) {
+                const vertexShader = this.createShader(this.gl.VERTEX_SHADER, vertexSource);
+                const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, fragmentSource);
+                const program = this.gl.createProgram();
+                this.gl.attachShader(program, vertexShader);
+                this.gl.attachShader(program, fragmentShader);
+                this.gl.linkProgram(program);
+                if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+                    console.error('Program linking failed:', this.gl.getProgramInfoLog(program));
+                    return null;
+                }
+                return program;
+            }
+
+            createShader(type, source) {
+                const shader = this.gl.createShader(type);
+                this.gl.shaderSource(shader, source);
+                this.gl.compileShader(shader);
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+                    console.error('Shader compilation failed:', this.gl.getShaderInfoLog(shader));
+                    return null;
+                }
+                return shader;
+            }
+
+            initBuffers() {
+                const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+                this.buffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, positions, this.gl.STATIC_DRAW);
+                const positionLocation = this.gl.getAttribLocation(this.program, 'a_position');
+                this.gl.enableVertexAttribArray(positionLocation);
+                this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+            }
+
+            resize() {
+                this.canvas.width = this.canvas.clientWidth;
+                this.canvas.height = this.canvas.clientHeight;
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            updateInteraction(mouseX, mouseY, intensity) {
+                this.mouseX = mouseX;
+                this.mouseY = mouseY;
+                this.mouseIntensity = intensity;
+            }
+
+            triggerClick() {
+                this.clickIntensity = 1.0;
+            }
+            
+            updateDensity(variation) {
+                this.densityTarget = variation;
+            }
+
+            render() {
+                if (!this.program) return;
+                this.resize();
+                this.gl.useProgram(this.program);
+
+                this.densityVariation += (this.densityTarget - this.densityVariation) * 0.05;
+                this.clickIntensity *= this.clickDecay;
+                
+                const time = Date.now() - this.startTime;
+                
+                this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
+                this.gl.uniform1f(this.uniforms.time, time);
+                this.gl.uniform2f(this.uniforms.mouse, this.mouseX, this.mouseY);
+                this.gl.uniform1f(this.uniforms.density, this.config.density);
+                this.gl.uniform1f(this.uniforms.speed, this.config.speed);
+                this.gl.uniform3fv(this.uniforms.color, new Float32Array(this.config.color));
+                this.gl.uniform1f(this.uniforms.mouseIntensity, this.mouseIntensity);
+                this.gl.uniform1f(this.uniforms.clickIntensity, this.clickIntensity);
+                this.gl.uniform1f(this.uniforms.densityVariation, this.densityVariation);
+                this.gl.uniform1f(this.uniforms.geometryType, this.config.geometryType);
+                
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+        }
+
+        class HolographicSystemManager {
+            constructor() {
+                this.variations = this.createVariations();
+                this.activeVisualizers = [];
+                this.currentPage = 0;
+                this.init();
+            }
+
+            createVariations() {
+                const variations = [];
+                const geometryTypes = [
+                    { name: "Tetrahedron", type: 0 }, { name: "Cube", type: 1 }, { name: "Sphere", type: 2 }, 
+                    { name: "Torus", type: 3 }, { name: "Wave", type: 4 }, { name: "Crystal", type: 5 }
+                ];
+
+                for (let i = 0; i < 30; i++) {
+                    const geo = geometryTypes[Math.floor(Math.random() * geometryTypes.length)];
+                    variations.push({
+                        name: `${geo.name} Variant ${i + 1}`,
+                        density: 4.0 + Math.random() * 4.0,
+                        speed: 0.2 + Math.random() * 0.8,
+                        color: [Math.random(), Math.random(), Math.random()],
+                        geometryType: geo.type
+                    });
+                }
+                return variations;
+            }
+
+            init() {
+                this.setupTabs();
+                this.loadPage(0);
+                this.setupInteractions();
+                this.startRenderLoop();
+            }
+
+            setupTabs() {
+                const tabContainer = document.getElementById('tabNavigation');
+                for (let i = 0; i < 10; i++) {
+                    const button = document.createElement('button');
+                    button.className = 'tab-button';
+                    button.textContent = `Page ${i + 1}`;
+                    button.onclick = () => this.loadPage(i);
+                    tabContainer.appendChild(button);
+                }
+                tabContainer.children[0].classList.add('active');
+            }
+
+            loadPage(pageIndex) {
+                this.currentPage = pageIndex;
+
+                const tabContainer = document.getElementById('tabNavigation');
+                Array.from(tabContainer.children).forEach((btn, index) => {
+                    btn.classList.toggle('active', index === pageIndex);
+                });
+
+                const grid = document.getElementById('holographicGrid');
+                grid.innerHTML = '';
+                this.activeVisualizers = [];
+
+                const startIndex = pageIndex * 3;
+                for (let i = 0; i < 3; i++) {
+                    const variationIndex = startIndex + i;
+                    if (variationIndex >= this.variations.length) break;
+
+                    const instanceDiv = document.createElement('div');
+                    instanceDiv.className = 'holographic-instance';
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.className = 'visualizer-canvas';
+                    
+                    const overlay = document.createElement('div');
+                    overlay.className = 'instance-overlay';
+                    overlay.textContent = this.variations[variationIndex].name;
+
+                    instanceDiv.appendChild(canvas);
+                    instanceDiv.appendChild(overlay);
+                    grid.appendChild(instanceDiv);
+
+                    const visualizer = new HolographicVisualizer(canvas, this.variations[variationIndex]);
+                    this.activeVisualizers.push(visualizer);
+                }
+            }
+
+            setupInteractions() {
+                document.addEventListener('mousemove', (e) => {
+                    const mouseX = e.clientX / window.innerWidth;
+                    const mouseY = 1.0 - (e.clientY / window.innerHeight);
+                    const intensity = Math.min(1.0, Math.sqrt(e.movementX**2 + e.movementY**2) / 40);
+                    this.activeVisualizers.forEach(viz => viz.updateInteraction(mouseX, mouseY, intensity));
+                });
+
+                document.addEventListener('click', () => {
+                    this.activeVisualizers.forEach(viz => viz.triggerClick());
+                });
+                
+                window.addEventListener('scroll', () => {
+                    const densityVar = Math.sin(window.scrollY / 500) * 2.0;
+                    this.activeVisualizers.forEach(viz => viz.updateDensity(densityVar));
+                });
+            }
+
+            startRenderLoop() {
+                const render = () => {
+                    this.activeVisualizers.forEach(viz => viz.render());
+                    requestAnimationFrame(render);
+                };
+                render();
+            }
+        }
+
+        window.addEventListener('load', () => new HolographicSystemManager());
+    </script>
+</body>
+</html>

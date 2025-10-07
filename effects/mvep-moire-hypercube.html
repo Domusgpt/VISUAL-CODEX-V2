@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVEP Moiré 4D Hypercube</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow-x: hidden;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            height: 300vh; /* Make it scrollable */
+        }
+        
+        .infinite-scroll-content {
+            height: 300vh;
+            background: linear-gradient(0deg, 
+                rgba(0,20,40,0.3) 0%, 
+                rgba(20,0,40,0.2) 33%, 
+                rgba(40,20,0,0.2) 66%, 
+                rgba(0,40,20,0.3) 100%);
+        }
+        
+        .scroll-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            z-index: 100;
+            font-size: 12px;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .controls {
+            /* position: absolute; */
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            z-index: 100;
+            width: 200px;
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .value-display {
+            color: #ff00ff;
+            font-weight: bold;
+        }
+        .audio-btn {
+            background: rgba(0,255,255,0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 8px 15px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .audio-btn:hover {
+            background: rgba(0,255,255,0.4);
+        }
+        .status {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            color: #ffff00;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="infinite-scroll-content"></div>
+    <canvas id="canvas"></canvas>
+    
+    <div class="status" id="status">
+        MVEP 4D Hypercube - Mouse: Move | Scroll: Grid/Color | Audio: Click to Enable
+    </div>
+    
+    <div class="scroll-indicator" id="scrollIndicator">
+        Scroll: 0% | Grid: 12.0 | Color: 0.00
+    </div>
+    
+    <div class="controls">
+        <div class="control-group">
+            <label>Dimension: <span class="value-display" id="dimensionValue">3.8</span></label>
+            <input type="range" id="dimension" min="3.0" max="5.0" step="0.1" value="3.8">
+        </div>
+        <div class="control-group">
+            <label>Morph Factor: <span class="value-display" id="morphValue">0.7</span></label>
+            <input type="range" id="morphFactor" min="0.0" max="1.5" step="0.1" value="0.7">
+        </div>
+        <div class="control-group">
+            <label>Glitch Intensity: <span class="value-display" id="glitchValue">0.05</span></label>
+            <input type="range" id="glitchIntensity" min="0.0" max="0.2" step="0.01" value="0.05">
+        </div>
+        <div class="control-group">
+            <label>Rotation Speed: <span class="value-display" id="rotationValue">1.2</span></label>
+            <input type="range" id="rotationSpeed" min="0.0" max="3.0" step="0.1" value="1.2">
+        </div>
+        <div class="control-group">
+            <label>Grid Density: <span class="value-display" id="gridValue">12.0</span></label>
+            <input type="range" id="gridDensity" min="5.0" max="25.0" step="0.5" value="12.0">
+        </div>
+        <div class="control-group">
+            <label>Moiré Scale: <span class="value-display" id="moireValue">1.01</span></label>
+            <input type="range" id="moireScale" min="0.95" max="1.05" step="0.001" value="1.01">
+        </div>
+        <div class="control-group">
+            <label>Color Shift: <span class="value-display" id="colorValue">0.0</span></label>
+            <input type="range" id="colorShift" min="-1.0" max="1.0" step="0.1" value="0.0">
+        </div>
+        <button class="audio-btn" id="audioBtn">Enable Audio</button>
+    </div>
+
+    <script>
+        class MVEPMoireHypercube {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
+                
+                this.mouseX = 0.5;
+                this.mouseY = 0.5;
+                this.time = 0;
+                this.startTime = Date.now();
+                
+                // MVEP Parameters
+                this.params = {
+                    dimension: 3.8,
+                    morphFactor: 0.7,
+                    glitchIntensity: 0.05,
+                    rotationSpeed: 1.2,
+                    gridDensity: 12.0,
+                    moireScale: 1.01,
+                    colorShift: 0.0
+                };
+                
+                // Audio
+                this.audioEnabled = false;
+                this.audioContext = null;
+                this.analyser = null;
+                this.audioData = { bass: 0, mid: 0, high: 0, pitch: 0 };
+                
+                this.init();
+            }
+            
+            init() {
+                if (!this.gl) {
+                    alert('WebGL not supported');
+                    return;
+                }
+                
+                this.setupCanvas();
+                this.createShaders();
+                this.createGeometry();
+                this.bindEvents();
+                this.animate();
+            }
+            
+            setupCanvas() {
+                const resize = () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                    this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+                };
+                resize();
+                window.addEventListener('resize', resize);
+            }
+            
+            createShaders() {
+                const vertexShaderSource = `
+                    attribute vec2 a_position;
+                    varying vec2 v_uv;
+                    
+                    void main() {
+                        v_uv = a_position * 0.5 + 0.5;
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                    }
+                `;
+                
+                const fragmentShaderSource = `
+                    precision highp float;
+                    
+                    varying vec2 v_uv;
+                    
+                    uniform float u_time;
+                    uniform float u_dimension;
+                    uniform float u_morphFactor;
+                    uniform float u_glitchIntensity;
+                    uniform float u_rotationSpeed;
+                    uniform float u_gridDensity;
+                    uniform float u_moireScale;
+                    uniform float u_colorShift;
+                    uniform vec2 u_resolution;
+                    uniform vec2 u_mouse;
+                    
+                    // Audio uniforms
+                    uniform float u_audioEnabled;
+                    uniform float u_bassLevel;
+                    uniform float u_midLevel;
+                    uniform float u_highLevel;
+                    uniform float u_pitchFactor;
+                    
+                    // 4D Rotation Matrices
+                    mat4 rotateXW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(
+                            c, 0.0, 0.0, -s,
+                            0.0, 1.0, 0.0, 0.0,
+                            0.0, 0.0, 1.0, 0.0,
+                            s, 0.0, 0.0, c
+                        );
+                    }
+                    
+                    mat4 rotateYW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(
+                            1.0, 0.0, 0.0, 0.0,
+                            0.0, c, 0.0, -s,
+                            0.0, 0.0, 1.0, 0.0,
+                            0.0, s, 0.0, c
+                        );
+                    }
+                    
+                    mat4 rotateZW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(
+                            1.0, 0.0, 0.0, 0.0,
+                            0.0, 1.0, 0.0, 0.0,
+                            0.0, 0.0, c, -s,
+                            0.0, 0.0, s, c
+                        );
+                    }
+                    
+                    // 4D to 3D projection
+                    vec3 project4Dto3D(vec4 point4D) {
+                        float w = point4D.w + 2.0;
+                        return point4D.xyz / max(w, 0.1);
+                    }
+                    
+                    // 4D Hypercube distance field
+                    float hypercubeLattice(vec3 p, float morphFactor, float gridDensity) {
+                        // Convert to 4D space
+                        vec4 p4d = vec4(p * gridDensity, sin(u_time * 0.5) * morphFactor);
+                        
+                        // Apply 4D rotations with mouse influence
+                        float rotX = u_time * u_rotationSpeed + u_mouse.x * 3.14159;
+                        float rotY = u_time * u_rotationSpeed * 0.7 + u_mouse.y * 3.14159;
+                        float rotZ = u_time * u_rotationSpeed * 0.5;
+                        
+                        // Audio-reactive rotation if available
+                        if (u_audioEnabled > 0.5) {
+                            rotX += u_bassLevel * 2.0;
+                            rotY += u_midLevel * 1.5;
+                            rotZ += u_highLevel * 1.0;
+                        }
+                        
+                        p4d = rotateXW(rotX) * p4d;
+                        p4d = rotateYW(rotY) * p4d;
+                        p4d = rotateZW(rotZ) * p4d;
+                        
+                        // Hypercube lattice calculation
+                        vec4 latticePos = fract(p4d) - 0.5;
+                        float dist = max(max(abs(latticePos.x), abs(latticePos.y)), 
+                                       max(abs(latticePos.z), abs(latticePos.w)));
+                        
+                        return 1.0 - smoothstep(0.4, 0.5, dist);
+                    }
+                    
+                    // Moiré pattern generation
+                    float generateMoire(vec3 p, float morphFactor, float gridDensity) {
+                        float grid1 = hypercubeLattice(p, morphFactor, gridDensity);
+                        float grid2 = hypercubeLattice(p, morphFactor, gridDensity * u_moireScale);
+                        return abs(grid1 - grid2) * 0.5;
+                    }
+                    
+                    // RGB Color splitting effect
+                    vec3 applyColorSplitting(vec2 uv, vec3 baseColor) {
+                        float glitchAmount = u_glitchIntensity;
+                        if (u_audioEnabled > 0.5) {
+                            glitchAmount += u_highLevel * 0.1;
+                        }
+                        
+                        vec2 rOffset = vec2(glitchAmount, glitchAmount * 0.5);
+                        vec2 gOffset = vec2(-glitchAmount * 0.3, glitchAmount * 0.2);
+                        vec2 bOffset = vec2(glitchAmount * 0.1, -glitchAmount * 0.4);
+                        
+                        float r = baseColor.r;
+                        float g = baseColor.g * 0.9;
+                        float b = baseColor.b * 0.8;
+                        
+                        return vec3(r, g, b);
+                    }
+                    
+                    // Hue shift function
+                    vec3 hueShift(vec3 color, float shift) {
+                        float c = cos(shift);
+                        float s = sin(shift);
+                        mat3 hueMatrix = mat3(
+                            0.299 + 0.701*c + 0.168*s, 0.587 - 0.587*c + 0.330*s, 0.114 - 0.114*c - 0.497*s,
+                            0.299 - 0.299*c - 0.328*s, 0.587 + 0.413*c + 0.035*s, 0.114 - 0.114*c + 0.292*s,
+                            0.299 - 0.300*c + 1.25*s, 0.587 - 0.588*c - 1.05*s, 0.114 + 0.886*c - 0.203*s
+                        );
+                        return hueMatrix * color;
+                    }
+                    
+                    void main() {
+                        vec2 uv = (v_uv - 0.5) * 2.0;
+                        uv.x *= u_resolution.x / u_resolution.y;
+                        
+                        // Ray direction for 3D effect
+                        vec3 rayDir = normalize(vec3(uv, 1.0));
+                        
+                        // Calculate hypercube lattice with morphing
+                        float morphFactor = u_morphFactor;
+                        if (u_audioEnabled > 0.5) {
+                            morphFactor += u_bassLevel * 0.5;
+                        }
+                        
+                        float lattice = hypercubeLattice(rayDir, morphFactor, u_gridDensity);
+                        float moire = generateMoire(rayDir, morphFactor, u_gridDensity);
+                        
+                        // Combine lattice and moiré
+                        float combined = lattice + moire * 0.5;
+                        
+                        // Base colors (vaporwave palette)
+                        vec3 color1 = vec3(0.0, 0.8, 1.0);  // Cyan
+                        vec3 color2 = vec3(1.0, 0.0, 1.0);  // Magenta
+                        vec3 color3 = vec3(1.0, 1.0, 0.0);  // Yellow
+                        
+                        // Color mixing based on lattice pattern
+                        vec3 finalColor = mix(mix(color1, color2, combined), color3, moire);
+                        
+                        // Apply hue shifting
+                        finalColor = hueShift(finalColor, u_colorShift);
+                        
+                        // Apply RGB color splitting
+                        finalColor = applyColorSplitting(v_uv, finalColor);
+                        
+                        // Add some glow and intensity
+                        finalColor *= (0.5 + combined * 1.5);
+                        
+                        // Audio-reactive brightness
+                        if (u_audioEnabled > 0.5) {
+                            finalColor *= (0.8 + u_bassLevel * 0.4 + u_midLevel * 0.3);
+                        }
+                        
+                        gl_FragColor = vec4(finalColor, 1.0);
+                    }
+                `;
+                
+                const vertexShader = this.compileShader(vertexShaderSource, this.gl.VERTEX_SHADER);
+                const fragmentShader = this.compileShader(fragmentShaderSource, this.gl.FRAGMENT_SHADER);
+                
+                this.program = this.gl.createProgram();
+                this.gl.attachShader(this.program, vertexShader);
+                this.gl.attachShader(this.program, fragmentShader);
+                this.gl.linkProgram(this.program);
+                
+                if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)) {
+                    console.error('Program link error:', this.gl.getProgramInfoLog(this.program));
+                    return;
+                }
+                
+                this.gl.useProgram(this.program);
+                
+                // Get uniform locations
+                this.uniforms = {
+                    time: this.gl.getUniformLocation(this.program, 'u_time'),
+                    dimension: this.gl.getUniformLocation(this.program, 'u_dimension'),
+                    morphFactor: this.gl.getUniformLocation(this.program, 'u_morphFactor'),
+                    glitchIntensity: this.gl.getUniformLocation(this.program, 'u_glitchIntensity'),
+                    rotationSpeed: this.gl.getUniformLocation(this.program, 'u_rotationSpeed'),
+                    gridDensity: this.gl.getUniformLocation(this.program, 'u_gridDensity'),
+                    moireScale: this.gl.getUniformLocation(this.program, 'u_moireScale'),
+                    colorShift: this.gl.getUniformLocation(this.program, 'u_colorShift'),
+                    resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
+                    mouse: this.gl.getUniformLocation(this.program, 'u_mouse'),
+                    audioEnabled: this.gl.getUniformLocation(this.program, 'u_audioEnabled'),
+                    bassLevel: this.gl.getUniformLocation(this.program, 'u_bassLevel'),
+                    midLevel: this.gl.getUniformLocation(this.program, 'u_midLevel'),
+                    highLevel: this.gl.getUniformLocation(this.program, 'u_highLevel'),
+                    pitchFactor: this.gl.getUniformLocation(this.program, 'u_pitchFactor')
+                };
+            }
+            
+            compileShader(source, type) {
+                const shader = this.gl.createShader(type);
+                this.gl.shaderSource(shader, source);
+                this.gl.compileShader(shader);
+                
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+                    console.error('Shader compile error:', this.gl.getShaderInfoLog(shader));
+                    return null;
+                }
+                
+                return shader;
+            }
+            
+            createGeometry() {
+                // Fullscreen quad
+                const vertices = new Float32Array([
+                    -1, -1,
+                     1, -1,
+                    -1,  1,
+                     1,  1
+                ]);
+                
+                this.vertexBuffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
+                
+                const positionLocation = this.gl.getAttribLocation(this.program, 'a_position');
+                this.gl.enableVertexAttribArray(positionLocation);
+                this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+            }
+            
+            bindEvents() {
+                // Mouse tracking
+                document.addEventListener('mousemove', (e) => {
+                    this.mouseX = e.clientX / window.innerWidth;
+                    this.mouseY = 1.0 - (e.clientY / window.innerHeight); // Flip Y
+                });
+                
+                // PARAMETER-ONLY SCROLL (NO ACTUAL PAGE MOVEMENT)
+                this.scrollParameter = 0;
+                
+                window.addEventListener('wheel', (e) => {
+                    e.preventDefault(); // Prevent actual scrolling
+                    
+                    // Accumulate scroll input into parameter
+                    const delta = e.deltaY * 0.001;
+                    this.scrollParameter += delta;
+                    this.scrollParameter = Math.max(0, Math.min(1, this.scrollParameter)); // Clamp 0-1
+                    
+                    // Bind scroll parameter to grid density (5.0 to 25.0)
+                    this.params.gridDensity = 5.0 + (this.scrollParameter * 20.0);
+                    document.getElementById('gridDensity').value = this.params.gridDensity;
+                    document.getElementById('gridValue').textContent = this.params.gridDensity.toFixed(1);
+                    
+                    // Bind scroll parameter to color shift (-1.0 to 1.0)
+                    this.params.colorShift = -1.0 + (this.scrollParameter * 2.0);
+                    document.getElementById('colorShift').value = this.params.colorShift;
+                    document.getElementById('colorValue').textContent = this.params.colorShift.toFixed(1);
+                    
+                    // Update scroll indicator
+                    const indicator = document.getElementById('scrollIndicator');
+                    if (indicator) {
+                        indicator.textContent = `Scroll: ${(this.scrollParameter * 100).toFixed(1)}% | Grid: ${this.params.gridDensity.toFixed(1)} | Color: ${this.params.colorShift.toFixed(2)}`;
+                    }
+                    
+                    console.log(`🎛️ Parameter scroll: ${(this.scrollParameter * 100).toFixed(1)}% → Grid: ${this.params.gridDensity.toFixed(1)}, Color: ${this.params.colorShift.toFixed(2)} (no page movement)`);
+                }, { passive: false });
+                
+                // Parameter controls
+                const params = ['dimension', 'morphFactor', 'glitchIntensity', 'rotationSpeed', 'gridDensity', 'moireScale', 'colorShift'];
+                params.forEach(param => {
+                    const slider = document.getElementById(param);
+                    const display = document.getElementById(param + 'Value');
+                    slider.addEventListener('input', (e) => {
+                        this.params[param] = parseFloat(e.target.value);
+                        display.textContent = e.target.value;
+                    });
+                });
+
+                document.getElementById('audioBtn').addEventListener('click', () => this.toggleAudio());
+            }
+            
+            async initAudio() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const source = this.audioContext.createMediaStreamSource(stream);
+                    
+                    this.analyser = this.audioContext.createAnalyser();
+                    this.analyser.fftSize = 256;
+                    source.connect(this.analyser);
+                    
+                    this.frequencyData = new Uint8Array(this.analyser.frequencyBinCount);
+                    this.audioEnabled = true;
+                    
+                    document.getElementById('audioBtn').textContent = 'Audio: ON';
+                    document.getElementById('status').textContent = 'MVEP 4D Hypercube - Mouse: Move | Audio: LIVE';
+                } catch (error) {
+                    console.error('Audio initialization failed:', error);
+                }
+            }
+
+            toggleAudio() {
+                if (!this.audioEnabled) {
+                    this.initAudio();
+                } else {
+                    this.audioEnabled = false;
+                    document.getElementById('audioBtn').textContent = 'Enable Audio';
+                    document.getElementById('status').textContent = 'MVEP 4D Hypercube - Mouse: Move | Audio: OFF';
+                }
+            }
+            
+            updateAudio() {
+                if (!this.audioEnabled || !this.analyser) return;
+                
+                this.analyser.getByteFrequencyData(this.frequencyData);
+                
+                // Extract frequency bands
+                const bassEnd = Math.floor(this.frequencyData.length * 0.1);
+                const midEnd = Math.floor(this.frequencyData.length * 0.4);
+                
+                let bass = 0, mid = 0, high = 0;
+                
+                for (let i = 0; i < bassEnd; i++) {
+                    bass += this.frequencyData[i];
+                }
+                bass /= (bassEnd * 255);
+                
+                for (let i = bassEnd; i < midEnd; i++) {
+                    mid += this.frequencyData[i];
+                }
+                mid /= ((midEnd - bassEnd) * 255);
+                
+                for (let i = midEnd; i < this.frequencyData.length; i++) {
+                    high += this.frequencyData[i];
+                }
+                high /= ((this.frequencyData.length - midEnd) * 255);
+                
+                this.audioData = { bass, mid, high, pitch: 0 };
+            }
+            
+            render() {
+                this.time = (Date.now() - this.startTime) / 1000;
+                
+                this.updateAudio();
+                
+                this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+                
+                // Set uniforms
+                this.gl.uniform1f(this.uniforms.time, this.time);
+                this.gl.uniform1f(this.uniforms.dimension, this.params.dimension);
+                this.gl.uniform1f(this.uniforms.morphFactor, this.params.morphFactor);
+                this.gl.uniform1f(this.uniforms.glitchIntensity, this.params.glitchIntensity);
+                this.gl.uniform1f(this.uniforms.rotationSpeed, this.params.rotationSpeed);
+                this.gl.uniform1f(this.uniforms.gridDensity, this.params.gridDensity);
+                this.gl.uniform1f(this.uniforms.moireScale, this.params.moireScale);
+                this.gl.uniform1f(this.uniforms.colorShift, this.params.colorShift);
+                this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
+                this.gl.uniform2f(this.uniforms.mouse, this.mouseX, this.mouseY);
+                
+                // Audio uniforms
+                this.gl.uniform1f(this.uniforms.audioEnabled, this.audioEnabled ? 1.0 : 0.0);
+                this.gl.uniform1f(this.uniforms.bassLevel, this.audioData.bass);
+                this.gl.uniform1f(this.uniforms.midLevel, this.audioData.mid);
+                this.gl.uniform1f(this.uniforms.highLevel, this.audioData.high);
+                this.gl.uniform1f(this.uniforms.pitchFactor, this.audioData.pitch);
+                
+                // Draw
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+            
+            animate() {
+                this.render();
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+        
+        // Initialize
+        const mvepVisualizer = new MVEPMoireHypercube();
+        window.mvepVisualizer = mvepVisualizer;
+
+        // Add touch reactions for mobile
+        function setupTouchReactions() {
+            let touchIntensity = 0;
+            let touchX = 0.5;
+            let touchY = 0.5;
+            
+            // Touch start - trigger intense reaction
+            document.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                touchX = touch.clientX / window.innerWidth;
+                touchY = touch.clientY / window.innerHeight;
+                touchIntensity = 1.0;
+                
+                // Visual feedback
+                const touchIndicator = document.createElement('div');
+                touchIndicator.style.cssText = `
+                    position: fixed;
+                    left: ${touch.clientX - 25}px;
+                    top: ${touch.clientY - 25}px;
+                    width: 50px;
+                    height: 50px;
+                    border: 2px solid #00ffff;
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 1000;
+                    animation: touchRipple 0.6s ease-out forwards;
+                `;
+                document.body.appendChild(touchIndicator);
+                
+                // Add ripple animation
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes touchRipple {
+                        0% { transform: scale(0); opacity: 1; }
+                        100% { transform: scale(3); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                setTimeout(() => document.body.removeChild(touchIndicator), 600);
+                
+                console.log('🔥 Touch reaction triggered');
+            }, { passive: false });
+            
+            // Touch move - continuous reaction
+            document.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                touchX = touch.clientX / window.innerWidth;
+                touchY = touch.clientY / window.innerHeight;
+                touchIntensity = 0.8;
+                
+                // Update MVEP visualizer with touch data
+                if (mvepVisualizer) {
+                    mvepVisualizer.mouseX = touchX;
+                    mvepVisualizer.mouseY = 1.0 - touchY;
+                    mvepVisualizer.interactionIntensity = touchIntensity;
+                }
+            }, { passive: false });
+            
+            // Touch end - decay reaction
+            document.addEventListener('touchend', (e) => {
+                touchIntensity *= 0.5;
+                setTimeout(() => {
+                    touchIntensity = 0;
+                }, 300);
+                
+                console.log('🌊 Touch reaction ending');
+            });
+            
+            // Multi-touch support
+            document.addEventListener('touchstart', (e) => {
+                if (e.touches.length > 1) {
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    const distance = Math.sqrt(
+                        Math.pow(touch2.clientX - touch1.clientX, 2) +
+                        Math.pow(touch2.clientY - touch1.clientY, 2)
+                    );
+                    
+                    // Multi-touch creates chaos effect
+                    if (mvepVisualizer) {
+                        mvepVisualizer.chaosIntensity = Math.min(1.0, distance / 200);
+                    }
+                    
+                    console.log('⚡ Multi-touch chaos effect activated');
+                }
+            });
+        }
+        
+        // Initialize touch reactions when DOM is ready
+        document.addEventListener('DOMContentLoaded', setupTouchReactions);
+    </script>
+    
+    <!-- Add collapsible menu system -->
+    <script>
+        window.COLLAPSIBLE_MENU_CONFIG = {
+            startCollapsed: true,
+            position: 'top-right',
+            theme: 'dark'
+        };
+    </script>
+    <script src="../js/inject-collapsible-menu.js"></script>
+</body>
+</html>

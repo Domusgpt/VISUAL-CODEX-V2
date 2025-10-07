@@ -1,0 +1,17 @@
+# GitHub Pages configuration
+theme: null
+title: Visual Codex Gallery
+description: Private collection of holographic and interactive visual effects
+show_downloads: false
+
+# Exclude files from GitHub Pages build
+exclude:
+  - start-gallery.py
+  - start-gallery.bat
+  - quick-debug.js
+  - debug-gallery-puppeteer.js
+  - server.log
+  - "*.pyc"
+  - "__pycache__"
+  - ".vscode"
+  - "*.tmp"

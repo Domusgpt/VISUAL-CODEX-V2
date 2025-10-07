@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Codex Gallery - Parallax Scroll System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        :root {
+            --neon-cyan: #00ffff;
+            --neon-magenta: #ff00ff;
+            --neon-yellow: #ffff00;
+            --electric-blue: #0080ff;
+            --hot-pink: #ff1088;
+            --cyber-purple: #8000ff;
+            --card-bg: rgba(16, 16, 32, 0.95);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: var(--neon-cyan);
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+        
+        /* EVOLVING BACKGROUND SYSTEM */
+        .background-visualizer-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            opacity: 0.6;
+        }
+        
+        .background-visualizer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: opacity 1s ease;
+        }
+        
+        .background-visualizer.inactive {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .background-visualizer.active {
+            opacity: 1;
+        }
+        
+        /* PARALLAX SCROLL CONTAINER */
+        .parallax-container {
+            height: 700vh; /* 7 sections × 100vh */
+            position: relative;
+        }
+        
+        /* FLOATING CARDS SYSTEM */
+        .floating-cards-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90vw;
+            max-width: 1200px;
+            height: 80vh;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        .card-section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 20px;
+            opacity: 0;
+            transform: scale(0.8) translateY(50px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            pointer-events: none;
+        }
+        
+        .card-section.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: all;
+        }
+        
+        .floating-card {
+            background: var(--card-bg);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            pointer-events: all;
+        }
+        
+        .floating-card:hover {
+            transform: scale(1.05) translateZ(20px);
+            box-shadow: 
+                0 0 50px var(--neon-magenta),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: var(--neon-magenta);
+        }
+        
+        .floating-card h3 {
+            color: var(--neon-yellow);
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            text-shadow: 0 0 10px var(--neon-yellow);
+        }
+        
+        .floating-card p {
+            color: var(--neon-cyan);
+            font-size: 0.8em;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            flex-grow: 1;
+        }
+        
+        .floating-card .preview-area {
+            width: 100%;
+            height: 120px;
+            border: 1px solid var(--electric-blue);
+            border-radius: 8px;
+            background: rgba(0, 20, 40, 0.9);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--electric-blue);
+            font-size: 0.7em;
+            cursor: pointer;
+        }
+        
+        .floating-card .preview-area iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+        
+        .floating-card .tags {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .floating-card .tag {
+            background: rgba(255, 0, 255, 0.2);
+            color: var(--neon-magenta);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.6em;
+            border: 1px solid var(--neon-magenta);
+        }
+        
+        /* NAVIGATION SYSTEM */
+        .scroll-indicator {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+        }
+        
+        .scroll-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-cyan);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .scroll-dot.active {
+            background: var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        
+        .scroll-dot:hover {
+            transform: scale(1.3);
+            border-color: var(--neon-magenta);
+        }
+        
+        /* SECTION PROGRESS INDICATOR */
+        .section-info {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: var(--card-bg);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 10px;
+            padding: 15px 20px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+        
+        .section-title {
+            color: var(--neon-yellow);
+            font-size: 1.2em;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px var(--neon-yellow);
+        }
+        
+        .section-subtitle {
+            color: var(--neon-cyan);
+            font-size: 0.8em;
+        }
+        
+        /* CHAOS INTENSITY INDICATOR */
+        .chaos-meter {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: var(--card-bg);
+            border: 2px solid var(--electric-blue);
+            border-radius: 10px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+        
+        .chaos-meter-title {
+            color: var(--electric-blue);
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+        
+        .chaos-bar {
+            width: 150px;
+            height: 8px;
+            background: rgba(0, 128, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .chaos-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--electric-blue), var(--hot-pink));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px var(--electric-blue);
+        }
+        
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .card-section {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(6, 1fr);
+                gap: 15px;
+            }
+            
+            .floating-cards-container {
+                width: 95vw;
+                height: 90vh;
+            }
+            
+            .floating-card {
+                padding: 15px;
+            }
+            
+            .floating-card .preview-area {
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Visualizer Container -->
+    <div class="background-visualizer-container" id="backgroundContainer">
+        <!-- 7 background visualizers will be created dynamically -->
+    </div>
+    
+    <!-- Section Info -->
+    <div class="section-info">
+        <div class="section-title" id="sectionTitle">Holographic Hypercubes</div>
+        <div class="section-subtitle" id="sectionSubtitle">Section 1 of 7 • Visual Codex Gallery</div>
+    </div>
+    
+    <!-- Chaos Meter -->
+    <div class="chaos-meter">
+        <div class="chaos-meter-title">Chaos Intensity</div>
+        <div class="chaos-bar">
+            <div class="chaos-fill" id="chaosFill" style="width: 15%;"></div>
+        </div>
+    </div>
+    
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator" id="scrollIndicator">
+        <!-- 7 dots will be created dynamically -->
+    </div>
+    
+    <!-- Parallax Container -->
+    <div class="parallax-container" id="parallaxContainer"></div>
+    
+    <!-- Floating Cards Container -->
+    <div class="floating-cards-container" id="floatingCards">
+        <!-- 7 card sections will be created dynamically -->
+    </div>
+
+    <script>
+        console.log('🌌 Visual Codex Parallax System - Advanced Scroll Physics');
+        
+        // VISUAL EFFECTS DATA WITH SMART CANVAS GROUPING
+        const visualEffectsGrouped = [
+            // Group 1: Mixed Canvas/Non-Canvas (Low chaos)
+            [
+                { title: "Neoskeuomorphic Cards", description: "Modern skeuomorphic design", tags: ["css", "cards", "design"], file: "demos/neoskeuomorphic-cards.html", hasCanvas: false },
+                { title: "Neon Typography", description: "Glowing text effects", tags: ["css", "typography", "glow"], file: "demos/neon-typography.html", hasCanvas: false },
+                { title: "Holographic Progress", description: "Futuristic progress bars", tags: ["css", "progress", "holographic"], file: "demos/holographic-progress.html", hasCanvas: false },
+                { title: "State Control Dots", description: "Interactive navigation dots", tags: ["css", "controls", "interactive"], file: "demos/state-control-dots.html", hasCanvas: false },
+                { title: "Geometric Patterns", description: "SVG geometric designs", tags: ["svg", "patterns", "geometry"], file: "demos/geometric-patterns.html", hasCanvas: false },
+                { title: "3D Transforms", description: "CSS 3D perspective effects", tags: ["css", "3d", "transforms"], file: "demos/3d-transforms.html", hasCanvas: false }
+            ],
+            // Group 2: Light Canvas Load
+            [
+                { title: "Holographic Visualizer", description: "Multi-layer blend modes", tags: ["webgl", "holographic", "blend"], file: "demos/holographic-visualizer.html", hasCanvas: true },
+                { title: "Particle Systems", description: "Canvas 2D particle physics", tags: ["canvas", "particles", "physics"], file: "demos/particle-systems.html", hasCanvas: true },
+                { title: "Blend Mode Experiments", description: "CSS blend mode showcase", tags: ["css", "blend", "experiments"], file: "demos/blend-mode-experiments.html", hasCanvas: false },
+                { title: "Liquid Morphing", description: "Fluid CSS animations", tags: ["css", "fluid", "morphing"], file: "demos/liquid-morphing.html", hasCanvas: false },
+                { title: "Glitch Effects", description: "Digital corruption visuals", tags: ["css", "glitch", "digital"], file: "demos/glitch-effects.html", hasCanvas: false },
+                { title: "Cyberpunk Interface", description: "Futuristic UI elements", tags: ["css", "cyberpunk", "interface"], file: "demos/cyberpunk-interface.html", hasCanvas: false }
+            ],
+            // Group 3: Medium Canvas Load
+            [
+                { title: "MVEP Moire Hypercube", description: "4D hypercube with interference", tags: ["webgl", "4d", "moire"], file: "demos/mvep-moire-hypercube.html", hasCanvas: true },
+                { title: "Fractal Visualizations", description: "Mathematical fractal generation", tags: ["canvas", "fractal", "math"], file: "demos/fractal-visualizations.html", hasCanvas: true },
+                { title: "Matrix Rain Effect", description: "Digital rain animation", tags: ["canvas", "matrix", "rain"], file: "demos/matrix-rain-effect.html", hasCanvas: true },
+                { title: "Hologram Projections", description: "3D hologram illusions", tags: ["css", "hologram", "3d"], file: "demos/hologram-projections.html", hasCanvas: false },
+                { title: "VR Interface Elements", description: "Virtual reality UI", tags: ["css", "vr", "interface"], file: "demos/vr-interface-elements.html", hasCanvas: false },
+                { title: "Temporal Rifts", description: "Time distortion effects", tags: ["css", "temporal", "distortion"], file: "demos/temporal-rifts.html", hasCanvas: false }
+            ],
+            // Group 4: Heavy WebGL Load
+            [
+                { title: "VIB34D Complete System", description: "Revolutionary 4D framework", tags: ["webgl", "vib34d", "4d"], file: "effects/vib34d-complete-system.html", hasCanvas: true },
+                { title: "Shader Effects", description: "WebGL fragment shaders", tags: ["webgl", "shaders", "fragments"], file: "demos/shader-effects.html", hasCanvas: true },
+                { title: "Quantum Visualizer", description: "Quantum mechanics visuals", tags: ["webgl", "quantum", "physics"], file: "demos/quantum-visualizer.html", hasCanvas: true },
+                { title: "Plasma Field Generator", description: "Plasma energy fields", tags: ["webgl", "plasma", "energy"], file: "demos/plasma-field-generator.html", hasCanvas: true },
+                { title: "Crystalline Structures", description: "3D crystal formations", tags: ["webgl", "crystal", "3d"], file: "demos/crystalline-structures.html", hasCanvas: true },
+                { title: "Wormhole Visualization", description: "Spacetime distortion", tags: ["webgl", "wormhole", "physics"], file: "demos/wormhole-visualization.html", hasCanvas: true }
+            ],
+            // Group 5: Chaos Visualizers
+            [
+                { title: "Hyperdimensional Matrix", description: "8D+ chaos visualization", tags: ["webgl", "8d", "chaos"], file: "effects/insane-hyperdimensional-matrix.html", hasCanvas: true },
+                { title: "Chaos Overlay System", description: "Digital interference chaos", tags: ["webgl", "chaos", "interference"], file: "demos/chaos-overlay-system.html", hasCanvas: true },
+                { title: "Neural Network Display", description: "AI network visualization", tags: ["canvas", "neural", "ai"], file: "demos/neural-network-display.html", hasCanvas: true },
+                { title: "DNA Helix Animator", description: "Biological helix animation", tags: ["webgl", "dna", "biology"], file: "demos/dna-helix-animator.html", hasCanvas: true },
+                { title: "Cosmic Background", description: "Cosmic radiation patterns", tags: ["webgl", "cosmic", "astronomy"], file: "demos/cosmic-background.html", hasCanvas: true },
+                { title: "Dimension Portal", description: "Interdimensional gateway", tags: ["webgl", "portal", "dimension"], file: "demos/dimension-portal.html", hasCanvas: true }
+            ],
+            // Group 6: Advanced Systems
+            [
+                { title: "Elegant 4D Flow", description: "Organic 4D movements", tags: ["webgl", "4d", "organic"], file: "effects/elegant-4d-flow-visualizer.html", hasCanvas: true },
+                { title: "Multi-Canvas Visualizer", description: "Synchronized canvas system", tags: ["webgl", "multi", "sync"], file: "effects/multi-canvas-visualizer-system.html", hasCanvas: true },
+                { title: "Card Bending System", description: "3D CSS morphing cards", tags: ["css", "3d", "morphing"], file: "effects/vib34d-advanced-card-bending-system.html", hasCanvas: false },
+                { title: "Color Shift System", description: "Extreme filter effects", tags: ["css", "color", "filters"], file: "effects/enhanced-color-shift-contrast-system.html", hasCanvas: false },
+                { title: "Interactive Animations", description: "Touch responsive systems", tags: ["css", "interactive", "responsive"], file: "demos/interactive-animations.html", hasCanvas: false },
+                { title: "Consciousness Stream", description: "Abstract consciousness flow", tags: ["webgl", "consciousness", "abstract"], file: "demos/consciousness-stream.html", hasCanvas: true }
+            ],
+            // Group 7: Maximum Chaos
+            [
+                { title: "Narrative Choreography", description: "JSON-driven transformations", tags: ["webgl", "narrative", "choreography"], file: "effects/narrative-choreography-engine.html", hasCanvas: true },
+                { title: "Holographic Pulse", description: "Multi-layer glow system", tags: ["webgl", "pulse", "glow"], file: "effects/holographic-pulse-system.html", hasCanvas: true },
+                { title: "Tabbed Visualizer", description: "Advanced WebGL management", tags: ["webgl", "tabs", "management"], file: "effects/tabbed-visualizer-system.html", hasCanvas: true },
+                { title: "Active Holographic Systems", description: "125 WebGL visualizers", tags: ["webgl", "holographic", "active"], file: "demos/active-holographic-systems-mega-demo.html", hasCanvas: true, isHeavy: true },
+                { title: "Fractal Spirals", description: "Infinite recursive patterns", tags: ["webgl", "fractal", "spiral"], file: "demos/fractal-spirals.html", hasCanvas: true },
+                { title: "Polytopal Projections", description: "N-dimensional polytopes", tags: ["webgl", "polytope", "projection"], file: "demos/polytopal-projections.html", hasCanvas: true }
+            ]
+        ];
+        
+        // BACKGROUND VISUALIZER THEMES
+        const backgroundThemes = [
+            { name: 'Hypercube Genesis', geometry: 'hypercube', chaos: 0.15, speed: 0.3 },
+            { name: 'Plasma Emergence', geometry: 'plasma', chaos: 0.35, speed: 0.5 },
+            { name: 'Neural Awakening', geometry: 'neural', chaos: 0.50, speed: 0.7 },
+            { name: 'Crystal Resonance', geometry: 'crystal', chaos: 0.65, speed: 0.9 },
+            { name: 'Quantum Chaos', geometry: 'quantum', chaos: 0.80, speed: 1.2 },
+            { name: 'Fractal Storm', geometry: 'fractal', chaos: 0.90, speed: 1.5 },
+            { name: 'Dimensional Collapse', geometry: 'matrix', chaos: 1.0, speed: 2.0 }
+        ];
+        
+        // ADVANCED HOLOGRAPHIC BACKGROUND VISUALIZER
+        class HolographicBackgroundVisualizer {
+            constructor(canvas, theme, sectionIndex) {
+                this.canvas = canvas;
+                this.theme = theme;
+                this.sectionIndex = sectionIndex;
+                this.gl = canvas.getContext('webgl');
+                
+                if (!this.gl) {
+                    console.error('WebGL not supported for background visualizer');
+                    return;
+                }
+                
+                this.scrollProgress = 0;
+                this.chaosLevel = theme.chaos;
+                this.baseSpeed = theme.speed;
+                this.rotationSpeed = 0;
+                this.densityMultiplier = 1.0;
+                
+                this.startTime = Date.now();
+                this.initShaders();
+                this.initBuffers();
+                this.resize();
+                
+                console.log(`✅ Background Visualizer ${sectionIndex}: ${theme.name} (Chaos: ${theme.chaos})`);
+            }
+            
+            initShaders() {
+                const vertexShaderSource = `
+                    attribute vec2 a_position;
+                    void main() {
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                    }
+                `;
+                
+                const fragmentShaderSource = `
+                    precision highp float;
+                    
+                    uniform vec2 u_resolution;
+                    uniform float u_time;
+                    uniform float u_scrollProgress;
+                    uniform float u_chaosLevel;
+                    uniform float u_rotationSpeed;
+                    uniform float u_densityMultiplier;
+                    uniform float u_geometryType;
+                    
+                    // Enhanced 4D rotation system
+                    mat4 rotateXW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(c, 0, 0, -s, 0, 1, 0, 0, 0, 0, 1, 0, s, 0, 0, c);
+                    }
+                    
+                    mat4 rotateYW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(1, 0, 0, 0, 0, c, 0, -s, 0, 0, 1, 0, 0, s, 0, c);
+                    }
+                    
+                    mat4 rotateZW(float theta) {
+                        float c = cos(theta);
+                        float s = sin(theta);
+                        return mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, c, -s, 0, 0, s, c);
+                    }
+                    
+                    vec3 project4Dto3D(vec4 p) {
+                        float w = 2.0 / (2.0 + p.w);
+                        return vec3(p.x * w, p.y * w, p.z * w);
+                    }
+                    
+                    // Chaos-driven geometry functions
+                    float hypercubeGeometry(vec3 p, float density, float chaos) {
+                        vec3 grid = fract(p * density * (1.0 + chaos * 3.0));
+                        vec3 edges = 1.0 - smoothstep(0.0, 0.02 * (1.0 + chaos), abs(grid - 0.5));
+                        float corners = length(grid - 0.5);
+                        corners = 1.0 - smoothstep(0.0, 0.3 * (1.0 + chaos * 2.0), corners);
+                        return max(max(max(edges.x, edges.y), edges.z), corners * chaos);
+                    }
+                    
+                    float plasmaGeometry(vec3 p, float density, float chaos) {
+                        float plasma = sin(p.x * density * (1.0 + chaos * 2.0) + u_time * 0.001) +
+                                      sin(p.y * density * (1.0 + chaos * 2.0) + u_time * 0.0012) +
+                                      sin(p.z * density * (1.0 + chaos * 2.0) + u_time * 0.0008);
+                        plasma += chaos * (sin(p.x * density * 5.0) * sin(p.y * density * 5.0));
+                        return smoothstep(-1.5, 1.5, plasma);
+                    }
+                    
+                    float neuralGeometry(vec3 p, float density, float chaos) {
+                        float nodes = 0.0;
+                        for (int i = 0; i < 8; i++) {
+                            float fi = float(i);
+                            vec3 nodePos = vec3(sin(fi + u_time * 0.001), cos(fi + u_time * 0.0012), sin(fi * 0.7 + u_time * 0.0008));
+                            float dist = length(p - nodePos * (1.0 + chaos));
+                            nodes += exp(-dist * density * (1.0 + chaos * 2.0));
+                        }
+                        return nodes * (1.0 + chaos * 3.0);
+                    }
+                    
+                    float crystalGeometry(vec3 p, float density, float chaos) {
+                        vec3 q = fract(p * density * (1.0 + chaos)) - 0.5;
+                        float d1 = abs(q.x + q.y + q.z) / sqrt(3.0);
+                        float d2 = abs(q.x - q.y + q.z) / sqrt(3.0);
+                        float d3 = abs(q.x + q.y - q.z) / sqrt(3.0);
+                        float crystal = min(min(d1, d2), d3);
+                        crystal = 1.0 - smoothstep(0.0, 0.2 * (1.0 + chaos), crystal);
+                        return crystal * (1.0 + chaos * 2.0);
+                    }
+                    
+                    float quantumGeometry(vec3 p, float density, float chaos) {
+                        float quantum = 0.0;
+                        for (int i = 0; i < 12; i++) {
+                            float fi = float(i);
+                            float angle = fi * 0.523 + u_time * 0.002 * (1.0 + chaos);
+                            float radius = 0.5 + sin(u_time * 0.001 + fi) * 0.3 * (1.0 + chaos);
+                            vec3 wavePos = vec3(cos(angle) * radius, sin(angle) * radius, sin(fi + u_time * 0.001) * 0.2);
+                            float dist = length(p - wavePos);
+                            quantum += exp(-dist * density * (1.0 + chaos * 3.0)) * (1.0 + chaos);
+                        }
+                        return quantum;
+                    }
+                    
+                    float fractalGeometry(vec3 p, float density, float chaos) {
+                        float fractal = 0.0;
+                        vec3 z = p * density * (1.0 + chaos);
+                        for (int i = 0; i < 6; i++) {
+                            z = abs(z) - 0.5 * (1.0 + chaos);
+                            float r2 = dot(z, z);
+                            if (r2 > 1.0) z *= 1.0 / r2;
+                            fractal += exp(-r2 * (1.0 + chaos * 2.0));
+                        }
+                        return fractal * (1.0 + chaos * 4.0);
+                    }
+                    
+                    float matrixGeometry(vec3 p, float density, float chaos) {
+                        vec3 grid = fract(p * density * (1.0 + chaos * 4.0));
+                        float matrix = 0.0;
+                        
+                        // Grid lines
+                        matrix = max(matrix, 1.0 - smoothstep(0.0, 0.05 * (1.0 + chaos), abs(grid.x - 0.5)));
+                        matrix = max(matrix, 1.0 - smoothstep(0.0, 0.05 * (1.0 + chaos), abs(grid.y - 0.5)));
+                        matrix = max(matrix, 1.0 - smoothstep(0.0, 0.05 * (1.0 + chaos), abs(grid.z - 0.5)));
+                        
+                        // Chaos interference
+                        float interference = sin(p.x * 10.0 * (1.0 + chaos)) * sin(p.y * 10.0 * (1.0 + chaos)) * chaos;
+                        matrix += interference * 0.5;
+                        
+                        return matrix;
+                    }
+                    
+                    float getGeometry(vec3 p, float density, float chaos, float geomType) {
+                        if (geomType < 0.5) return hypercubeGeometry(p, density, chaos);
+                        else if (geomType < 1.5) return plasmaGeometry(p, density, chaos);
+                        else if (geomType < 2.5) return neuralGeometry(p, density, chaos);
+                        else if (geomType < 3.5) return crystalGeometry(p, density, chaos);
+                        else if (geomType < 4.5) return quantumGeometry(p, density, chaos);
+                        else if (geomType < 5.5) return fractalGeometry(p, density, chaos);
+                        else return matrixGeometry(p, density, chaos);
+                    }
+                    
+                    vec3 hsv2rgb(vec3 c) {
+                        vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+                        vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+                        return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+                    }
+                    
+                    void main() {
+                        vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+                        float aspectRatio = u_resolution.x / u_resolution.y;
+                        uv.x *= aspectRatio;
+                        uv -= 0.5;
+                        
+                        // Scroll-driven rotation and movement
+                        float scrollRotation = u_scrollProgress * 6.28 * 2.0; // 2 full rotations per scroll
+                        float time = u_time * 0.0005 * (1.0 + u_chaosLevel);
+                        
+                        // 4D space with scroll-tied transformations
+                        vec4 p4d = vec4(uv, 
+                                       sin(time + scrollRotation * 0.5) * 0.3, 
+                                       cos(time + scrollRotation * 0.3) * 0.3);
+                        
+                        // Multi-axis rotations tied to scroll and chaos
+                        p4d = rotateXW(scrollRotation + time * u_rotationSpeed + u_chaosLevel) * p4d;
+                        p4d = rotateYW(scrollRotation * 0.7 + time * u_rotationSpeed * 0.8 + u_chaosLevel * 0.5) * p4d;
+                        p4d = rotateZW(scrollRotation * 1.3 + time * u_rotationSpeed * 1.2 + u_chaosLevel * 0.3) * p4d;
+                        
+                        vec3 p = project4Dto3D(p4d);
+                        
+                        // Scroll-driven density (gets tighter/more chaotic)
+                        float baseDensity = 3.0 + u_scrollProgress * 12.0; // 3 to 15
+                        float finalDensity = baseDensity * u_densityMultiplier * (1.0 + u_chaosLevel * 2.0);
+                        
+                        // Get geometry value with chaos
+                        float geometry = getGeometry(p, finalDensity, u_chaosLevel, u_geometryType);
+                        
+                        // Chaos-driven coloring
+                        float baseHue = u_geometryType * 0.4 + u_scrollProgress * 0.8 + u_chaosLevel;
+                        float hue = baseHue + sin(u_time * 0.001) * 0.2;
+                        float saturation = 0.6 + u_chaosLevel * 0.3 + geometry * 0.2;
+                        float brightness = 0.1 + geometry * 0.6 + u_chaosLevel * 0.3;
+                        
+                        vec3 color = hsv2rgb(vec3(hue, saturation, brightness));
+                        
+                        // Chaos enhancement
+                        color *= (1.0 + u_chaosLevel * 2.0);
+                        
+                        // Scroll-driven intensity boost
+                        color *= (1.0 + u_scrollProgress * 0.5);
+                        
+                        gl_FragColor = vec4(color, 0.6 + u_chaosLevel * 0.3);
+                    }
+                `;
+                
+                this.program = this.createProgram(vertexShaderSource, fragmentShaderSource);
+                this.uniforms = {
+                    resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
+                    time: this.gl.getUniformLocation(this.program, 'u_time'),
+                    scrollProgress: this.gl.getUniformLocation(this.program, 'u_scrollProgress'),
+                    chaosLevel: this.gl.getUniformLocation(this.program, 'u_chaosLevel'),
+                    rotationSpeed: this.gl.getUniformLocation(this.program, 'u_rotationSpeed'),
+                    densityMultiplier: this.gl.getUniformLocation(this.program, 'u_densityMultiplier'),
+                    geometryType: this.gl.getUniformLocation(this.program, 'u_geometryType')
+                };
+            }
+            
+            createProgram(vertexSource, fragmentSource) {
+                const vertexShader = this.createShader(this.gl.VERTEX_SHADER, vertexSource);
+                const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, fragmentSource);
+                
+                const program = this.gl.createProgram();
+                this.gl.attachShader(program, vertexShader);
+                this.gl.attachShader(program, fragmentShader);
+                this.gl.linkProgram(program);
+                
+                if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+                    console.error('Program linking failed:', this.gl.getProgramInfoLog(program));
+                    return null;
+                }
+                
+                return program;
+            }
+            
+            createShader(type, source) {
+                const shader = this.gl.createShader(type);
+                this.gl.shaderSource(shader, source);
+                this.gl.compileShader(shader);
+                
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+                    console.error('Shader compilation failed:', this.gl.getShaderInfoLog(shader));
+                    return null;
+                }
+                
+                return shader;
+            }
+            
+            initBuffers() {
+                const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+                
+                this.buffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, positions, this.gl.STATIC_DRAW);
+                
+                const positionLocation = this.gl.getAttribLocation(this.program, 'a_position');
+                this.gl.enableVertexAttribArray(positionLocation);
+                this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+            }
+            
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            }
+            
+            updateScroll(scrollProgress) {
+                this.scrollProgress = scrollProgress;
+                this.rotationSpeed = this.baseSpeed * (1.0 + scrollProgress * 2.0);
+                this.densityMultiplier = 1.0 + scrollProgress * 1.5;
+            }
+            
+            render() {
+                if (!this.program) return;
+                
+                this.resize();
+                this.gl.useProgram(this.program);
+                
+                const time = Date.now() - this.startTime;
+                const geometryType = this.sectionIndex % 7; // 7 geometry types
+                
+                // Set uniforms
+                this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
+                this.gl.uniform1f(this.uniforms.time, time);
+                this.gl.uniform1f(this.uniforms.scrollProgress, this.scrollProgress);
+                this.gl.uniform1f(this.uniforms.chaosLevel, this.chaosLevel);
+                this.gl.uniform1f(this.uniforms.rotationSpeed, this.rotationSpeed);
+                this.gl.uniform1f(this.uniforms.densityMultiplier, this.densityMultiplier);
+                this.gl.uniform1f(this.uniforms.geometryType, geometryType);
+                
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+        }
+        
+        // PARALLAX SCROLL SYSTEM MANAGER
+        class ParallaxScrollSystemManager {
+            constructor() {
+                this.currentSection = 0;
+                this.scrollProgress = 0;
+                this.backgroundVisualizers = [];
+                this.isScrolling = false;
+                this.loadedPreviews = new Set();
+                
+                this.initialize();
+            }
+            
+            initialize() {
+                console.log('🎨 Initializing Parallax Scroll System...');
+                
+                this.createBackgroundVisualizers();
+                this.createCardSections();
+                this.createScrollIndicators();
+                this.setupScrollPhysics();
+                this.updateUI();
+                
+                console.log('✅ Parallax System ready - 7 sections with smart canvas loading');
+            }
+            
+            createBackgroundVisualizers() {
+                const container = document.getElementById('backgroundContainer');
+                
+                backgroundThemes.forEach((theme, index) => {
+                    const visualizerDiv = document.createElement('div');
+                    visualizerDiv.className = 'background-visualizer';
+                    visualizerDiv.id = `bg-visualizer-${index}`;
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.id = `bg-canvas-${index}`;
+                    visualizerDiv.appendChild(canvas);
+                    
+                    container.appendChild(visualizerDiv);
+                    
+                    // Create visualizer with delay
+                    setTimeout(() => {
+                        const visualizer = new HolographicBackgroundVisualizer(canvas, theme, index);
+                        this.backgroundVisualizers.push(visualizer);
+                    }, index * 200);
+                });
+            }
+            
+            createCardSections() {
+                const container = document.getElementById('floatingCards');
+                
+                visualEffectsGrouped.forEach((group, sectionIndex) => {
+                    const section = document.createElement('div');
+                    section.className = 'card-section';
+                    section.id = `card-section-${sectionIndex}`;
+                    
+                    group.forEach((effect, cardIndex) => {
+                        const card = this.createCard(effect, sectionIndex, cardIndex);
+                        section.appendChild(card);
+                    });
+                    
+                    container.appendChild(section);
+                });
+            }
+            
+            createCard(effect, sectionIndex, cardIndex) {
+                const card = document.createElement('div');
+                card.className = 'floating-card';
+                
+                card.innerHTML = `
+                    <h3>${effect.title}</h3>
+                    <p>${effect.description}</p>
+                    <div class="preview-area" data-file="${effect.file}" data-has-canvas="${effect.hasCanvas}" data-heavy="${effect.isHeavy || false}">
+                        <span>${effect.hasCanvas ? 'Click to load WebGL preview' : 'Click to load preview'}</span>
+                    </div>
+                    <div class="tags">
+                        ${effect.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                `;
+                
+                // Add click handler for smart preview loading
+                const previewArea = card.querySelector('.preview-area');
+                previewArea.addEventListener('click', () => {
+                    this.loadPreview(previewArea, effect, sectionIndex);
+                });
+                
+                return card;
+            }
+            
+            loadPreview(previewArea, effect, sectionIndex) {
+                const previewId = `${sectionIndex}-${effect.file}`;
+                
+                if (this.loadedPreviews.has(previewId)) return;
+                
+                // Special handling for heavy canvas effects
+                if (effect.isHeavy) {
+                    previewArea.innerHTML = `
+                        <div style="padding: 20px; text-align: center;">
+                            <div style="color: var(--hot-pink); margin-bottom: 10px;">⚠️ HEAVY WEBGL SYSTEM</div>
+                            <div style="font-size: 0.7em; line-height: 1.4;">
+                                125 WebGL visualizers<br>
+                                <button onclick="window.open('${effect.file}', '_blank')" 
+                                        style="margin-top: 8px; padding: 6px 12px; background: var(--card-bg); 
+                                               border: 1px solid var(--neon-magenta); color: var(--neon-magenta); 
+                                               border-radius: 4px; cursor: pointer;">
+                                    Open in New Tab
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    previewArea.innerHTML = `
+                        <iframe src="${effect.file}" 
+                                width="100%" 
+                                height="100%" 
+                                frameborder="0"
+                                loading="lazy">
+                        </iframe>
+                    `;
+                }
+                
+                this.loadedPreviews.add(previewId);
+            }
+            
+            createScrollIndicators() {
+                const container = document.getElementById('scrollIndicator');
+                
+                for (let i = 0; i < 7; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'scroll-dot';
+                    dot.addEventListener('click', () => {
+                        this.scrollToSection(i);
+                    });
+                    container.appendChild(dot);
+                }
+            }
+            
+            setupScrollPhysics() {
+                let ticking = false;
+                
+                window.addEventListener('scroll', () => {
+                    if (!ticking) {
+                        requestAnimationFrame(() => {
+                            this.updateScrollState();
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
+                });
+                
+                // Smooth scroll behavior
+                window.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    
+                    const delta = e.deltaY;
+                    const sensitivity = 1.5;
+                    const scrollAmount = delta * sensitivity;
+                    
+                    window.scrollBy(0, scrollAmount);
+                }, { passive: false });
+            }
+            
+            updateScrollState() {
+                const scrollTop = window.pageYOffset;
+                const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                const globalProgress = scrollTop / maxScroll;
+                
+                // Calculate current section (0-6)
+                const sectionProgress = globalProgress * 7;
+                const newSection = Math.floor(sectionProgress);
+                const sectionLocalProgress = sectionProgress - newSection;
+                
+                // Update if section changed
+                if (newSection !== this.currentSection && newSection >= 0 && newSection < 7) {
+                    this.currentSection = Math.max(0, Math.min(6, newSection));
+                    this.updateUI();
+                }
+                
+                // Update background visualizers with scroll progress
+                this.backgroundVisualizers.forEach((viz, index) => {
+                    if (viz) {
+                        if (index === this.currentSection) {
+                            viz.updateScroll(sectionLocalProgress);
+                        } else {
+                            viz.updateScroll(0);
+                        }
+                    }
+                });
+                
+                // Update background visibility
+                this.updateBackgroundVisibility();
+                
+                // Update card section visibility
+                this.updateCardVisibility();
+                
+                // Update chaos meter
+                this.updateChaosMeter();
+            }
+            
+            updateBackgroundVisibility() {
+                const backgrounds = document.querySelectorAll('.background-visualizer');
+                backgrounds.forEach((bg, index) => {
+                    bg.classList.toggle('active', index === this.currentSection);
+                    bg.classList.toggle('inactive', index !== this.currentSection);
+                });
+            }
+            
+            updateCardVisibility() {
+                const sections = document.querySelectorAll('.card-section');
+                sections.forEach((section, index) => {
+                    section.classList.toggle('active', index === this.currentSection);
+                });
+            }
+            
+            updateUI() {
+                // Update section info
+                const theme = backgroundThemes[this.currentSection];
+                document.getElementById('sectionTitle').textContent = theme.name;
+                document.getElementById('sectionSubtitle').textContent = `Section ${this.currentSection + 1} of 7 • Visual Codex Gallery`;
+                
+                // Update scroll dots
+                const dots = document.querySelectorAll('.scroll-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentSection);
+                });
+            }
+            
+            updateChaosMeter() {
+                const theme = backgroundThemes[this.currentSection];
+                const chaosPercentage = (theme.chaos * 100).toFixed(0);
+                const chaosFill = document.getElementById('chaosFill');
+                chaosFill.style.width = `${chaosPercentage}%`;
+            }
+            
+            scrollToSection(sectionIndex) {
+                const targetScroll = (sectionIndex / 7) * (document.documentElement.scrollHeight - window.innerHeight);
+                
+                window.scrollTo({
+                    top: targetScroll,
+                    behavior: 'smooth'
+                });
+            }
+            
+            startRenderLoop() {
+                const render = () => {
+                    this.backgroundVisualizers.forEach(viz => {
+                        if (viz) viz.render();
+                    });
+                    requestAnimationFrame(render);
+                };
+                
+                render();
+                console.log('🎬 Parallax background render loop started');
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            console.log('🚀 Starting Visual Codex Parallax System...');
+            const manager = new ParallaxScrollSystemManager();
+            manager.startRenderLoop();
+            window.parallaxManager = manager;
+        });
+        
+    </script>
+</body>
+</html>

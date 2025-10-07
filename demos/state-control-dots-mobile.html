@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>State Control Dots - Mobile Optimized</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        :root {
+            /* Mobile-optimized color system */
+            --primary-dark: #1a0033;
+            --secondary-dark: #000000;
+            --neon-cyan: #00ffff;
+            --neon-magenta: #ff00ff;
+            --neon-yellow: #ffff00;
+            --neon-green: #00ff88;
+            --neon-orange: #ff8800;
+            
+            /* Touch-optimized sizing */
+            --dot-size: 56px; /* Increased from 20px for touch */
+            --dot-spacing: 16px;
+            --control-padding: 24px;
+            --text-size-mobile: 16px; /* Minimum readable size */
+            
+            /* Performance-optimized animations */
+            --transition-fast: 0.2s ease;
+            --transition-smooth: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        html {
+            font-size: 16px; /* Prevent iOS zoom */
+        }
+        
+        body {
+            background: radial-gradient(ellipse at center, var(--primary-dark) 0%, var(--secondary-dark) 70%);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            
+            /* Mobile scroll optimization */
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: y proximity;
+        }
+        
+        .demo-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 32px;
+            scroll-snap-align: start;
+        }
+        
+        .demo-title {
+            font-size: 1.75rem; /* Mobile-optimized size */
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-magenta), var(--neon-yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+        
+        .demo-subtitle {
+            font-size: var(--text-size-mobile);
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 400;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+        
+        .mobile-instructions {
+            display: inline-block;
+            padding: 10px 16px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            font-size: 14px;
+            color: var(--neon-cyan);
+        }
+        
+        /* Mobile-First Grid Layout */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        @media (min-width: 600px) {
+            .controls-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* TOUCH-OPTIMIZED STATE CONTROLS */
+        .state-controls {
+            background: linear-gradient(135deg,
+                rgba(0, 0, 0, 0.8) 0%,
+                rgba(26, 0, 51, 0.6) 50%,
+                rgba(0, 0, 0, 0.8) 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            padding: var(--control-padding);
+            position: relative;
+            scroll-snap-align: start;
+            
+            /* Performance optimization */
+            transform: translateZ(0);
+            will-change: transform;
+        }
+        
+        .control-title {
+            font-size: 1.25rem; /* Increased for mobile readability */
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--neon-cyan);
+            text-align: center;
+        }
+        
+        .control-description {
+            font-size: var(--text-size-mobile);
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        
+        /* Touch-Optimized Dots Container */
+        .dots-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: var(--dot-spacing);
+            margin-bottom: 20px;
+            padding: 12px;
+        }
+        
+        /* Individual State Dots - Touch Optimized */
+        .state-dot {
+            width: var(--dot-size);
+            height: var(--dot-size);
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+            position: relative;
+            
+            /* Touch optimization */
+            touch-action: manipulation;
+            transition: all var(--transition-smooth);
+            transform: translateZ(0);
+            
+            /* Accessibility */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            /* Enhanced shadows for depth */
+            box-shadow: 
+                0 4px 16px rgba(0, 0, 0, 0.3),
+                inset 0 2px 4px rgba(255, 255, 255, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Touch States (replacing hover) */
+        .state-dot:active {
+            transform: scale(0.95) translateZ(0);
+        }
+        
+        .state-dot.active {
+            border-color: var(--neon-cyan);
+            background: radial-gradient(circle, 
+                rgba(0, 255, 255, 0.4) 0%, 
+                rgba(0, 255, 255, 0.1) 70%, 
+                transparent 100%);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.5),
+                0 4px 20px rgba(0, 0, 0, 0.4),
+                inset 0 2px 4px rgba(0, 255, 255, 0.3);
+            transform: scale(1.1) translateZ(0);
+        }
+        
+        /* Dot Inner Glow */
+        .state-dot::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transition: all var(--transition-smooth);
+            opacity: 0;
+        }
+        
+        .state-dot.active::before {
+            opacity: 1;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 12px var(--neon-cyan);
+        }
+        
+        /* Dot Labels - Mobile Optimized */
+        .dot-label {
+            position: absolute;
+            bottom: -32px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 500;
+            white-space: nowrap;
+            pointer-events: none;
+            text-align: center;
+            min-width: 44px; /* Touch-friendly minimum */
+        }
+        
+        .state-dot.active .dot-label {
+            color: var(--neon-cyan);
+            font-weight: 600;
+        }
+        
+        /* State Display Area */
+        .state-display {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 20px;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .current-state {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--neon-cyan);
+            margin-bottom: 8px;
+        }
+        
+        .state-info {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.4;
+        }
+        
+        /* Different Control Themes */
+        .theme-navigation .state-dot.active {
+            border-color: var(--neon-green);
+            background: radial-gradient(circle, 
+                rgba(0, 255, 136, 0.4) 0%, 
+                rgba(0, 255, 136, 0.1) 70%, 
+                transparent 100%);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+        }
+        
+        .theme-navigation .state-dot.active::before {
+            background: var(--neon-green);
+            box-shadow: 0 0 12px var(--neon-green);
+        }
+        
+        .theme-status .state-dot.active {
+            border-color: var(--neon-yellow);
+            background: radial-gradient(circle, 
+                rgba(255, 255, 0, 0.4) 0%, 
+                rgba(255, 255, 0, 0.1) 70%, 
+                transparent 100%);
+            box-shadow: 0 0 30px rgba(255, 255, 0, 0.5);
+        }
+        
+        .theme-status .state-dot.active::before {
+            background: var(--neon-yellow);
+            box-shadow: 0 0 12px var(--neon-yellow);
+        }
+        
+        .theme-settings .state-dot.active {
+            border-color: var(--neon-orange);
+            background: radial-gradient(circle, 
+                rgba(255, 136, 0, 0.4) 0%, 
+                rgba(255, 136, 0, 0.1) 70%, 
+                transparent 100%);
+            box-shadow: 0 0 30px rgba(255, 136, 0, 0.5);
+        }
+        
+        .theme-settings .state-dot.active::before {
+            background: var(--neon-orange);
+            box-shadow: 0 0 12px var(--neon-orange);
+        }
+        
+        /* Touch Ripple Effect */
+        .touch-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (min-width: 480px) {
+            .demo-title {
+                font-size: 2rem;
+            }
+            
+            :root {
+                --dot-size: 64px;
+                --dot-spacing: 20px;
+            }
+        }
+        
+        /* Landscape mode optimizations */
+        @media (orientation: landscape) and (max-height: 600px) {
+            .demo-header {
+                margin-bottom: 20px;
+            }
+            
+            .controls-grid {
+                gap: 16px;
+            }
+            
+            :root {
+                --control-padding: 16px;
+            }
+        }
+        
+        /* Accessibility and reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* High contrast mode */
+        @media (prefers-contrast: high) {
+            .state-dot {
+                border-width: 4px;
+            }
+            
+            .dot-label {
+                color: white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1 class="demo-title">State Control Dots</h1>
+            <p class="demo-subtitle">Touch-friendly navigation with smooth state transitions</p>
+            <div class="mobile-instructions">👆 Tap dots to change states</div>
+        </div>
+        
+        <div class="controls-grid">
+            <!-- Navigation Control -->
+            <div class="state-controls theme-navigation" data-theme="navigation">
+                <h3 class="control-title">Page Navigation</h3>
+                <p class="control-description">Navigate between different pages or sections</p>
+                
+                <div class="dots-container">
+                    <div class="state-dot active" data-state="0" role="button" tabindex="0" aria-label="Home page">
+                        <span class="dot-label">Home</span>
+                    </div>
+                    <div class="state-dot" data-state="1" role="button" tabindex="0" aria-label="About page">
+                        <span class="dot-label">About</span>
+                    </div>
+                    <div class="state-dot" data-state="2" role="button" tabindex="0" aria-label="Services page">
+                        <span class="dot-label">Services</span>
+                    </div>
+                    <div class="state-dot" data-state="3" role="button" tabindex="0" aria-label="Contact page">
+                        <span class="dot-label">Contact</span>
+                    </div>
+                </div>
+                
+                <div class="state-display">
+                    <div class="current-state">Home Page</div>
+                    <div class="state-info">Welcome to the main dashboard</div>
+                </div>
+            </div>
+            
+            <!-- Status Control -->
+            <div class="state-controls theme-status" data-theme="status">
+                <h3 class="control-title">System Status</h3>
+                <p class="control-description">Monitor and control system operational states</p>
+                
+                <div class="dots-container">
+                    <div class="state-dot active" data-state="0" role="button" tabindex="0" aria-label="System online">
+                        <span class="dot-label">Online</span>
+                    </div>
+                    <div class="state-dot" data-state="1" role="button" tabindex="0" aria-label="System maintenance">
+                        <span class="dot-label">Maintenance</span>
+                    </div>
+                    <div class="state-dot" data-state="2" role="button" tabindex="0" aria-label="System offline">
+                        <span class="dot-label">Offline</span>
+                    </div>
+                    <div class="state-dot" data-state="3" role="button" tabindex="0" aria-label="System error">
+                        <span class="dot-label">Error</span>
+                    </div>
+                </div>
+                
+                <div class="state-display">
+                    <div class="current-state">System Online</div>
+                    <div class="state-info">All services running normally</div>
+                </div>
+            </div>
+            
+            <!-- Settings Control -->
+            <div class="state-controls theme-settings" data-theme="settings">
+                <h3 class="control-title">User Preferences</h3>
+                <p class="control-description">Customize application settings and preferences</p>
+                
+                <div class="dots-container">
+                    <div class="state-dot active" data-state="0" role="button" tabindex="0" aria-label="General settings">
+                        <span class="dot-label">General</span>
+                    </div>
+                    <div class="state-dot" data-state="1" role="button" tabindex="0" aria-label="Privacy settings">
+                        <span class="dot-label">Privacy</span>
+                    </div>
+                    <div class="state-dot" data-state="2" role="button" tabindex="0" aria-label="Security settings">
+                        <span class="dot-label">Security</span>
+                    </div>
+                    <div class="state-dot" data-state="3" role="button" tabindex="0" aria-label="Advanced settings">
+                        <span class="dot-label">Advanced</span>
+                    </div>
+                </div>
+                
+                <div class="state-display">
+                    <div class="current-state">General Settings</div>
+                    <div class="state-info">Basic application preferences</div>
+                </div>
+            </div>
+            
+            <!-- Progress Control -->
+            <div class="state-controls theme-navigation" data-theme="progress">
+                <h3 class="control-title">Process Steps</h3>
+                <p class="control-description">Track progress through multi-step processes</p>
+                
+                <div class="dots-container">
+                    <div class="state-dot active" data-state="0" role="button" tabindex="0" aria-label="Step 1">
+                        <span class="dot-label">Step 1</span>
+                    </div>
+                    <div class="state-dot" data-state="1" role="button" tabindex="0" aria-label="Step 2">
+                        <span class="dot-label">Step 2</span>
+                    </div>
+                    <div class="state-dot" data-state="2" role="button" tabindex="0" aria-label="Step 3">
+                        <span class="dot-label">Step 3</span>
+                    </div>
+                    <div class="state-dot" data-state="3" role="button" tabindex="0" aria-label="Complete">
+                        <span class="dot-label">Complete</span>
+                    </div>
+                </div>
+                
+                <div class="state-display">
+                    <div class="current-state">Step 1: Setup</div>
+                    <div class="state-info">Initialize your configuration</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        console.log('📱 State Control Dots Mobile - Touch Optimized');
+        
+        class MobileStateControlDots {
+            constructor() {
+                this.controls = document.querySelectorAll('.state-controls');
+                this.states = {
+                    navigation: ['Home Page', 'About Us', 'Our Services', 'Contact Info'],
+                    status: ['System Online', 'Maintenance Mode', 'System Offline', 'Error State'],
+                    settings: ['General Settings', 'Privacy Controls', 'Security Options', 'Advanced Config'],
+                    progress: ['Step 1: Setup', 'Step 2: Configure', 'Step 3: Review', 'Process Complete']
+                };
+                
+                this.descriptions = {
+                    navigation: [
+                        'Welcome to the main dashboard',
+                        'Learn more about our company',
+                        'Discover what we can do for you',
+                        'Get in touch with our team'
+                    ],
+                    status: [
+                        'All services running normally',
+                        'Scheduled maintenance in progress',
+                        'System temporarily unavailable',
+                        'Critical system error detected'
+                    ],
+                    settings: [
+                        'Basic application preferences',
+                        'Control your data and privacy',
+                        'Manage passwords and authentication',
+                        'Expert configuration options'
+                    ],
+                    progress: [
+                        'Initialize your configuration',
+                        'Set up your preferences',
+                        'Review and confirm settings',
+                        'Setup finished successfully'
+                    ]
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupTouchEvents();
+                this.setupAccessibility();
+                console.log('✅ Mobile state control dots initialized');
+            }
+            
+            setupTouchEvents() {
+                this.controls.forEach(control => {
+                    const theme = control.dataset.theme;
+                    const dots = control.querySelectorAll('.state-dot');
+                    const display = control.querySelector('.state-display');
+                    
+                    dots.forEach((dot, index) => {
+                        // Touch events
+                        dot.addEventListener('touchstart', (e) => {
+                            this.handleTouchStart(e, dot, control, index, theme);
+                        }, { passive: true });
+                        
+                        dot.addEventListener('touchend', (e) => {
+                            this.handleTouchEnd(e, dot, control, index, theme);
+                        }, { passive: true });
+                        
+                        // Mouse events for desktop compatibility
+                        dot.addEventListener('click', (e) => {
+                            this.selectState(dot, control, index, theme);
+                        });
+                        
+                        // Keyboard events for accessibility
+                        dot.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                this.selectState(dot, control, index, theme);
+                            }
+                        });
+                    });
+                });
+            }
+            
+            handleTouchStart(event, dot, control, index, theme) {
+                // Create ripple effect
+                this.createRipple(event, dot);
+                
+                // Haptic feedback if available
+                if (navigator.vibrate) {
+                    navigator.vibrate(25);
+                }
+                
+                console.log(`👆 Touch start on ${theme} dot ${index + 1}`);
+            }
+            
+            handleTouchEnd(event, dot, control, index, theme) {
+                // Select the state
+                this.selectState(dot, control, index, theme);
+                
+                console.log(`👆 Touch end on ${theme} dot ${index + 1}`);
+            }
+            
+            selectState(selectedDot, control, index, theme) {
+                // Remove active class from all dots in this control
+                const dots = control.querySelectorAll('.state-dot');
+                dots.forEach(dot => dot.classList.remove('active'));
+                
+                // Add active class to selected dot
+                selectedDot.classList.add('active');
+                
+                // Update the display
+                this.updateStateDisplay(control, index, theme);
+                
+                // Enhanced haptic feedback for state change
+                if (navigator.vibrate) {
+                    navigator.vibrate([30, 10, 30]);
+                }
+                
+                // Announce state change for screen readers
+                this.announceStateChange(theme, index);
+                
+                console.log(`🎯 State selected: ${theme} - ${index + 1}`);
+            }
+            
+            updateStateDisplay(control, index, theme) {
+                const stateDisplay = control.querySelector('.current-state');
+                const stateInfo = control.querySelector('.state-info');
+                
+                if (stateDisplay && stateInfo) {
+                    stateDisplay.textContent = this.states[theme][index];
+                    stateInfo.textContent = this.descriptions[theme][index];
+                    
+                    // Smooth animation
+                    stateDisplay.style.opacity = '0';
+                    stateInfo.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        stateDisplay.style.opacity = '1';
+                        stateInfo.style.opacity = '1';
+                    }, 150);
+                }
+            }
+            
+            createRipple(event, dot) {
+                const rect = dot.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = (event.touches ? event.touches[0].clientX : event.clientX) - rect.left - size / 2;
+                const y = (event.touches ? event.touches[0].clientY : event.clientY) - rect.top - size / 2;
+                
+                const ripple = document.createElement('div');
+                ripple.className = 'touch-ripple';
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                
+                dot.appendChild(ripple);
+                
+                // Remove ripple after animation
+                setTimeout(() => {
+                    if (ripple.parentNode) {
+                        ripple.remove();
+                    }
+                }, 600);
+            }
+            
+            setupAccessibility() {
+                this.controls.forEach(control => {
+                    const dots = control.querySelectorAll('.state-dot');
+                    
+                    dots.forEach((dot, index) => {
+                        // ARIA attributes
+                        dot.setAttribute('role', 'button');
+                        dot.setAttribute('tabindex', '0');
+                        
+                        // Focus management
+                        dot.addEventListener('focus', () => {
+                            dot.style.outline = '3px solid rgba(0, 255, 255, 0.6)';
+                            dot.style.outlineOffset = '3px';
+                        });
+                        
+                        dot.addEventListener('blur', () => {
+                            dot.style.outline = '';
+                            dot.style.outlineOffset = '';
+                        });
+                    });
+                });
+                
+                console.log('♿ Accessibility features enabled');
+            }
+            
+            announceStateChange(theme, index) {
+                // Create live region for screen readers
+                const announcement = document.createElement('div');
+                announcement.setAttribute('aria-live', 'polite');
+                announcement.setAttribute('aria-atomic', 'true');
+                announcement.style.position = 'absolute';
+                announcement.style.left = '-10000px';
+                announcement.style.width = '1px';
+                announcement.style.height = '1px';
+                announcement.style.overflow = 'hidden';
+                
+                announcement.textContent = `Selected ${this.states[theme][index]}. ${this.descriptions[theme][index]}`;
+                
+                document.body.appendChild(announcement);
+                
+                // Remove after announcement
+                setTimeout(() => {
+                    if (announcement.parentNode) {
+                        announcement.remove();
+                    }
+                }, 1000);
+            }
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                new MobileStateControlDots();
+            });
+        } else {
+            new MobileStateControlDots();
+        }
+        
+        // Performance monitoring for mobile
+        let performanceMetrics = {
+            frameCount: 0,
+            lastTime: performance.now(),
+            fps: 60
+        };
+        
+        function monitorPerformance() {
+            performanceMetrics.frameCount++;
+            const now = performance.now();
+            
+            if (now - performanceMetrics.lastTime >= 1000) {
+                performanceMetrics.fps = Math.round(
+                    performanceMetrics.frameCount * 1000 / (now - performanceMetrics.lastTime)
+                );
+                
+                if (performanceMetrics.fps < 30) {
+                    console.warn('⚠️ Low FPS detected:', performanceMetrics.fps);
+                    // Reduce animation complexity
+                    document.documentElement.style.setProperty('--transition-smooth', '0.1s ease');
+                }
+                
+                performanceMetrics.frameCount = 0;
+                performanceMetrics.lastTime = now;
+            }
+            
+            requestAnimationFrame(monitorPerformance);
+        }
+        
+        // Start performance monitoring
+        requestAnimationFrame(monitorPerformance);
+        
+        console.log('📱 State Control Dots Mobile - Ready for Touch!');
+    </script>
+</body>
+</html>

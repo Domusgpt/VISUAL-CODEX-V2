@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Cyberpunk UI Effects Demo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', 'Courier New', monospace;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a0f 0%, #1a0a1f 50%, #0f1a2f 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #00ffff;
+            position: relative;
+        }
+
+        /* Scan lines overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 255, 0.03) 2px,
+                rgba(0, 255, 255, 0.03) 4px
+            );
+            animation: scanlines 0.1s linear infinite;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        @keyframes scanlines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        /* Grid background */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(0,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,255,0.02) 1px, transparent 1px);
+            background-size: 30px 30px;
+            animation: gridFlow 15s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes gridFlow {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(30px, 30px); }
+        }
+
+        .container {
+            padding: 40px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 50px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            animation: titleFlicker 3s ease-in-out infinite;
+            position: relative;
+        }
+
+        .title::before {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #ff0000, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0;
+            animation: glitchFlicker 0.15s ease-in-out infinite alternate;
+            transform: translate(2px, 0);
+        }
+
+        @keyframes titleFlicker {
+            0%, 100% { 
+                filter: brightness(1) hue-rotate(0deg);
+                text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            }
+            50% { 
+                filter: brightness(1.2) hue-rotate(90deg);
+                text-shadow: 0 0 40px rgba(255, 0, 255, 0.8);
+            }
+        }
+
+        @keyframes glitchFlicker {
+            0% { opacity: 0; }
+            10% { opacity: 0.8; transform: translate(2px, 0); }
+            20% { opacity: 0; }
+            30% { opacity: 0.6; transform: translate(-1px, 1px); }
+            40% { opacity: 0; }
+            50% { opacity: 0.9; transform: translate(1px, -1px); }
+            60% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        /* Cyberpunk Buttons */
+        .cyberpunk-section {
+            margin: 60px 0;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #ff00ff;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff00ff, transparent);
+            animation: underlinePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes underlinePulse {
+            0%, 100% { opacity: 0.5; transform: translateX(-50%) scaleX(1); }
+            50% { opacity: 1; transform: translateX(-50%) scaleX(1.5); }
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .cyber-button {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1));
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 15px 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+        }
+
+        .cyber-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .cyber-button:hover::before {
+            left: 100%;
+        }
+
+        .cyber-button:hover {
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.6),
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+            transform: translateY(-3px);
+            border-color: #ff00ff;
+            color: #ff00ff;
+        }
+
+        .cyber-button:active {
+            transform: translateY(0);
+            box-shadow: 
+                0 0 10px rgba(0, 255, 255, 0.4),
+                inset 0 0 30px rgba(0, 255, 255, 0.2);
+        }
+
+        /* Holographic Cards */
+        .holo-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .holo-card {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.05), rgba(255, 0, 255, 0.05));
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+
+        .holo-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 0deg,
+                transparent,
+                rgba(0, 255, 255, 0.1),
+                transparent,
+                rgba(255, 0, 255, 0.1),
+                transparent
+            );
+            animation: holoRotate 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .holo-card:hover::before {
+            opacity: 1;
+        }
+
+        @keyframes holoRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .holo-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: rgba(255, 0, 255, 0.6);
+            box-shadow: 
+                0 15px 35px rgba(0, 255, 255, 0.2),
+                0 0 30px rgba(255, 0, 255, 0.3);
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card-text {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        /* Data Stream Effect */
+        .data-stream {
+            position: relative;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 40px 0;
+            overflow: hidden;
+        }
+
+        .data-stream::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 255, 0.1) 2px,
+                    rgba(0, 255, 255, 0.1) 4px
+                );
+            animation: dataFlow 1s linear infinite;
+        }
+
+        @keyframes dataFlow {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(20px); }
+        }
+
+        .data-content {
+            position: relative;
+            z-index: 2;
+            font-family: 'Courier New', monospace;
+            color: #00ffff;
+        }
+
+        .data-line {
+            margin: 5px 0;
+            animation: textGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes textGlow {
+            from { text-shadow: 0 0 5px rgba(0, 255, 255, 0.5); }
+            to { text-shadow: 0 0 15px rgba(0, 255, 255, 0.8); }
+        }
+
+        /* Terminal Interface */
+        .terminal {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 40px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terminal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at center, rgba(0, 255, 255, 0.05) 0%, transparent 70%);
+            animation: terminalPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes terminalPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 8px;
+            margin-right: 15px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: dotPulse 2s ease-in-out infinite;
+        }
+
+        .dot:nth-child(1) { background: #ff5555; animation-delay: 0s; }
+        .dot:nth-child(2) { background: #ffff55; animation-delay: 0.3s; }
+        .dot:nth-child(3) { background: #55ff55; animation-delay: 0.6s; }
+
+        @keyframes dotPulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .terminal-title {
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        .terminal-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .terminal-line {
+            color: #00ffff;
+            margin: 8px 0;
+            position: relative;
+        }
+
+        .terminal-line::before {
+            content: '> ';
+            color: #ff00ff;
+            font-weight: bold;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #00ffff;
+            animation: cursorBlink 1s infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes cursorBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .title { font-size: 2.5rem; }
+            .button-grid { grid-template-columns: 1fr; }
+            .holo-cards { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title" data-text="CYBERPUNK UI EFFECTS">CYBERPUNK UI EFFECTS</h1>
+
+        <div class="cyberpunk-section">
+            <h2 class="section-title">Interactive Cyber Buttons</h2>
+            <div class="button-grid">
+                <button class="cyber-button">Neural Link</button>
+                <button class="cyber-button">Data Upload</button>
+                <button class="cyber-button">System Override</button>
+                <button class="cyber-button">Quantum Access</button>
+                <button class="cyber-button">Cyber Defense</button>
+                <button class="cyber-button">Matrix Entry</button>
+            </div>
+        </div>
+
+        <div class="cyberpunk-section">
+            <h2 class="section-title">Holographic Interface Cards</h2>
+            <div class="holo-cards">
+                <div class="holo-card">
+                    <div class="card-content">
+                        <h3 class="card-title">Neural Interface</h3>
+                        <p class="card-text">
+                            Direct neural connection to the cybernet. Experience enhanced 
+                            cognitive processing and real-time data streams.
+                        </p>
+                    </div>
+                </div>
+                <div class="holo-card">
+                    <div class="card-content">
+                        <h3 class="card-title">Quantum Encryption</h3>
+                        <p class="card-text">
+                            Military-grade quantum encryption protocols. Secure your data 
+                            with unbreakable cryptographic barriers.
+                        </p>
+                    </div>
+                </div>
+                <div class="holo-card">
+                    <div class="card-content">
+                        <h3 class="card-title">Reality Augmentation</h3>
+                        <p class="card-text">
+                            Overlay digital information onto physical reality. Enhanced 
+                            perception through advanced AR processing.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="data-stream">
+            <div class="data-content">
+                <h3 style="margin-bottom: 15px; color: #ff00ff;">DATA STREAM MONITOR</h3>
+                <div class="data-line">NEURAL_LINK_STATUS: ACTIVE</div>
+                <div class="data-line">ENCRYPTION_LEVEL: QUANTUM_256</div>
+                <div class="data-line">SYSTEM_INTEGRITY: 98.7%</div>
+                <div class="data-line">DATA_THROUGHPUT: 847.3 TB/s</div>
+                <div class="data-line">REALITY_COHERENCE: STABLE</div>
+            </div>
+        </div>
+
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="terminal-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <div class="terminal-title">CYBER_TERMINAL_v3.7.9</div>
+            </div>
+            <div class="terminal-content">
+                <div class="terminal-line">Initializing neural interface...</div>
+                <div class="terminal-line">Connecting to quantum network...</div>
+                <div class="terminal-line">Loading reality augmentation modules...</div>
+                <div class="terminal-line">System ready for input<span class="cursor"></span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add interactive glitch effects to buttons
+        document.querySelectorAll('.cyber-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Create glitch effect
+                this.style.transform = 'translateY(0) translateX(2px)';
+                this.style.filter = 'hue-rotate(180deg)';
+                
+                setTimeout(() => {
+                    this.style.transform = '';
+                    this.style.filter = '';
+                }, 150);
+            });
+        });
+
+        // Random data updates for terminal
+        const dataLines = document.querySelectorAll('.data-line');
+        setInterval(() => {
+            const randomLine = dataLines[Math.floor(Math.random() * dataLines.length)];
+            randomLine.style.color = '#ff00ff';
+            setTimeout(() => {
+                randomLine.style.color = '#00ffff';
+            }, 200);
+        }, 2000);
+
+        // Typing effect for terminal
+        const terminalContent = document.querySelector('.terminal-content');
+        const messages = [
+            'Scanning for system vulnerabilities...',
+            'Neural patterns synchronized.',
+            'Quantum encryption activated.',
+            'Reality matrix stable.',
+            'All systems operational.'
+        ];
+
+        let messageIndex = 0;
+        setInterval(() => {
+            if (messageIndex < messages.length) {
+                const newLine = document.createElement('div');
+                newLine.className = 'terminal-line';
+                newLine.textContent = messages[messageIndex];
+                
+                // Remove cursor from last line
+                const cursor = terminalContent.querySelector('.cursor');
+                if (cursor) cursor.remove();
+                
+                // Add new line with cursor
+                newLine.innerHTML += '<span class="cursor"></span>';
+                terminalContent.appendChild(newLine);
+                
+                messageIndex++;
+                
+                // Keep only last 8 lines
+                const lines = terminalContent.querySelectorAll('.terminal-line');
+                if (lines.length > 8) {
+                    lines[0].remove();
+                }
+            } else {
+                messageIndex = 0;
+            }
+        }, 3000);
+
+        // Add hover effects to cards
+        document.querySelectorAll('.holo-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.background = 'linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1))';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.background = 'linear-gradient(135deg, rgba(0, 255, 255, 0.05), rgba(255, 0, 255, 0.05))';
+            });
+        });
+    </script>
+</body>
+</html>

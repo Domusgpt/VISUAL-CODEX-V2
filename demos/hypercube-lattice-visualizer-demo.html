@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hypercube Lattice WebGL Visualizer</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        .controls { 
+            position: fixed; top: 20px; left: 20px; background: rgba(0,0,0,0.8); 
+            padding: 20px; border: 1px solid #00ffff; color: #00ffff; z-index: 100;
+            border-radius: 10px; backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .controls.collapsed {
+            width: 40px;
+            height: 40px;
+            padding: 8px;
+            overflow: hidden;
+        }
+        
+        .controls-toggle {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            cursor: pointer;
+            padding: 3px 6px;
+            font-size: 10px;
+            z-index: 101;
+        }
+        
+        .controls-toggle:hover {
+            background: rgba(0, 255, 255, 0.4);
+        }
+        
+        .controls-content {
+            transition: opacity 0.3s ease;
+        }
+        
+        .controls.collapsed .controls-content {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .slider { width: 200px; margin: 10px 0; }
+        .slider-label { margin-bottom: 5px; }
+        input[type="range"] { width: 100%; }
+        .btn { 
+            background: rgba(0,255,255,0.2); border: 1px solid #00ffff; color: #00ffff; 
+            padding: 8px 16px; margin: 5px; cursor: pointer; border-radius: 5px;
+        }
+        .btn:hover { background: rgba(0,255,255,0.4); box-shadow: 0 0 10px #00ffff; }
+        .info { position: fixed; bottom: 20px; left: 20px; color: #ff00ff; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="controls collapsed" id="controlsPanel">
+        <button class="controls-toggle" onclick="toggleControls()">▼</button>
+        <div class="controls-content">
+        <h3>4D Hypercube Lattice Controls</h3>
+        <div class="slider">
+            <div class="slider-label">Grid Density: <span id="densityValue">0.5</span></div>
+            <input type="range" id="density" min="0.1" max="2.0" step="0.1" value="0.5">
+        </div>
+        <div class="slider">
+            <div class="slider-label">Morph Factor: <span id="morphValue">0.5</span></div>
+            <input type="range" id="morph" min="0.0" max="1.0" step="0.1" value="0.5">
+        </div>
+        <div class="slider">
+            <div class="slider-label">RGB Glitch: <span id="glitchValue">0.2</span></div>
+            <input type="range" id="glitch" min="0.0" max="1.0" step="0.1" value="0.2">
+        </div>
+        <div class="slider">
+            <div class="slider-label">Rotation Speed: <span id="speedValue">1.0</span></div>
+            <input type="range" id="speed" min="0.1" max="3.0" step="0.1" value="1.0">
+        </div>
+        <div class="slider">
+            <div class="slider-label">Moiré Intensity: <span id="moireValue">0.3</span></div>
+            <input type="range" id="moire" min="0.0" max="1.0" step="0.1" value="0.3">
+        </div>
+        <button class="btn" onclick="randomizeParams()">Randomize</button>
+        <button class="btn" onclick="resetParams()">Reset</button>
+        </div>
+    </div>
+
+    <div class="info">
+        Click and drag to rotate • Mouse wheel to zoom • R to randomize
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        
+        if (!gl) {
+            alert('WebGL not supported');
+        }
+
+        let params = {
+            density: 0.5,
+            morph: 0.5,
+            glitch: 0.2,
+            speed: 1.0,
+            moire: 0.3
+        };
+
+        let mouse = { x: 0, y: 0, down: false };
+        let rotation = { x: 0, y: 0 };
+        let zoom = 1.0;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const vertexShaderSource = `
+            attribute vec2 a_position;
+            void main() {
+                gl_Position = vec4(a_position, 0.0, 1.0);
+            }
+        `;
+
+        const fragmentShaderSource = `
+            precision highp float;
+            uniform float u_time;
+            uniform vec2 u_resolution;
+            uniform vec2 u_mouse;
+            uniform float u_density;
+            uniform float u_morph;
+            uniform float u_glitch;
+            uniform float u_speed;
+            uniform float u_moire;
+            uniform vec2 u_rotation;
+            uniform float u_zoom;
+            
+            // 4D rotation matrices
+            mat4 rotateXY(float theta) {
+                float c = cos(theta);
+                float s = sin(theta);
+                return mat4(
+                    c, -s, 0, 0,
+                    s, c, 0, 0,
+                    0, 0, 1, 0,
+                    0, 0, 0, 1
+                );
+            }
+            
+            mat4 rotateZW(float theta) {
+                float c = cos(theta);
+                float s = sin(theta);
+                return mat4(
+                    1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, c, -s,
+                    0, 0, s, c
+                );
+            }
+            
+            mat4 rotateXW(float theta) {
+                float c = cos(theta);
+                float s = sin(theta);
+                return mat4(
+                    c, 0, 0, -s,
+                    0, 1, 0, 0,
+                    0, 0, 1, 0,
+                    s, 0, 0, c
+                );
+            }
+            
+            // 4D hypercube lattice
+            float hypercubeLattice(vec4 p, float gridSize) {
+                vec4 grid = abs(fract(p / gridSize) - 0.5);
+                float thickness = 0.02 * (1.0 + u_morph * 2.0);
+                
+                // Calculate distance to grid lines in all 4 dimensions
+                float minDist = min(min(min(grid.x, grid.y), grid.z), grid.w);
+                return smoothstep(thickness, thickness * 0.5, minDist);
+            }
+            
+            // RGB channel separation effect
+            vec3 rgbGlitch(vec3 color, vec2 uv, float intensity) {
+                vec2 offset1 = vec2(intensity * 0.01 * sin(u_time * 10.0), 0.0);
+                vec2 offset2 = vec2(-intensity * 0.01 * cos(u_time * 12.0), 0.0);
+                
+                float r = color.r;
+                float g = mix(color.g, color.r, intensity * 0.5);
+                float b = mix(color.b, color.g, intensity * 0.3);
+                
+                return vec3(r, g, b);
+            }
+            
+            // Moiré pattern
+            float moirePattern(vec2 uv, float intensity) {
+                float pattern1 = sin(uv.x * 50.0 * (1.0 + intensity)) * sin(uv.y * 50.0 * (1.0 + intensity));
+                float pattern2 = sin((uv.x + uv.y) * 35.0 * (1.0 + intensity * 0.5));
+                return pattern1 * pattern2 * intensity;
+            }
+            
+            void main() {
+                vec2 uv = gl_FragCoord.xy / u_resolution;
+                vec2 coord = (uv - 0.5) * 2.0 * u_zoom;
+                
+                // Apply rotation from mouse interaction
+                coord = mat2(cos(u_rotation.x), -sin(u_rotation.x), 
+                           sin(u_rotation.x), cos(u_rotation.x)) * coord;
+                
+                // Create 4D space coordinates
+                vec4 p4d = vec4(coord, sin(u_time * u_speed * 0.5), cos(u_time * u_speed * 0.3));
+                
+                // Apply 4D rotations
+                p4d = rotateXY(u_time * u_speed * 0.2) * p4d;
+                p4d = rotateZW(u_time * u_speed * 0.15) * p4d;
+                p4d = rotateXW(u_time * u_speed * 0.1) * p4d;
+                
+                // Morphing effect
+                p4d += vec4(
+                    sin(p4d.y * 3.0 + u_time * u_speed) * u_morph * 0.2,
+                    cos(p4d.x * 3.0 + u_time * u_speed) * u_morph * 0.2,
+                    sin(p4d.z * 2.0 + u_time * u_speed * 0.7) * u_morph * 0.3,
+                    cos(p4d.w * 2.0 + u_time * u_speed * 0.9) * u_morph * 0.3
+                );
+                
+                // Generate hypercube lattice
+                float lattice = hypercubeLattice(p4d, u_density);
+                
+                // Create base colors
+                vec3 color1 = vec3(0.0, 1.0, 1.0); // Cyan
+                vec3 color2 = vec3(1.0, 0.0, 1.0); // Magenta
+                vec3 color3 = vec3(1.0, 1.0, 0.0); // Yellow
+                
+                // Mix colors based on 4D position
+                vec3 color = mix(
+                    mix(color1, color2, sin(p4d.z + u_time * u_speed) * 0.5 + 0.5),
+                    color3,
+                    sin(p4d.w + u_time * u_speed * 0.7) * 0.5 + 0.5
+                );
+                
+                // Apply lattice
+                color *= lattice;
+                
+                // Add moiré pattern
+                float moire = moirePattern(uv + p4d.xy * 0.1, u_moire);
+                color += vec3(moire * 0.3);
+                
+                // Apply RGB glitch
+                color = rgbGlitch(color, uv, u_glitch);
+                
+                // Mouse interaction glow
+                vec2 mousePos = u_mouse / u_resolution;
+                float mouseDist = length(uv - mousePos);
+                color += exp(-mouseDist * 8.0) * 0.2;
+                
+                // Add depth-based intensity variation
+                float depth = (sin(p4d.z * 2.0) + sin(p4d.w * 2.0)) * 0.25 + 0.5;
+                color *= depth;
+                
+                // Final brightness adjustment
+                color *= 0.3 + lattice * 0.7;
+                
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        function createShader(type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+            return shader;
+        }
+
+        const vertexShader = createShader(gl.VERTEX_SHADER, vertexShaderSource);
+        const fragmentShader = createShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+        const program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            console.error('Program link error:', gl.getProgramInfoLog(program));
+        }
+
+        gl.useProgram(program);
+
+        const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+        const positionLocation = gl.getAttribLocation(program, 'a_position');
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+        // Get uniform locations
+        const uniforms = {
+            time: gl.getUniformLocation(program, 'u_time'),
+            resolution: gl.getUniformLocation(program, 'u_resolution'),
+            mouse: gl.getUniformLocation(program, 'u_mouse'),
+            density: gl.getUniformLocation(program, 'u_density'),
+            morph: gl.getUniformLocation(program, 'u_morph'),
+            glitch: gl.getUniformLocation(program, 'u_glitch'),
+            speed: gl.getUniformLocation(program, 'u_speed'),
+            moire: gl.getUniformLocation(program, 'u_moire'),
+            rotation: gl.getUniformLocation(program, 'u_rotation'),
+            zoom: gl.getUniformLocation(program, 'u_zoom')
+        };
+
+        // Mouse and touch interactions
+        canvas.addEventListener('mousedown', (e) => {
+            mouse.down = true;
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (mouse.down) {
+                rotation.x += (e.clientX - mouse.x) * 0.01;
+                rotation.y += (e.clientY - mouse.y) * 0.01;
+            }
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            mouse.down = false;
+        });
+
+        canvas.addEventListener('wheel', (e) => {
+            zoom *= e.deltaY > 0 ? 1.1 : 0.9;
+            zoom = Math.max(0.1, Math.min(5.0, zoom));
+            e.preventDefault();
+        });
+
+        // Control panel interactions
+        function setupSlider(id, param, valueId) {
+            const slider = document.getElementById(id);
+            const valueDisplay = document.getElementById(valueId);
+            
+            slider.addEventListener('input', (e) => {
+                params[param] = parseFloat(e.target.value);
+                valueDisplay.textContent = params[param].toFixed(1);
+            });
+        }
+
+        setupSlider('density', 'density', 'densityValue');
+        setupSlider('morph', 'morph', 'morphValue');
+        setupSlider('glitch', 'glitch', 'glitchValue');
+        setupSlider('speed', 'speed', 'speedValue');
+        setupSlider('moire', 'moire', 'moireValue');
+
+        function randomizeParams() {
+            params.density = Math.random() * 1.9 + 0.1;
+            params.morph = Math.random();
+            params.glitch = Math.random() * 0.8;
+            params.speed = Math.random() * 2.9 + 0.1;
+            params.moire = Math.random();
+            
+            updateSliders();
+        }
+
+        function resetParams() {
+            params.density = 0.5;
+            params.morph = 0.5;
+            params.glitch = 0.2;
+            params.speed = 1.0;
+            params.moire = 0.3;
+            
+            updateSliders();
+        }
+
+        function updateSliders() {
+            document.getElementById('density').value = params.density;
+            document.getElementById('densityValue').textContent = params.density.toFixed(1);
+            document.getElementById('morph').value = params.morph;
+            document.getElementById('morphValue').textContent = params.morph.toFixed(1);
+            document.getElementById('glitch').value = params.glitch;
+            document.getElementById('glitchValue').textContent = params.glitch.toFixed(1);
+            document.getElementById('speed').value = params.speed;
+            document.getElementById('speedValue').textContent = params.speed.toFixed(1);
+            document.getElementById('moire').value = params.moire;
+            document.getElementById('moireValue').textContent = params.moire.toFixed(1);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'r' || e.key === 'R') {
+                randomizeParams();
+            }
+        });
+        
+        // Controls toggle function
+        function toggleControls() {
+            const controls = document.getElementById('controlsPanel');
+            const toggle = controls.querySelector('.controls-toggle');
+            
+            controls.classList.toggle('collapsed');
+            toggle.textContent = controls.classList.contains('collapsed') ? '▼' : '▲';
+        }
+
+        function animate(time) {
+            gl.uniform1f(uniforms.time, time * 0.001);
+            gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
+            gl.uniform2f(uniforms.mouse, mouse.x, mouse.y);
+            gl.uniform1f(uniforms.density, params.density);
+            gl.uniform1f(uniforms.morph, params.morph);
+            gl.uniform1f(uniforms.glitch, params.glitch);
+            gl.uniform1f(uniforms.speed, params.speed);
+            gl.uniform1f(uniforms.moire, params.moire);
+            gl.uniform2f(uniforms.rotation, rotation.x, rotation.y);
+            gl.uniform1f(uniforms.zoom, zoom);
+            
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            requestAnimationFrame(animate);
+        }
+        
+        animate(0);
+
+        // Export function for Lattice Visualizer
+        function exportLatticeData() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                latticeParams: { ...params },
+                mousePosition: { x: mouse.x, y: mouse.y },
+                rotationState: { x: rotation.x, y: rotation.y },
+                zoomLevel: zoom,
+                canvasSize: { width: canvas.width, height: canvas.height },
+                visualizerType: 'Hypercube Lattice System',
+                version: '1.0'
+            };
+            
+            // Create downloadable JSON
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `lattice-visualizer-export-${Date.now()}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            console.log('🔬 Lattice Visualizer data exported successfully');
+        }
+        
+        // Add export button to controls
+        const controlsContent = document.querySelector('.controls-content');
+        if (controlsContent) {
+            const exportBtn = document.createElement('button');
+            exportBtn.textContent = 'Export Lattice';
+            exportBtn.className = 'btn';
+            exportBtn.onclick = exportLatticeData;
+            controlsContent.appendChild(exportBtn);
+        }
+    </script>
+    
+    <!-- Add collapsible menu system -->
+    <script>
+        window.COLLAPSIBLE_MENU_CONFIG = {
+            startCollapsed: true,
+            position: 'top-right',
+            theme: 'dark'
+        };
+    </script>
+    <script src="../js/inject-collapsible-menu.js"></script>
+</body>
+</html>

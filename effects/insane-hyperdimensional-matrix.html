@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INSANE Hyperdimensional Matrix</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.9);
+            padding: 15px;
+            border: 2px solid #ff0080;
+            color: #ff0080;
+            z-index: 100;
+            width: 200px;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.5);
+            transition: all 0.3s ease;
+        }
+        .controls.collapsed {
+            width: 40px;
+            height: 40px;
+            padding: 8px;
+            overflow: hidden;
+        }
+        .controls-toggle {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 128, 0.2);
+            border: 1px solid #ff0080;
+            color: #ff0080;
+            cursor: pointer;
+            padding: 3px 6px;
+            font-size: 10px;
+            z-index: 101;
+        }
+        .controls-toggle:hover {
+            background: rgba(255, 0, 128, 0.4);
+        }
+        .controls-content {
+            transition: opacity 0.3s ease;
+        }
+        .controls.collapsed .controls-content {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        input[type="range"] {
+            width: 100%;
+            background: transparent;
+        }
+        .value-display {
+            color: #00ff80;
+            font-weight: bold;
+            text-shadow: 0 0 5px #00ff80;
+        }
+        .chaos-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #ff0080;
+            font-size: 16px;
+            text-shadow: 0 0 10px #ff0080;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border: 1px solid #ff0080;
+        }
+        .insane-btn {
+            background: linear-gradient(45deg, #ff0080, #8000ff);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .insane-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 0, 128, 0.8);
+        }
+        .reality-warning {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #ff8000;
+            font-size: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border: 1px solid #ff8000;
+            max-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="chaos-indicator">
+        <div>CHAOS LEVEL: <span id="chaosDisplay">5.0</span></div>
+        <div>DIMENSION: <span id="dimensionDisplay">4.2</span>D</div>
+        <div>REALITY BEND: <span id="realityDisplay">25%</span></div>
+    </div>
+    
+    <div class="controls collapsed" id="controlsPanel">
+        <button class="controls-toggle" onclick="toggleControls()">▼</button>
+        <div class="controls-content">
+            <div class="control-group">
+                <label>Chaos Level: <span class="value-display" id="chaosValue">5.0</span></label>
+                <input type="range" id="chaosLevel" min="0.0" max="10.0" step="0.1" value="5.0">
+            </div>
+            <div class="control-group">
+                <label>Dimension Break: <span class="value-display" id="dimensionValue">4.2</span></label>
+                <input type="range" id="dimensionBreak" min="3.0" max="8.0" step="0.1" value="4.2">
+            </div>
+            <div class="control-group">
+                <label>Time Warp: <span class="value-display" id="timeWarpValue">1.0</span></label>
+                <input type="range" id="timeWarp" min="0.1" max="50.0" step="0.1" value="1.0">
+            </div>
+            <div class="control-group">
+                <label>Fractal Depth: <span class="value-display" id="fractalValue">8</span></label>
+                <input type="range" id="fractalDepth" min="1" max="20" step="1" value="8">
+            </div>
+            <div class="control-group">
+                <label>Quantum Tunnel: <span class="value-display" id="quantumValue">2.0</span></label>
+                <input type="range" id="quantumTunnel" min="0.0" max="5.0" step="0.1" value="2.0">
+            </div>
+            <div class="control-group">
+                <label>Reality Bend: <span class="value-display" id="realityValue">25.0</span></label>
+                <input type="range" id="realityBend" min="0.0" max="100.0" step="1.0" value="25.0">
+            </div>
+            <div class="control-group">
+                <label>Chaos Attractor: <span class="value-display" id="attractorValue">3.14</span></label>
+                <input type="range" id="chaosAttractor" min="0.0" max="10.0" step="0.01" value="3.14">
+            </div>
+            <div class="control-group">
+                <label>Hyperspace Flow: <span class="value-display" id="flowValue">7.5</span></label>
+                <input type="range" id="hyperspaceFlow" min="0.0" max="20.0" step="0.1" value="7.5">
+            </div>
+            <button class="insane-btn" onclick="triggerChaosExplosion()">CHAOS EXPLOSION</button>
+            <button class="insane-btn" onclick="resetReality()">RESET REALITY</button>
+        </div>
+    </div>
+    
+    <div class="reality-warning">
+        ⚠️ WARNING: High chaos levels may cause reality distortion. Prolonged exposure to 8D+ geometry may result in existential questioning.
+    </div>
+
+    <script>
+        class InsaneHyperdimensionalMatrix {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
+                
+                this.mouseX = 0.5;
+                this.mouseY = 0.5;
+                this.time = 0;
+                this.startTime = Date.now();
+                
+                // INSANE parameters for reality-bending effects
+                this.params = {
+                    chaosLevel: 5.0,
+                    dimensionBreak: 4.2,
+                    timeWarp: 1.0,
+                    fractalDepth: 8,
+                    quantumTunnel: 2.0,
+                    realityBend: 25.0,
+                    chaosAttractor: 3.14,
+                    hyperspaceFlow: 7.5
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                if (!this.gl) {
+                    alert('WebGL not supported');
+                    return;
+                }
+                
+                this.setupCanvas();
+                this.createInsaneShaders();
+                this.createGeometry();
+                this.bindEvents();
+                this.animate();
+            }
+            
+            setupCanvas() {
+                const resize = () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                    this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+                };
+                resize();
+                window.addEventListener('resize', resize);
+            }
+            
+            createInsaneShaders() {
+                const vertexShaderSource = `
+                    attribute vec2 a_position;
+                    varying vec2 v_uv;
+                    varying vec3 v_worldPos;
+                    
+                    uniform float u_time;
+                    uniform float u_dimensionBreak;
+                    uniform float u_timeWarp;
+                    
+                    void main() {
+                        v_uv = a_position * 0.5 + 0.5;
+                        
+                        // Reality distortion in vertex stage
+                        vec2 distorted = a_position;
+                        float warpedTime = u_time * u_timeWarp;
+                        
+                        if (u_dimensionBreak > 4.0) {
+                            float extraDim = u_dimensionBreak - 4.0;
+                            distorted *= 1.0 + extraDim * 0.3 * sin(warpedTime + length(a_position));
+                        }
+                        
+                        v_worldPos = vec3(distorted * 2.0, sin(warpedTime * 0.1));
+                        gl_Position = vec4(distorted, 0.0, 1.0);
+                    }
+                `;
+                
+                const fragmentShaderSource = `
+                    precision highp float;
+                    
+                    varying vec2 v_uv;
+                    varying vec3 v_worldPos;
+                    
+                    uniform float u_time;
+                    uniform float u_chaosLevel;
+                    uniform float u_dimensionBreak;
+                    uniform float u_timeWarp;
+                    uniform float u_fractalDepth;
+                    uniform float u_quantumTunnel;
+                    uniform float u_realityBend;
+                    uniform float u_chaosAttractor;
+                    uniform float u_hyperspaceFlow;
+                    uniform vec2 u_resolution;
+                    uniform vec2 u_mouse;
+                    
+                    // Chaos and noise functions
+                    float hash(vec3 p) {
+                        p = fract(p * vec3(443.897, 441.423, 437.195));
+                        p += dot(p, p.yzx + 19.19);
+                        return fract((p.x + p.y) * p.z);
+                    }
+                    
+                    float noise3D(vec3 p) {
+                        vec3 i = floor(p);
+                        vec3 f = fract(p);
+                        f = f * f * (3.0 - 2.0 * f);
+                        
+                        return mix(
+                            mix(mix(hash(i + vec3(0,0,0)), hash(i + vec3(1,0,0)), f.x),
+                                mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
+                            mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x),
+                                mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z);
+                    }
+                    
+                    float fractalNoise(vec3 p, float depth) {
+                        float value = 0.0;
+                        float amplitude = 0.5;
+                        float frequency = 1.0;
+                        
+                        for (float i = 0.0; i < 16.0; i++) {
+                            if (i >= depth) break;
+                            value += amplitude * noise3D(p * frequency);
+                            frequency *= 2.0;
+                            amplitude *= 0.5;
+                        }
+                        
+                        return value;
+                    }
+                    
+                    // INSANE 8D rotation simulation
+                    vec3 rotateHyperChaos(vec3 p, float time, float chaos) {
+                        float t = time * u_timeWarp + chaos * 10.0;
+                        
+                        // Multiple nested rotations for chaos
+                        float c1 = cos(t * 0.7), s1 = sin(t * 0.7);
+                        float c2 = cos(t * 1.3), s2 = sin(t * 1.3);
+                        float c3 = cos(t * 0.5), s3 = sin(t * 0.5);
+                        
+                        // Simulate 8D rotation by applying multiple 3D rotations
+                        mat3 rotX = mat3(1, 0, 0, 0, c1, -s1, 0, s1, c1);
+                        mat3 rotY = mat3(c2, 0, s2, 0, 1, 0, -s2, 0, c2);
+                        mat3 rotZ = mat3(c3, -s3, 0, s3, c3, 0, 0, 0, 1);
+                        
+                        vec3 result = rotX * rotY * rotZ * p;
+                        
+                        // Add extra-dimensional effects
+                        if (u_dimensionBreak > 4.0) {
+                            float extraDim = u_dimensionBreak - 4.0;
+                            result += vec3(sin(t + result.x), cos(t + result.y), sin(t + result.z)) * extraDim * 0.5;
+                        }
+                        
+                        return result;
+                    }
+                    
+                    // Project higher dimensions to 3D with reality bending
+                    vec3 projectHigherDimensions(vec3 p) {
+                        float bend = u_realityBend * 0.01;
+                        
+                        // Simulate projection from 8D to 3D
+                        vec3 projected = p;
+                        
+                        // Add dimensional folding effects
+                        projected.x += sin(p.y * 3.0 + u_time) * bend;
+                        projected.y += cos(p.z * 2.5 + u_time * 1.3) * bend;
+                        projected.z += sin(p.x * 4.0 + u_time * 0.7) * bend;
+                        
+                        return projected;
+                    }
+                    
+                    // Fractal hypercube tessellation
+                    float fractalHypercube(vec3 p, float morphFactor) {
+                        vec3 pos = projectHigherDimensions(p);
+                        pos = rotateHyperChaos(pos, u_time, u_chaosLevel);
+                        
+                        float fractal = 0.0;
+                        float amplitude = 1.0;
+                        
+                        for (float i = 0.0; i < 12.0; i++) {
+                            if (i >= u_fractalDepth) break;
+                            
+                            // Hypercube distance field with chaos
+                            vec3 q = abs(fract(pos * pow(2.0, i)) - 0.5);
+                            float dist = max(max(q.x, q.y), q.z) - 0.3;
+                            
+                            // Add chaos and quantum tunneling
+                            dist += noise3D(pos * pow(2.0, i) + u_time) * u_chaosLevel * 0.1;
+                            dist += sin(length(pos) * 10.0 + u_time * 2.0) * u_quantumTunnel * 0.05;
+                            
+                            fractal += amplitude * (1.0 - smoothstep(0.0, 0.1, abs(dist)));
+                            amplitude *= 0.6;
+                        }
+                        
+                        return fractal;
+                    }
+                    
+                    // Strange attractor field
+                    vec3 strangeAttractor(vec3 p, float time) {
+                        // Simplified Lorenz-like attractor
+                        float sigma = 10.0 + u_chaosAttractor;
+                        float rho = 28.0 + u_chaosAttractor * 2.0;
+                        float beta = 8.0/3.0 + u_chaosAttractor * 0.5;
+                        
+                        vec3 dp;
+                        dp.x = sigma * (p.y - p.x);
+                        dp.y = p.x * (rho - p.z) - p.y;
+                        dp.z = p.x * p.y - beta * p.z;
+                        
+                        return normalize(dp) * u_hyperspaceFlow * 0.1;
+                    }
+                    
+                    // Quantum probability tunneling
+                    float quantumTunneling(vec3 p, float time) {
+                        float wave = sin(length(p) * 20.0 + time * 3.0);
+                        float probability = exp(-abs(wave) * u_quantumTunnel);
+                        return probability;
+                    }
+                    
+                    void main() {
+                        vec2 uv = (v_uv - 0.5) * 2.0;
+                        uv.x *= u_resolution.x / u_resolution.y;
+                        
+                        // Mouse influence on chaos
+                        vec2 mouseInfluence = (u_mouse - 0.5) * 2.0;
+                        float mouseChaos = length(mouseInfluence) * u_chaosLevel;
+                        
+                        // Ray direction with reality distortion
+                        vec3 rayDir = normalize(vec3(uv, 1.0));
+                        rayDir += strangeAttractor(rayDir, u_time);
+                        
+                        // Calculate fractal hypercube with all effects
+                        float fractal = fractalHypercube(rayDir * 5.0, u_chaosLevel);
+                        
+                        // Add quantum tunneling effects
+                        float quantum = quantumTunneling(rayDir * 10.0, u_time);
+                        fractal *= (0.7 + quantum * 0.3);
+                        
+                        // Hyperspace flow effects
+                        vec3 flowPos = rayDir + sin(u_time * 0.5) * u_hyperspaceFlow * 0.1;
+                        float flow = fractalNoise(flowPos * 3.0 + u_time * 0.2, 6.0);
+                        
+                        // Reality-bending color calculation
+                        vec3 baseColor1 = vec3(1.0, 0.0, 0.5);  // Magenta
+                        vec3 baseColor2 = vec3(0.0, 1.0, 0.5);  // Electric Green
+                        vec3 baseColor3 = vec3(0.5, 0.0, 1.0);  // Electric Purple
+                        vec3 chaosColor = vec3(1.0, 0.5, 0.0);  // Chaos Orange
+                        
+                        // Color mixing based on chaos and effects
+                        vec3 finalColor = mix(
+                            mix(baseColor1, baseColor2, fractal),
+                            mix(baseColor3, chaosColor, flow),
+                            mouseChaos * 0.5
+                        );
+                        
+                        // Apply quantum and chaos modulation
+                        finalColor *= (0.3 + fractal * 1.2);
+                        finalColor += vec3(quantum) * 0.3;
+                        finalColor *= (0.8 + u_chaosLevel * 0.1);
+                        
+                        // Reality bend final effects
+                        if (u_realityBend > 50.0) {
+                            finalColor = mix(finalColor, vec3(1.0), (u_realityBend - 50.0) * 0.01);
+                        }
+                        
+                        // Time warp color effects
+                        finalColor += sin(u_time * u_timeWarp * vec3(1.1, 1.3, 0.9)) * 0.1;
+                        
+                        gl_FragColor = vec4(finalColor, 1.0);
+                    }
+                `;
+                
+                const vertexShader = this.compileShader(vertexShaderSource, this.gl.VERTEX_SHADER);
+                const fragmentShader = this.compileShader(fragmentShaderSource, this.gl.FRAGMENT_SHADER);
+                
+                this.program = this.gl.createProgram();
+                this.gl.attachShader(this.program, vertexShader);
+                this.gl.attachShader(this.program, fragmentShader);
+                this.gl.linkProgram(this.program);
+                
+                if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)) {
+                    console.error('Program link error:', this.gl.getProgramInfoLog(this.program));
+                    return;
+                }
+                
+                this.gl.useProgram(this.program);
+                
+                this.uniforms = {
+                    time: this.gl.getUniformLocation(this.program, 'u_time'),
+                    chaosLevel: this.gl.getUniformLocation(this.program, 'u_chaosLevel'),
+                    dimensionBreak: this.gl.getUniformLocation(this.program, 'u_dimensionBreak'),
+                    timeWarp: this.gl.getUniformLocation(this.program, 'u_timeWarp'),
+                    fractalDepth: this.gl.getUniformLocation(this.program, 'u_fractalDepth'),
+                    quantumTunnel: this.gl.getUniformLocation(this.program, 'u_quantumTunnel'),
+                    realityBend: this.gl.getUniformLocation(this.program, 'u_realityBend'),
+                    chaosAttractor: this.gl.getUniformLocation(this.program, 'u_chaosAttractor'),
+                    hyperspaceFlow: this.gl.getUniformLocation(this.program, 'u_hyperspaceFlow'),
+                    resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
+                    mouse: this.gl.getUniformLocation(this.program, 'u_mouse')
+                };
+            }
+            
+            compileShader(source, type) {
+                const shader = this.gl.createShader(type);
+                this.gl.shaderSource(shader, source);
+                this.gl.compileShader(shader);
+                
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+                    console.error('Shader compile error:', this.gl.getShaderInfoLog(shader));
+                    return null;
+                }
+                
+                return shader;
+            }
+            
+            createGeometry() {
+                const vertices = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+                
+                this.vertexBuffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
+                
+                const positionLocation = this.gl.getAttribLocation(this.program, 'a_position');
+                this.gl.enableVertexAttribArray(positionLocation);
+                this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+            }
+            
+            bindEvents() {
+                // Mouse tracking
+                document.addEventListener('mousemove', (e) => {
+                    this.mouseX = e.clientX / window.innerWidth;
+                    this.mouseY = 1.0 - (e.clientY / window.innerHeight);
+                });
+                
+                // Parameter controls
+                const params = ['chaosLevel', 'dimensionBreak', 'timeWarp', 'fractalDepth', 'quantumTunnel', 'realityBend', 'chaosAttractor', 'hyperspaceFlow'];
+                params.forEach(param => {
+                    const slider = document.getElementById(param);
+                    const display = document.getElementById(param.replace('Break', '').replace('Attractor', '').replace('Tunnel', '').replace('Level', '').replace('Warp', '').replace('Depth', '').replace('Bend', '').replace('Flow', '') + 'Value');
+                    
+                    if (slider && display) {
+                        slider.addEventListener('input', (e) => {
+                            this.params[param] = parseFloat(e.target.value);
+                            display.textContent = e.target.value;
+                            this.updateDisplays();
+                        });
+                    }
+                });
+            }
+            
+            updateDisplays() {
+                document.getElementById('chaosDisplay').textContent = this.params.chaosLevel.toFixed(1);
+                document.getElementById('dimensionDisplay').textContent = this.params.dimensionBreak.toFixed(1);
+                document.getElementById('realityDisplay').textContent = this.params.realityBend.toFixed(0) + '%';
+            }
+            
+            triggerChaosExplosion() {
+                // Temporarily max out chaos parameters
+                this.params.chaosLevel = 10.0;
+                this.params.timeWarp = 25.0;
+                this.params.realityBend = 100.0;
+                
+                // Update sliders and displays
+                document.getElementById('chaosLevel').value = 10.0;
+                document.getElementById('timeWarp').value = 25.0;
+                document.getElementById('realityBend').value = 100.0;
+                
+                this.updateDisplays();
+                
+                // Reset after 3 seconds
+                setTimeout(() => {
+                    this.resetReality();
+                }, 3000);
+            }
+            
+            resetReality() {
+                this.params = {
+                    chaosLevel: 5.0,
+                    dimensionBreak: 4.2,
+                    timeWarp: 1.0,
+                    fractalDepth: 8,
+                    quantumTunnel: 2.0,
+                    realityBend: 25.0,
+                    chaosAttractor: 3.14,
+                    hyperspaceFlow: 7.5
+                };
+                
+                // Reset all sliders
+                Object.keys(this.params).forEach(param => {
+                    const slider = document.getElementById(param);
+                    if (slider) {
+                        slider.value = this.params[param];
+                        const display = document.getElementById(param.replace('Break', '').replace('Attractor', '').replace('Tunnel', '').replace('Level', '').replace('Warp', '').replace('Depth', '').replace('Bend', '').replace('Flow', '') + 'Value');
+                        if (display) {
+                            display.textContent = this.params[param];
+                        }
+                    }
+                });
+                
+                this.updateDisplays();
+            }
+            
+            render() {
+                this.time = (Date.now() - this.startTime) / 1000;
+                
+                this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+                
+                // Set uniforms
+                this.gl.uniform1f(this.uniforms.time, this.time);
+                this.gl.uniform1f(this.uniforms.chaosLevel, this.params.chaosLevel);
+                this.gl.uniform1f(this.uniforms.dimensionBreak, this.params.dimensionBreak);
+                this.gl.uniform1f(this.uniforms.timeWarp, this.params.timeWarp);
+                this.gl.uniform1f(this.uniforms.fractalDepth, this.params.fractalDepth);
+                this.gl.uniform1f(this.uniforms.quantumTunnel, this.params.quantumTunnel);
+                this.gl.uniform1f(this.uniforms.realityBend, this.params.realityBend);
+                this.gl.uniform1f(this.uniforms.chaosAttractor, this.params.chaosAttractor);
+                this.gl.uniform1f(this.uniforms.hyperspaceFlow, this.params.hyperspaceFlow);
+                this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
+                this.gl.uniform2f(this.uniforms.mouse, this.mouseX, this.mouseY);
+                
+                // Draw
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+            
+            animate() {
+                this.render();
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+        
+        // Initialize the INSANE system
+        const insaneMatrix = new InsaneHyperdimensionalMatrix();
+        
+        // Global functions for buttons
+        function triggerChaosExplosion() {
+            insaneMatrix.triggerChaosExplosion();
+        }
+        
+        function resetReality() {
+            insaneMatrix.resetReality();
+        }
+
+        function toggleControls() {
+            const controls = document.getElementById('controlsPanel');
+            const toggle = controls.querySelector('.controls-toggle');
+            
+            controls.classList.toggle('collapsed');
+            toggle.textContent = controls.classList.contains('collapsed') ? '▼' : '▲';
+        }
+    </script>
+</body>
+</html>

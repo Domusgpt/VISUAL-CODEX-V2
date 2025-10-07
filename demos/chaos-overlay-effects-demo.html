@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chaos Overlay Effects Demo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: radial-gradient(ellipse at center, #1a0033 0%, #000000 70%);
+            color: white;
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+            cursor: crosshair;
+        }
+        
+        .demo-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* CHAOS OVERLAY EFFECTS */
+        .chaos-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        /* BASIC CHAOS PATTERN */
+        .chaos-overlay.basic {
+            background: 
+                repeating-linear-gradient(
+                    22.5deg,
+                    transparent,
+                    transparent 3px,
+                    rgba(255, 0, 255, 0.03) 3px,
+                    rgba(255, 0, 255, 0.03) 6px
+                ),
+                repeating-linear-gradient(
+                    67.5deg,
+                    transparent,
+                    transparent 3px,
+                    rgba(0, 255, 255, 0.03) 3px,
+                    rgba(0, 255, 255, 0.03) 6px
+                );
+        }
+        
+        .chaos-overlay.basic.active {
+            opacity: 0.8;
+            animation: chaosFlicker 0.12s infinite;
+        }
+        
+        @keyframes chaosFlicker {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        /* COMPLEX CHAOS PATTERN */
+        .chaos-overlay.complex {
+            background: 
+                repeating-linear-gradient(
+                    15deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 0, 255, 0.05) 2px,
+                    rgba(255, 0, 255, 0.05) 4px
+                ),
+                repeating-linear-gradient(
+                    75deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 255, 0.05) 2px,
+                    rgba(0, 255, 255, 0.05) 4px
+                ),
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 1px,
+                    rgba(255, 255, 0, 0.02) 1px,
+                    rgba(255, 255, 0, 0.02) 2px
+                ),
+                repeating-linear-gradient(
+                    135deg,
+                    transparent,
+                    transparent 1px,
+                    rgba(255, 128, 0, 0.02) 1px,
+                    rgba(255, 128, 0, 0.02) 2px
+                );
+        }
+        
+        .chaos-overlay.complex.active {
+            opacity: 0.9;
+            animation: complexChaos 0.08s infinite;
+        }
+        
+        @keyframes complexChaos {
+            0% { 
+                opacity: 0.7;
+                filter: hue-rotate(0deg);
+            }
+            25% { 
+                opacity: 1;
+                filter: hue-rotate(90deg);
+            }
+            50% { 
+                opacity: 0.8;
+                filter: hue-rotate(180deg);
+            }
+            75% { 
+                opacity: 1;
+                filter: hue-rotate(270deg);
+            }
+            100% { 
+                opacity: 0.7;
+                filter: hue-rotate(360deg);
+            }
+        }
+        
+        /* GLITCH CHAOS PATTERN */
+        .chaos-overlay.glitch {
+            background: 
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 1px,
+                    rgba(255, 0, 0, 0.03) 1px,
+                    rgba(255, 0, 0, 0.03) 2px
+                ),
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 0, 0.02) 2px,
+                    rgba(0, 255, 0, 0.02) 4px
+                ),
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 3px,
+                    rgba(0, 0, 255, 0.02) 3px,
+                    rgba(0, 0, 255, 0.02) 6px
+                );
+        }
+        
+        .chaos-overlay.glitch.active {
+            opacity: 0.7;
+            animation: glitchChaos 0.05s infinite;
+        }
+        
+        @keyframes glitchChaos {
+            0% { 
+                opacity: 0.5;
+                transform: translate(0, 0);
+            }
+            10% { 
+                opacity: 0.8;
+                transform: translate(-1px, 0);
+            }
+            20% { 
+                opacity: 0.3;
+                transform: translate(1px, -1px);
+            }
+            30% { 
+                opacity: 0.9;
+                transform: translate(0, 1px);
+            }
+            40% { 
+                opacity: 0.6;
+                transform: translate(1px, 0);
+            }
+            50% { 
+                opacity: 0.8;
+                transform: translate(-1px, 1px);
+            }
+            60% { 
+                opacity: 0.4;
+                transform: translate(0, -1px);
+            }
+            70% { 
+                opacity: 0.9;
+                transform: translate(1px, 1px);
+            }
+            80% { 
+                opacity: 0.7;
+                transform: translate(-1px, 0);
+            }
+            90% { 
+                opacity: 0.5;
+                transform: translate(0, 0);
+            }
+            100% { 
+                opacity: 0.8;
+                transform: translate(0, 0);
+            }
+        }
+        
+        /* DIGITAL RAIN CHAOS */
+        .chaos-overlay.digital {
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 8px,
+                    rgba(0, 255, 0, 0.04) 8px,
+                    rgba(0, 255, 0, 0.04) 10px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 12px,
+                    rgba(0, 255, 255, 0.02) 12px,
+                    rgba(0, 255, 255, 0.02) 14px
+                );
+        }
+        
+        .chaos-overlay.digital.active {
+            opacity: 0.6;
+            animation: digitalRain 0.15s infinite;
+        }
+        
+        @keyframes digitalRain {
+            0% { 
+                opacity: 0.4;
+                background-position: 0 0, 0 0;
+            }
+            25% { 
+                opacity: 0.7;
+                background-position: 0 2px, 3px 0;
+            }
+            50% { 
+                opacity: 0.5;
+                background-position: 0 4px, 6px 0;
+            }
+            75% { 
+                opacity: 0.8;
+                background-position: 0 6px, 9px 0;
+            }
+            100% { 
+                opacity: 0.4;
+                background-position: 0 8px, 12px 0;
+            }
+        }
+        
+        /* INTERFERENCE CHAOS */
+        .chaos-overlay.interference {
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 0, 255, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 80% 70%, rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 0, 0.02) 1px, transparent 1px),
+                repeating-linear-gradient(
+                    30deg,
+                    transparent,
+                    transparent 5px,
+                    rgba(255, 0, 128, 0.02) 5px,
+                    rgba(255, 0, 128, 0.02) 10px
+                );
+            background-size: 40px 40px, 60px 60px, 80px 80px, 30px 30px;
+        }
+        
+        .chaos-overlay.interference.active {
+            opacity: 0.8;
+            animation: interferencePattern 0.2s infinite;
+        }
+        
+        @keyframes interferencePattern {
+            0% { 
+                opacity: 0.6;
+                background-position: 0 0, 0 0, 0 0, 0 0;
+            }
+            25% { 
+                opacity: 0.9;
+                background-position: 5px 5px, -10px 10px, 15px -5px, 8px 3px;
+            }
+            50% { 
+                opacity: 0.7;
+                background-position: 10px 10px, -20px 20px, 30px -10px, 16px 6px;
+            }
+            75% { 
+                opacity: 1;
+                background-position: 15px 15px, -30px 30px, 45px -15px, 24px 9px;
+            }
+            100% { 
+                opacity: 0.6;
+                background-position: 20px 20px, -40px 40px, 60px -20px, 32px 12px;
+            }
+        }
+        
+        /* DEMO INTERFACE */
+        .demo-interface {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 25px;
+            padding: 40px;
+            backdrop-filter: blur(15px);
+            max-width: 600px;
+            text-align: center;
+            z-index: 200;
+            position: relative;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(0, 255, 255, 0.2),
+                0 0 30px rgba(0, 255, 255, 0.1);
+        }
+        
+        .demo-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        
+        .demo-description {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        /* CHAOS CONTROLS */
+        .chaos-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .chaos-button {
+            background: linear-gradient(135deg, 
+                rgba(255, 0, 255, 0.15) 0%,
+                rgba(255, 0, 128, 0.1) 50%,
+                rgba(255, 0, 255, 0.15) 100%
+            );
+            border: 1px solid rgba(255, 0, 255, 0.4);
+            border-radius: 12px;
+            color: #ff00ff;
+            cursor: pointer;
+            padding: 12px 16px;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            font-family: inherit;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px #ff00ff;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1),
+                0 0 0 1px rgba(255, 0, 255, 0.2);
+        }
+        
+        .chaos-button:hover {
+            background: linear-gradient(135deg, 
+                rgba(255, 0, 255, 0.25) 0%,
+                rgba(255, 0, 128, 0.2) 50%,
+                rgba(255, 0, 255, 0.25) 100%
+            );
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 
+                0 8px 16px rgba(255, 0, 255, 0.2),
+                inset 0 2px 2px rgba(255, 255, 255, 0.15),
+                0 0 0 2px rgba(255, 0, 255, 0.4),
+                0 0 20px rgba(255, 0, 255, 0.3);
+        }
+        
+        .chaos-button.active {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 0, 0.25) 0%,
+                rgba(255, 128, 0, 0.2) 50%,
+                rgba(255, 255, 0, 0.25) 100%
+            );
+            border-color: #ffff00;
+            color: #ffff00;
+            text-shadow: 0 0 8px #ffff00;
+            box-shadow: 
+                0 8px 16px rgba(255, 255, 0, 0.2),
+                0 0 0 2px rgba(255, 255, 0, 0.4),
+                0 0 30px rgba(255, 255, 0, 0.3);
+            animation: activeButtonPulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes activeButtonPulse {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+        
+        /* SYSTEM CONTROLS */
+        .system-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .system-button {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.15) 0%,
+                rgba(0, 128, 255, 0.1) 50%,
+                rgba(0, 255, 255, 0.15) 100%
+            );
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 12px;
+            color: #00ffff;
+            cursor: pointer;
+            padding: 10px 20px;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px #00ffff;
+            backdrop-filter: blur(10px);
+        }
+        
+        .system-button:hover {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.25) 0%,
+                rgba(0, 128, 255, 0.2) 50%,
+                rgba(0, 255, 255, 0.25) 100%
+            );
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        /* STATUS INDICATOR */
+        .status-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #ff00ff;
+            border-radius: 15px;
+            padding: 15px;
+            z-index: 1000;
+            backdrop-filter: blur(15px);
+            color: #ff00ff;
+            font-size: 0.8rem;
+        }
+        
+        .status-item {
+            margin: 5px 0;
+        }
+        
+        .status-value {
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .demo-interface {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+            
+            .demo-title {
+                font-size: 1.5rem;
+            }
+            
+            .chaos-controls {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="chaos-overlay basic" id="chaosOverlay"></div>
+        
+        <div class="demo-interface">
+            <h1 class="demo-title">CHAOS OVERLAY EFFECTS</h1>
+            <p class="demo-description">
+                Advanced interference patterns and digital chaos effects for cyberpunk interfaces. 
+                Multiple pattern types with flickering animations and glitch behaviors.
+            </p>
+            
+            <div class="chaos-controls">
+                <button class="chaos-button active" onclick="setChaosPattern('basic')">Basic</button>
+                <button class="chaos-button" onclick="setChaosPattern('complex')">Complex</button>
+                <button class="chaos-button" onclick="setChaosPattern('glitch')">Glitch</button>
+                <button class="chaos-button" onclick="setChaosPattern('digital')">Digital</button>
+                <button class="chaos-button" onclick="setChaosPattern('interference')">Interference</button>
+            </div>
+            
+            <div class="system-controls">
+                <button class="system-button" onclick="toggleChaos()">Toggle Effect</button>
+                <button class="system-button" onclick="randomPattern()">Random Pattern</button>
+                <button class="system-button" onclick="cyclePatterns()">Cycle All</button>
+                <button class="system-button" onclick="resetChaos()">Reset</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="status-display">
+        <div class="status-item">Pattern: <span class="status-value" id="currentPattern">Basic</span></div>
+        <div class="status-item">Status: <span class="status-value" id="chaosStatus">Active</span></div>
+        <div class="status-item">Intensity: <span class="status-value" id="intensityLevel">Medium</span></div>
+        <div class="status-item">Animation: <span class="status-value" id="animationState">Running</span></div>
+    </div>
+    
+    <script>
+        let currentPattern = 'basic';
+        let isActive = true;
+        let isCycling = false;
+        
+        const chaosOverlay = document.getElementById('chaosOverlay');
+        const patterns = ['basic', 'complex', 'glitch', 'digital', 'interference'];
+        
+        function setChaosPattern(pattern) {
+            // Remove all pattern classes
+            chaosOverlay.className = 'chaos-overlay';
+            
+            // Remove active state from all buttons
+            document.querySelectorAll('.chaos-button').forEach(btn => btn.classList.remove('active'));
+            
+            // Apply new pattern
+            chaosOverlay.classList.add(pattern);
+            if (isActive) {
+                chaosOverlay.classList.add('active');
+            }
+            
+            currentPattern = pattern;
+            
+            // Update active button
+            event.target.classList.add('active');
+            
+            updateStatus();
+            console.log(`Chaos pattern changed to: ${pattern}`);
+        }
+        
+        function toggleChaos() {
+            isActive = !isActive;
+            
+            if (isActive) {
+                chaosOverlay.classList.add('active');
+            } else {
+                chaosOverlay.classList.remove('active');
+            }
+            
+            updateStatus();
+            console.log(`Chaos effect: ${isActive ? 'Activated' : 'Deactivated'}`);
+        }
+        
+        function randomPattern() {
+            let newPattern;
+            do {
+                newPattern = patterns[Math.floor(Math.random() * patterns.length)];
+            } while (newPattern === currentPattern);
+            
+            // Find and click the button for the new pattern
+            document.querySelectorAll('.chaos-button').forEach(btn => {
+                if (btn.textContent.toLowerCase() === newPattern) {
+                    btn.click();
+                }
+            });
+        }
+        
+        function cyclePatterns() {
+            if (isCycling) {
+                isCycling = false;
+                return;
+            }
+            
+            isCycling = true;
+            let currentIndex = patterns.indexOf(currentPattern);
+            
+            const cycleInterval = setInterval(() => {
+                if (!isCycling) {
+                    clearInterval(cycleInterval);
+                    return;
+                }
+                
+                currentIndex = (currentIndex + 1) % patterns.length;
+                const newPattern = patterns[currentIndex];
+                
+                // Set pattern directly without clicking button
+                chaosOverlay.className = 'chaos-overlay ' + newPattern;
+                if (isActive) {
+                    chaosOverlay.classList.add('active');
+                }
+                
+                currentPattern = newPattern;
+                
+                // Update button states
+                document.querySelectorAll('.chaos-button').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent.toLowerCase() === newPattern) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                updateStatus();
+            }, 1500);
+            
+            // Stop cycling after one complete cycle
+            setTimeout(() => {
+                isCycling = false;
+                clearInterval(cycleInterval);
+            }, patterns.length * 1500);
+        }
+        
+        function resetChaos() {
+            isCycling = false;
+            isActive = true;
+            currentPattern = 'basic';
+            
+            chaosOverlay.className = 'chaos-overlay basic active';
+            
+            // Reset button states
+            document.querySelectorAll('.chaos-button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase() === 'basic') {
+                    btn.classList.add('active');
+                }
+            });
+            
+            updateStatus();
+            console.log('Chaos effects reset to default state');
+        }
+        
+        function updateStatus() {
+            document.getElementById('currentPattern').textContent = currentPattern.charAt(0).toUpperCase() + currentPattern.slice(1);
+            document.getElementById('chaosStatus').textContent = isActive ? 'Active' : 'Inactive';
+            document.getElementById('intensityLevel').textContent = isCycling ? 'High' : 'Medium';
+            document.getElementById('animationState').textContent = isActive ? 'Running' : 'Paused';
+        }
+        
+        // Mouse movement creates additional chaos effects
+        document.addEventListener('mousemove', (e) => {
+            if (!isActive) return;
+            
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            
+            // Subtle mouse-reactive filter effects
+            const hueShift = mouseX * 60;
+            const brightness = 1 + (mouseY * 0.2);
+            
+            chaosOverlay.style.filter = `hue-rotate(${hueShift}deg) brightness(${brightness})`;
+        });
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case ' ':
+                    e.preventDefault();
+                    toggleChaos();
+                    break;
+                case 'r':
+                case 'R':
+                    randomPattern();
+                    break;
+                case 'c':
+                case 'C':
+                    cyclePatterns();
+                    break;
+                case 'Escape':
+                    resetChaos();
+                    break;
+                case '1':
+                    setChaosPattern('basic');
+                    break;
+                case '2':
+                    setChaosPattern('complex');
+                    break;
+                case '3':
+                    setChaosPattern('glitch');
+                    break;
+                case '4':
+                    setChaosPattern('digital');
+                    break;
+                case '5':
+                    setChaosPattern('interference');
+                    break;
+            }
+        });
+        
+        // Initialize
+        updateStatus();
+        
+        console.log('🎨 Chaos Overlay Effects Demo loaded - 5 pattern types with mouse/keyboard controls');
+        console.log('Keyboard controls: Space=toggle, R=random, C=cycle, Esc=reset, 1-5=patterns');
+    </script>
+</body>
+</html>

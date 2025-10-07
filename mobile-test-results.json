@@ -1,0 +1,25 @@
+{
+  "summary": {
+    "successRate": 86,
+    "passedChecks": 6,
+    "totalChecks": 7,
+    "elements": {
+      "header": true,
+      "nav": true,
+      "cards": 3,
+      "galleryContainer": true,
+      "performanceIndicator": true,
+      "zingTouchLoaded": false
+    },
+    "errors": [],
+    "performance": {
+      "loadTime": 952,
+      "domReady": 932,
+      "resources": 8
+    },
+    "demos": {
+      "neomorphicCards": 4,
+      "stateDots": 16
+    }
+  }
+}

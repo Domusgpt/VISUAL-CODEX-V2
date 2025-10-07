@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIB34D Advanced Card Bending System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: white;
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow-x: hidden;
+            height: 100vh;
+            cursor: crosshair;
+            background: radial-gradient(ellipse at center, #1a0033 0%, #000000 70%);
+            perspective: 1000px;
+            
+            /* Advanced CSS Variables for Real-time Reactivity */
+            --global-energy: 0.0;
+            --section-focus: 0;
+            --portal-intensity: 0.0;
+            --micro-chaos: 0.0;
+            --inverse-flow: 0.0;
+            --grid-vibrance: 1.0;
+            --transition-phase: 0.0;
+            --hover-section: -1;
+            --scroll-momentum: 0.0;
+            --reality-tear: 0.0;
+            
+            /* Card Bending Parameters */
+            --bend-intensity: 0.5;
+            --perspective-depth: 800px;
+            --rotation-x: 0deg;
+            --rotation-y: 0deg;
+            --rotation-z: 0deg;
+            --scale-factor: 1.0;
+            --warp-strength: 0.0;
+            --dimensional-shift: 0.0;
+            --skew-x: 0deg;
+            --skew-y: 0deg;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 30px;
+            padding: 40px;
+            transform-style: preserve-3d;
+        }
+        
+        /* MOBILE LAYOUT OPTIMIZATIONS */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(6, auto);
+                gap: 20px;
+                padding: 20px;
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            
+            body {
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            
+            .bend-card {
+                min-height: 200px;
+                transform: none !important; /* Disable 3D transforms on mobile for performance */
+                perspective: none;
+                border-radius: 15px;
+                font-size: 0.9rem;
+            }
+            
+            .bend-card:hover {
+                transform: scale(1.02) !important;
+                transition: transform 0.3s ease;
+            }
+            
+            .card-content {
+                padding: 15px !important;
+            }
+            
+            .card-title {
+                font-size: 1.1rem !important;
+                margin-bottom: 8px !important;
+            }
+            
+            .card-subtitle {
+                font-size: 0.75rem !important;
+                margin-bottom: 10px !important;
+            }
+            
+            .card-description {
+                font-size: 0.7rem !important;
+                line-height: 1.4 !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .bend-card {
+                min-height: 180px;
+                border-radius: 12px;
+            }
+            
+            .card-content {
+                padding: 12px !important;
+            }
+            
+            .card-title {
+                font-size: 1rem !important;
+                margin-bottom: 6px !important;
+            }
+            
+            .card-subtitle {
+                font-size: 0.7rem !important;
+                margin-bottom: 8px !important;
+            }
+            
+            .card-description {
+                font-size: 0.65rem !important;
+                line-height: 1.3 !important;
+            }
+        }
+
+        .bend-card {
+            position: relative;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, calc(0.12 + var(--global-energy) * 0.08)) 0%,
+                rgba(255, 255, 255, calc(0.06 + var(--global-energy) * 0.04)) 50%,
+                rgba(0, 0, 0, 0.02) 100%
+            );
+            backdrop-filter: blur(calc(20px + var(--grid-vibrance) * 10px)) saturate(calc(180% + var(--grid-vibrance) * 50%));
+            border-radius: 25px;
+            border: 2px solid rgba(255, 255, 255, calc(0.18 + var(--global-energy) * 0.3));
+            overflow: hidden;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform-style: preserve-3d;
+            cursor: pointer;
+            
+            /* Base 2D-like Transform */
+            transform: 
+                scale(calc(var(--scale-factor) + var(--micro-chaos) * 0.02))
+                rotateZ(calc(var(--rotation-z) * var(--bend-intensity)))
+                skewX(calc(var(--skew-x) * var(--bend-intensity)))
+                skewY(calc(var(--skew-y) * var(--bend-intensity)));
+            
+            box-shadow: 
+                0 calc(15px + var(--global-energy) * 20px) calc(35px + var(--global-energy) * 30px) rgba(0, 0, 0, 0.4),
+                0 5px 15px rgba(0, 255, 255, calc(0.1 + var(--grid-vibrance) * 0.2)),
+                inset 0 1px 1px rgba(255, 255, 255, calc(0.2 + var(--global-energy) * 0.2)),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Individual Card Bending Behaviors */
+        .bend-card.perspective-tilt {
+            transform: 
+                scale(1.05)
+                rotateZ(5deg)
+                skewX(5deg);
+            transform-origin: center center;
+        }
+
+        .bend-card.deep-perspective {
+            transform: 
+                scale(1.1)
+                rotateZ(-8deg)
+                skewY(7deg);
+        }
+
+        .bend-card.twist-warp {
+            transform: 
+                scale(1.08)
+                rotateZ(10deg)
+                skewX(8deg)
+                skewY(5deg);
+        }
+
+        .bend-card.dimension-fold {
+            transform: 
+                scaleX(1.15)
+                scaleY(0.9)
+                rotateZ(15deg)
+                skewX(10deg);
+        }
+
+        .bend-card.reality-bend {
+            transform: 
+                scale(1.12)
+                rotateZ(-12deg)
+                skewX(-10deg)
+                skewY(8deg);
+        }
+
+        .bend-card.portal-emergence {
+            transform: 
+                scale(1.2)
+                rotateZ(20deg)
+                skewX(15deg);
+            animation: portal-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes portal-pulse {
+            0% { 
+                transform: 
+                    scale(1.2)
+                    rotateZ(20deg)
+                    skewX(15deg);
+                filter: hue-rotate(0deg) saturate(150%);
+            }
+            50% {
+                transform: 
+                    scale(1.25)
+                    rotateZ(25deg)
+                    skewX(20deg);
+                filter: hue-rotate(180deg) saturate(200%);
+            }
+            100% { 
+                transform: 
+                    scale(1.2)
+                    rotateZ(20deg)
+                    skewX(15deg);
+                filter: hue-rotate(360deg) saturate(150%);
+            }
+        }
+
+        /* Hover Enhancements - Extreme Bending */
+        .bend-card:hover {
+            --global-energy: 1.0;
+            --grid-vibrance: 2.0;
+            --micro-chaos: 0.8;
+            border-color: rgba(0, 255, 255, 0.9);
+            box-shadow: 
+                0 50px 100px rgba(0, 0, 0, 0.8),
+                0 25px 80px rgba(0, 255, 255, 0.6),
+                0 0 120px rgba(255, 0, 255, 0.5),
+                0 0 200px rgba(255, 255, 0, 0.4),
+                inset 0 3px 6px rgba(255, 255, 255, 0.8),
+                inset 0 -3px 6px rgba(0, 255, 255, 0.4);
+            backdrop-filter: blur(60px) saturate(400%) hue-rotate(45deg);
+            z-index: 10;
+        }
+
+        .bend-card.perspective-tilt:hover {
+            transform: 
+                scale(1.15)
+                rotateZ(10deg)
+                skewX(10deg);
+            animation: holographic-shimmer 1.5s ease-in-out infinite;
+        }
+
+        .bend-card.deep-perspective:hover {
+            transform: 
+                scale(1.25)
+                rotateZ(-15deg)
+                skewY(12deg);
+        }
+
+        .bend-card.twist-warp:hover {
+            transform: 
+                scale(1.18)
+                rotateZ(20deg)
+                skewX(15deg)
+                skewY(10deg);
+        }
+
+        .bend-card.dimension-fold:hover {
+            transform: 
+                scaleX(1.3)
+                scaleY(0.8)
+                rotateZ(25deg)
+                skewX(18deg);
+        }
+
+        .bend-card.reality-bend:hover {
+            transform: 
+                scale(1.22)
+                rotateZ(-20deg)
+                skewX(-15deg)
+                skewY(12deg);
+        }
+
+        @keyframes holographic-shimmer {
+            0% { filter: hue-rotate(0deg) saturate(150%) brightness(1.1); }
+            33% { filter: hue-rotate(120deg) saturate(200%) brightness(1.3); }
+            66% { filter: hue-rotate(240deg) saturate(180%) brightness(1.2); }
+            100% { filter: hue-rotate(360deg) saturate(150%) brightness(1.1); }
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 2;
+            padding: 25px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            transform-style: preserve-3d;
+        }
+
+        .card-title {
+            font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+            font-weight: 900;
+            margin-bottom: 12px;
+            color: #ffffff;
+            text-shadow: 
+                0 0 5px #00ffff,
+                0 0 10px #00ffff,
+                0 0 20px rgba(0, 255, 255, 0.5);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            line-height: 1.1;
+            transform: translateZ(0px); /* Keep content flat */
+        }
+
+        .card-subtitle {
+            font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+            color: #00ffff;
+            margin-bottom: 15px;
+            text-shadow: 0 0 8px #00ffff;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            transform: translateZ(0px); /* Keep content flat */
+        }
+
+        .card-description {
+            font-size: clamp(0.6rem, 1.4vw, 0.8rem);
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.5;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.3);
+            font-family: 'JetBrains Mono', monospace;
+            transform: translateZ(0px); /* Keep content flat */
+        }
+
+        .bend-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid #00ffff;
+            border-radius: 12px;
+            padding: 20px;
+            color: #00ffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            z-index: 1000;
+            min-width: 280px;
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-label {
+            flex: 1;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .control-slider {
+            flex: 2;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: rgba(0, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .control-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #00ffff;
+            cursor: pointer;
+            box-shadow: 0 0 5px #00ffff;
+        }
+
+        .control-value {
+            flex: 0.5;
+            text-align: right;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .info-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid #ff00ff;
+            border-radius: 12px;
+            padding: 20px;
+            color: #ff00ff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .info-title {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #00ffff;
+        }
+
+        .info-item {
+            margin-bottom: 8px;
+            font-size: 0.7rem;
+            line-height: 1.4;
+        }
+
+        .info-key {
+            color: #00ffff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-panel">
+        <div class="info-title">VIB34D Card Bending</div>
+        <div class="info-item"><span class="info-key">System:</span> Advanced 2D/3D CSS Transform Engine</div>
+        <div class="info-item"><span class="info-key">Cards:</span> 6 Unique Bending Behaviors</div>
+        <div class="info-item"><span class="info-key">Interaction:</span> Hover for Extreme Transforms</div>
+        <div class="info-item"><span class="info-key">Controls:</span> Real-time Parameter Adjustment</div>
+        <div class="info-item"><span class="info-key">Perspective:</span> Multi-layer 3D Depth</div>
+        <div class="info-item"><span class="info-key">Animation:</span> Portal Pulse on Card 6</div>
+    </div>
+
+    <div class="bend-controls">
+        <div class="info-title">Bend Parameters</div>
+        <div class="control-group">
+            <label class="control-label">Bend Intensity:</label>
+            <input type="range" class="control-slider" id="bendIntensity" min="0" max="2" step="0.1" value="0.5">
+            <span class="control-value" id="bendIntensityValue">0.5</span>
+        </div>
+        <div class="control-group">
+            <label class="control-label">Perspective Depth:</label>
+            <input type="range" class="control-slider" id="perspectiveDepth" min="400" max="2000" step="50" value="800">
+            <span class="control-value" id="perspectiveDepthValue">800px</span>
+        </div>
+        <div class="control-group">
+            <label class="control-label">Global Energy:</label>
+            <input type="range" class="control-slider" id="globalEnergy" min="0" max="2" step="0.1" value="0">
+            <span class="control-value" id="globalEnergyValue">0.0</span>
+        </div>
+        <div class="control-group">
+            <label class="control-label">Grid Vibrance:</label>
+            <input type="range" class="control-slider" id="gridVibrance" min="0.5" max="3" step="0.1" value="1">
+            <span class="control-value" id="gridVibranceValue">1.0</span>
+        </div>
+        <div class="control-group">
+            <label class="control-label">Micro Chaos:</label>
+            <input type="range" class="control-slider" id="microChaos" min="0" max="2" step="0.1" value="0">
+            <span class="control-value" id="microChaosValue">0.0</span>
+        </div>
+        <div class="control-group">
+            <label class="control-label">Scale Factor:</label>
+            <input type="range" class="control-slider" id="scaleFactor" min="0.5" max="2" step="0.05" value="1">
+            <span class="control-value" id="scaleFactorValue">1.0</span>
+        </div>
+        <div class="control-group">
+            <label class="control-label">Dimensional Shift:</label>
+            <input type="range" class="control-slider" id="dimensionalShift" min="-2" max="2" step="0.1" value="0">
+            <span class="control-value" id="dimensionalShiftValue">0.0</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="bend-card perspective-tilt">
+            <div class="card-content">
+                <div class="card-title">Perspective Tilt</div>
+                <div class="card-description">Gentle perspective tilt with rotateZ(5deg) and skewX(5deg). Hover enhances the effect with shimmer animation and increased depth.</div>
+            </div>
+        </div>
+
+        <div class="bend-card deep-perspective">
+            <div class="card-content">
+                <div class="card-title">Deep Perspective</div>
+                <div class="card-description">Dramatic perspective with rotateZ(-8deg) and skewY(7deg). Creates the illusion of cards floating in true 3D space.</div>
+            </div>
+        </div>
+
+        <div class="bend-card twist-warp">
+            <div class="card-content">
+                <div class="card-title">Twist Warp</div>
+                <div class="card-description">Complex transformation combining rotateZ, skewX, and skewY. Creates a twisted warping effect that suggests dimensional folding.</div>
+            </div>
+        </div>
+
+        <div class="bend-card dimension-fold">
+            <div class="card-content">
+                <div class="card-title">Dimension Fold</div>
+                <div class="card-description">Advanced folding effect using scaleY(0.9) and scaleX(1.15) with rotation. Simulates cards bending along multiple axes simultaneously.</div>
+            </div>
+        </div>
+
+        <div class="bend-card reality-bend">
+            <div class="card-content">
+                <div class="card-title">Reality Bend</div>
+                <div class="card-description">Combines rotation with translateX and translateY displacement. Creates the effect of reality bending around the card.</div>
+            </div>
+        </div>
+
+        <div class="bend-card portal-emergence">
+            <div class="card-content">
+                <div class="card-title">Portal Emergence</div>
+                <div class="card-description">Extreme perspective with animated portal-pulse effect. Continuously cycles through rotations and color shifts.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class VIB34DCardBendingSystem {
+            constructor() {
+                this.params = {
+                    bendIntensity: 0.5,
+                    perspectiveDepth: 800,
+                    globalEnergy: 0.0,
+                    gridVibrance: 1.0,
+                    microChaos: 0.0,
+                    scaleFactor: 1.0,
+                    dimensionalShift: 0.0
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupControls();
+                this.applyParameters();
+                this.setupCardInteractions();
+                console.log('🎯 VIB34D Card Bending System initialized');
+            }
+            
+            setupControls() {
+                const controls = [
+                    'bendIntensity', 'perspectiveDepth', 'globalEnergy', 
+                    'gridVibrance', 'microChaos', 'scaleFactor', 'dimensionalShift'
+                ];
+                
+                controls.forEach(control => {
+                    const slider = document.getElementById(control);
+                    const display = document.getElementById(control + 'Value');
+                    
+                    if (slider && display) {
+                        slider.addEventListener('input', (e) => {
+                            const value = parseFloat(e.target.value);
+                            this.params[control] = value;
+                            
+                            const displayValue = control === 'perspectiveDepth' ? 
+                                value + 'px' : value.toFixed(1);
+                            display.textContent = displayValue;
+                            
+                            this.applyParameters();
+                        });
+                    }
+                });
+            }
+            
+            applyParameters() {
+                const root = document.documentElement;
+                
+                // Apply CSS custom properties
+                root.style.setProperty('--bend-intensity', this.params.bendIntensity);
+                root.style.setProperty('--perspective-depth', this.params.perspectiveDepth + 'px');
+                root.style.setProperty('--global-energy', this.params.globalEnergy);
+                root.style.setProperty('--grid-vibrance', this.params.gridVibrance);
+                root.style.setProperty('--micro-chaos', this.params.microChaos);
+                root.style.setProperty('--scale-factor', this.params.scaleFactor);
+                root.style.setProperty('--dimensional-shift', this.params.dimensionalShift);
+            }
+            
+            setupCardInteractions() {
+                const cards = document.querySelectorAll('.bend-card');
+                
+                cards.forEach((card, index) => {
+                    // Mouse move tracking for enhanced bending
+                    card.addEventListener('mousemove', (e) => {
+                        const rect = card.getBoundingClientRect();
+                        const centerX = rect.left + rect.width / 2;
+                        const centerY = rect.top + rect.height / 2;
+                        
+                        const deltaX = (e.clientX - centerX) / (rect.width / 2);
+                        const deltaY = (e.clientY - centerY) / (rect.height / 2);
+                        
+                        // Apply dynamic 2D-like rotation and skew based on mouse position
+                        const rotateZ = deltaX * 10 * this.params.bendIntensity;
+                        const skewX = -deltaY * 5 * this.params.bendIntensity;
+                        const skewY = deltaX * 5 * this.params.bendIntensity;
+                        
+                        card.style.setProperty('--rotation-z', rotateZ + 'deg');
+                        card.style.setProperty('--skew-x', skewX + 'deg');
+                        card.style.setProperty('--skew-y', skewY + 'deg');
+                    });
+                    
+                    // Reset on mouse leave
+                    card.addEventListener('mouseleave', () => {
+                        card.style.setProperty('--rotation-z', '0deg');
+                        card.style.setProperty('--skew-x', '0deg');
+                        card.style.setProperty('--skew-y', '0deg');
+                    });
+                    
+                    // Click for random bend
+                    card.addEventListener('click', () => {
+                        this.randomBend(card);
+                    });
+                });
+            }
+            
+            randomBend(card) {
+                const randomRotZ = (Math.random() - 0.5) * 30;
+                const randomSkewX = (Math.random() - 0.5) * 20;
+                const randomSkewY = (Math.random() - 0.5) * 20;
+                const randomScale = 0.8 + Math.random() * 0.6;
+                
+                card.style.setProperty('--rotation-z', randomRotZ + 'deg');
+                card.style.setProperty('--skew-x', randomSkewX + 'deg');
+                card.style.setProperty('--skew-y', randomSkewY + 'deg');
+                card.style.setProperty('--scale-factor', randomScale);
+                
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    card.style.setProperty('--rotation-z', '0deg');
+                    card.style.setProperty('--skew-x', '0deg');
+                    card.style.setProperty('--skew-y', '0deg');
+                    card.style.setProperty('--scale-factor', this.params.scaleFactor);
+                }, 2000);
+            }
+            
+            // Auto-demonstration mode
+            startAutoDemo() {
+                setInterval(() => {
+                    // Cycle through different parameter combinations
+                    this.params.bendIntensity = 0.5 + Math.sin(Date.now() / 3000) * 0.5;
+                    this.params.globalEnergy = 0.5 + Math.sin(Date.now() / 2000) * 0.5;
+                    this.params.microChaos = 0.3 + Math.sin(Date.now() / 4000) * 0.3;
+                    
+                    this.applyParameters();
+                    this.updateDisplays();
+                }, 100);
+            }
+            
+            updateDisplays() {
+                Object.keys(this.params).forEach(param => {
+                    const display = document.getElementById(param + 'Value');
+                    if (display) {
+                        const value = param === 'perspectiveDepth' ? 
+                            this.params[param] + 'px' : this.params[param].toFixed(1);
+                        display.textContent = value;
+                    }
+                });
+            }
+        }
+        
+        // Initialize the system
+        document.addEventListener('DOMContentLoaded', () => {
+            const bendingSystem = new VIB34DCardBendingSystem();
+            
+            // Make globally accessible
+            window.bendingSystem = bendingSystem;
+            
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case 'd':
+                    case 'D':
+                        bendingSystem.startAutoDemo();
+                        console.log('🎬 Auto-demo mode started');
+                        break;
+                    case 'r':
+                    case 'R':
+                        // Reset all parameters
+                        bendingSystem.params = {
+                            bendIntensity: 0.5,
+                            perspectiveDepth: 800,
+                            globalEnergy: 0.0,
+                            gridVibrance: 1.0,
+                            microChaos: 0.0,
+                            scaleFactor: 1.0,
+                            dimensionalShift: 0.0
+                        };
+                        bendingSystem.applyParameters();
+                        bendingSystem.updateDisplays();
+                        console.log('🔄 Parameters reset');
+                        break;
+                }
+            });
+        });
+    </script>
+    
+    <!-- Add collapsible menu system -->
+    <script>
+        window.COLLAPSIBLE_MENU_CONFIG = {
+            startCollapsed: true,
+            position: 'top-right',
+            theme: 'dark'
+        };
+    </script>
+    <script src="../js/inject-collapsible-menu.js"></script>
+</body>
+</html>
