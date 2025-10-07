@@ -11,12 +11,19 @@ An advanced interactive gallery showcasing 39 unique visual effects and style de
 - **39 Visual Effects**: Holographic systems, 4D visualizers, particle effects, CSS animations
 - **Lazy Loading**: Efficient iframe loading prevents WebGL context overload
 - **Interactive Previews**: Mouse, scroll, and click interactions
+- **Dataset Switcher**: Floating control for instant swapping between gallery datasets without leaving the page
+- **Accessibility Aware**: Honors `prefers-reduced-motion` and falls back to CSS backgrounds when WebGL is unavailable
 - **Responsive Design**: Mobile-optimized with VaporWave aesthetics
 
 ## 🚀 Quick Start
 
 ### View on GitHub Pages
 Visit: https://[your-username].github.io/visual-codex/
+
+### Available Systems
+- **Proper 4D System** (`gallery-proper-system.html?gallery=proper`): Original curated polytopal showcase with WebGL backgrounds and reactive crystal wafers.
+- **Aurora Twin System** (`gallery-aurora-system.html?gallery=twin`): Alternate curation featuring Aurora-inspired palettes, mobile-first groupings, and tooling-oriented heavy entries.
+- You can also stay on either shell and use the in-page dataset switcher to jump between modes; query parameters (`?gallery=...`) keep the view in sync.
 
 ### Local Development
 ```bash
