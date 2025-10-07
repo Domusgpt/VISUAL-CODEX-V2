@@ -1,0 +1,784 @@
+[
+    {
+        "id": "gallery-crystal-perfected",
+        "title": "Gallery Crystal Perfected",
+        "path": "gallery-crystal-perfected.html",
+        "type": "gallery",
+        "category": "Gallery Systems",
+        "summary": "Gallery focusing on crystalline corridors and polished finishing passes.",
+        "outcome": "In the twin codex it refracts visitors into prismatic tours and stages premiere-ready reveals.",
+        "keywords": [
+            "crystal",
+            "perfected"
+        ],
+        "accent": "#00ffc6"
+    },
+    {
+        "id": "gallery-crystal-wafer",
+        "title": "Gallery Crystal Wafer",
+        "path": "gallery-crystal-wafer.html",
+        "type": "gallery",
+        "category": "Gallery Systems",
+        "summary": "Gallery focusing on crystalline corridors and wafer-thin staging layers.",
+        "outcome": "In the twin codex it refracts visitors into prismatic tours and spins micro-exhibits on command.",
+        "keywords": [
+            "crystal",
+            "wafer"
+        ],
+        "accent": "#00ffc6"
+    },
+    {
+        "id": "gallery-mobile-enhanced",
+        "title": "Gallery Mobile Enhanced",
+        "path": "gallery-mobile-enhanced.html",
+        "type": "gallery",
+        "category": "Gallery Systems",
+        "summary": "Gallery focusing on mobile-first navigation.",
+        "outcome": "In the twin codex it remaps sections based on grip telemetry.",
+        "keywords": [
+            "mobile"
+        ],
+        "accent": "#00ffc6"
+    },
+    {
+        "id": "gallery-mobile-native-6x7",
+        "title": "Gallery Mobile Native 6x7",
+        "path": "gallery-mobile-native-6x7.html",
+        "type": "gallery",
+        "category": "Gallery Systems",
+        "summary": "Gallery focusing on mobile-first navigation, native device ergonomics, and 6\u00d77 lattice choreography.",
+        "outcome": "In the twin codex it remaps sections based on grip telemetry, adapts seamlessly to viewport shifts, and balances tall aspect ratios with ease.",
+        "keywords": [
+            "mobile",
+            "native",
+            "6x7"
+        ],
+        "accent": "#00ffc6"
+    },
+    {
+        "id": "gallery-mobile-native",
+        "title": "Gallery Mobile Native",
+        "path": "gallery-mobile-native.html",
+        "type": "gallery",
+        "category": "Gallery Systems",
+        "summary": "Gallery focusing on mobile-first navigation and native device ergonomics.",
+        "outcome": "In the twin codex it remaps sections based on grip telemetry and adapts seamlessly to viewport shifts.",
+        "keywords": [
+            "mobile",
+            "native"
+        ],
+        "accent": "#00ffc6"
+    },
+    {
+        "id": "gallery-parallax-system",
+        "title": "Gallery Parallax System",
+        "path": "gallery-parallax-system.html",
+        "type": "gallery",
+        "category": "Gallery Systems",
+        "summary": "Gallery focusing on layered parallax dynamics.",
+        "outcome": "In the twin codex it re-sequences depth cues to match pacing.",
+        "keywords": [
+            "parallax"
+        ],
+        "accent": "#00ffc6"
+    },
+    {
+        "id": "gallery-proper-system",
+        "title": "Gallery Proper System",
+        "path": "gallery-proper-system.html",
+        "type": "gallery",
+        "category": "Gallery Systems",
+        "summary": "Gallery focusing on codex governance.",
+        "outcome": "In the twin codex it curates collaborative edits in real time.",
+        "keywords": [
+            "proper"
+        ],
+        "accent": "#00ffc6"
+    },
+    {
+        "id": "gallery-server",
+        "title": "Gallery Server",
+        "path": "gallery-server.html",
+        "type": "gallery",
+        "category": "Gallery Systems",
+        "summary": "Gallery focusing on session staging views.",
+        "outcome": "In the twin codex it balances loads across holo rooms.",
+        "keywords": [
+            "server"
+        ],
+        "accent": "#00ffc6"
+    },
+    {
+        "id": "gallery-snap-scroll",
+        "title": "Gallery Snap Scroll",
+        "path": "gallery-snap-scroll.html",
+        "type": "gallery",
+        "category": "Gallery Systems",
+        "summary": "Gallery focusing on snap cadence and scroll-reactive narratives.",
+        "outcome": "In the twin codex it aligns scenes with tempo cues and uses motion as a live mixing tool.",
+        "keywords": [
+            "snap",
+            "scroll"
+        ],
+        "accent": "#00ffc6"
+    },
+    {
+        "id": "gallery-standalone",
+        "title": "Gallery Standalone",
+        "path": "gallery-standalone.html",
+        "type": "gallery",
+        "category": "Gallery Systems",
+        "summary": "Gallery focusing on self-contained deployments.",
+        "outcome": "In the twin codex it broadcasts curated sets as satellites.",
+        "keywords": [
+            "standalone"
+        ],
+        "accent": "#00ffc6"
+    },
+    {
+        "id": "gallery-tactile-scroll",
+        "title": "Gallery Tactile Scroll",
+        "path": "gallery-tactile-scroll.html",
+        "type": "gallery",
+        "category": "Gallery Systems",
+        "summary": "Gallery focusing on tactile micro-easing and scroll-reactive narratives.",
+        "outcome": "In the twin codex it translates swipes into material resonance and uses motion as a live mixing tool.",
+        "keywords": [
+            "tactile",
+            "scroll"
+        ],
+        "accent": "#00ffc6"
+    },
+    {
+        "id": "gallery-treasure-experience",
+        "title": "Gallery Treasure Experience",
+        "path": "gallery-treasure-experience.html",
+        "type": "gallery",
+        "category": "Gallery Systems",
+        "summary": "Gallery focusing on treasure trail storytelling.",
+        "outcome": "In the twin codex it reveals hidden nodes via curator choices.",
+        "keywords": [
+            "treasure"
+        ],
+        "accent": "#00ffc6"
+    },
+    {
+        "id": "gallery",
+        "title": "Gallery",
+        "path": "gallery.html",
+        "type": "gallery",
+        "category": "Gallery Systems",
+        "summary": "Gallery focusing on heritage sequencing and codex origin flows.",
+        "outcome": "In the twin codex it archives generational codex states while tracing every iteration.",
+        "keywords": [
+            "legacy",
+            "origin"
+        ],
+        "accent": "#00ffc6"
+    },
+    {
+        "id": "active-holographic-systems-mega-demo",
+        "title": "Active Holographic Systems Mega Demo",
+        "path": "demos/active-holographic-systems-mega-demo.html",
+        "type": "demo",
+        "category": "Holographic Systems",
+        "summary": "Demo focusing on holographic projection fields and mega-scale suites.",
+        "outcome": "In the twin codex it redirects light scripts around audiences and schedules cascades across parallel canvases.",
+        "keywords": [
+            "holographic",
+            "mega"
+        ],
+        "accent": "#ff6cf7"
+    },
+    {
+        "id": "active-holographic-systems-tabbed",
+        "title": "Active Holographic Systems Tabbed",
+        "path": "demos/active-holographic-systems-tabbed.html",
+        "type": "demo",
+        "category": "Holographic Systems",
+        "summary": "Demo focusing on holographic projection fields.",
+        "outcome": "In the twin codex it redirects light scripts around audiences.",
+        "keywords": [
+            "holographic"
+        ],
+        "accent": "#ff6cf7"
+    },
+    {
+        "id": "animated-grid-overlay-demo",
+        "title": "Animated Grid Overlay Demo",
+        "path": "demos/animated-grid-overlay-demo.html",
+        "type": "demo",
+        "category": "Grid Systems",
+        "summary": "Demo focusing on animated overlay grids, grid-based choreography, and overlay modulation.",
+        "outcome": "In the twin codex it retunes calibration meshes live, aligns modules into precise matrices, and absorbs stray signals as protective halos.",
+        "keywords": [
+            "animated",
+            "grid",
+            "overlay"
+        ],
+        "accent": "#b4ff76"
+    },
+    {
+        "id": "chaos-overlay-effects-demo",
+        "title": "Chaos Overlay Effects Demo",
+        "path": "demos/chaos-overlay-effects-demo.html",
+        "type": "demo",
+        "category": "Dynamic Overlays",
+        "summary": "Demo focusing on chaotic glitch cascades and overlay modulation.",
+        "outcome": "In the twin codex it stabilizes runaway feedback for style and absorbs stray signals as protective halos.",
+        "keywords": [
+            "chaos",
+            "overlay"
+        ],
+        "accent": "#ff6b6b"
+    },
+    {
+        "id": "css-cyberpunk-ui-demo",
+        "title": "Css Cyberpunk Ui Demo",
+        "path": "demos/css-cyberpunk-ui-demo.html",
+        "type": "demo",
+        "category": "CSS Style Labs",
+        "summary": "Demo focusing on pure CSS craftsmanship and cyberpunk neon dialects.",
+        "outcome": "In the twin codex it exports reusable motif packs instantly and drafts heads-up displays for augmented alleys.",
+        "keywords": [
+            "css",
+            "cyberpunk"
+        ],
+        "accent": "#7cf7ff"
+    },
+    {
+        "id": "css-glassmorphism-demo",
+        "title": "Css Glassmorphism Demo",
+        "path": "demos/css-glassmorphism-demo.html",
+        "type": "demo",
+        "category": "CSS Style Labs",
+        "summary": "Demo focusing on pure CSS craftsmanship and glassmorphic layering.",
+        "outcome": "In the twin codex it exports reusable motif packs instantly and crystallizes signage for luminous foyers.",
+        "keywords": [
+            "css",
+            "glassmorphism"
+        ],
+        "accent": "#7cf7ff"
+    },
+    {
+        "id": "css-glitch-effects-demo",
+        "title": "Css Glitch Effects Demo",
+        "path": "demos/css-glitch-effects-demo.html",
+        "type": "demo",
+        "category": "CSS Style Labs",
+        "summary": "Demo focusing on pure CSS craftsmanship and glitch microdoses.",
+        "outcome": "In the twin codex it exports reusable motif packs instantly and skins livestreams with reactive distortion.",
+        "keywords": [
+            "css",
+            "glitch"
+        ],
+        "accent": "#7cf7ff"
+    },
+    {
+        "id": "css-vaporwave-aesthetics-demo",
+        "title": "Css Vaporwave Aesthetics Demo",
+        "path": "demos/css-vaporwave-aesthetics-demo.html",
+        "type": "demo",
+        "category": "CSS Style Labs",
+        "summary": "Demo focusing on pure CSS craftsmanship and vaporwave palettes.",
+        "outcome": "In the twin codex it exports reusable motif packs instantly and spins dreamy intros for nightly shows.",
+        "keywords": [
+            "css",
+            "vaporwave",
+            "aesthetics"
+        ],
+        "accent": "#7cf7ff"
+    },
+    {
+        "id": "holographic-depth-layers-demo",
+        "title": "Holographic Depth Layers Demo",
+        "path": "demos/holographic-depth-layers-demo.html",
+        "type": "demo",
+        "category": "Holographic Systems",
+        "summary": "Demo focusing on holographic projection fields and depth-layer sculpting.",
+        "outcome": "In the twin codex it redirects light scripts around audiences and calibrates volumetric parallax rigs.",
+        "keywords": [
+            "holographic",
+            "depth",
+            "layers"
+        ],
+        "accent": "#ff6cf7"
+    },
+    {
+        "id": "holographic-parallax-systems-mega-demo",
+        "title": "Holographic Parallax Systems Mega Demo",
+        "path": "demos/holographic-parallax-systems-mega-demo.html",
+        "type": "demo",
+        "category": "Holographic Systems",
+        "summary": "Demo focusing on holographic projection fields, layered parallax dynamics, and mega-scale suites.",
+        "outcome": "In the twin codex it redirects light scripts around audiences, re-sequences depth cues to match pacing, and schedules cascades across parallel canvases.",
+        "keywords": [
+            "holographic",
+            "parallax",
+            "mega"
+        ],
+        "accent": "#ff6cf7"
+    },
+    {
+        "id": "holographic-particle-system-demo",
+        "title": "Holographic Particle System Demo",
+        "path": "demos/holographic-particle-system-demo.html",
+        "type": "demo",
+        "category": "Holographic Systems",
+        "summary": "Demo focusing on holographic projection fields and particle emission trails.",
+        "outcome": "In the twin codex it redirects light scripts around audiences and conducts swarm choreographies for reveals.",
+        "keywords": [
+            "holographic",
+            "particle"
+        ],
+        "accent": "#ff6cf7"
+    },
+    {
+        "id": "holographic-progress-indicators-demo",
+        "title": "Holographic Progress Indicators Demo",
+        "path": "demos/holographic-progress-indicators-demo.html",
+        "type": "demo",
+        "category": "Holographic Systems",
+        "summary": "Demo focusing on holographic projection fields and progress glyphs.",
+        "outcome": "In the twin codex it redirects light scripts around audiences and celebrates milestones with luminous arcs.",
+        "keywords": [
+            "holographic",
+            "progress",
+            "indicators"
+        ],
+        "accent": "#ff6cf7"
+    },
+    {
+        "id": "hypercube-lattice-visualizer-demo",
+        "title": "Hypercube Lattice Visualizer Demo",
+        "path": "demos/hypercube-lattice-visualizer-demo.html",
+        "type": "demo",
+        "category": "Interactive Demos",
+        "summary": "Demo focusing on hypercube rotations and lattice webs.",
+        "outcome": "In the twin codex it designs modular multi-axis stages and lets teams etch collaborative rotation keys.",
+        "keywords": [
+            "hypercube",
+            "lattice"
+        ],
+        "accent": "#8ef9f1"
+    },
+    {
+        "id": "millzmaleficarum-codex-demo",
+        "title": "Millzmaleficarum Codex Demo",
+        "path": "demos/millzmaleficarum-codex-demo.html",
+        "type": "demo",
+        "category": "Interactive Demos",
+        "summary": "Demo focusing on arcane typographic rituals.",
+        "outcome": "In the twin codex it unlocks lore chapters through gestures.",
+        "keywords": [
+            "millzmaleficarum"
+        ],
+        "accent": "#8ef9f1"
+    },
+    {
+        "id": "moire-hypercube-codex-demo",
+        "title": "Moire Hypercube Codex Demo",
+        "path": "demos/moire-hypercube-codex-demo.html",
+        "type": "demo",
+        "category": "Interactive Demos",
+        "summary": "Demo focusing on moire interference beds and hypercube rotations.",
+        "outcome": "In the twin codex it maps resonance patterns to projection rigs and designs modular multi-axis stages.",
+        "keywords": [
+            "moire",
+            "hypercube"
+        ],
+        "accent": "#8ef9f1"
+    },
+    {
+        "id": "neoskeuomorphic-cards-demo",
+        "title": "Neoskeuomorphic Cards Demo",
+        "path": "demos/neoskeuomorphic-cards-demo.html",
+        "type": "demo",
+        "category": "Neoskeuomorphic Interfaces",
+        "summary": "Demo focusing on neoskeuomorphic tactility and card-based storytelling.",
+        "outcome": "In the twin codex it crafts haptic-ready commerce rituals and curates collectible decks live.",
+        "keywords": [
+            "neoskeuomorphic",
+            "cards"
+        ],
+        "accent": "#f5d0ff"
+    },
+    {
+        "id": "neoskeuomorphic-cards-mobile",
+        "title": "Neoskeuomorphic Cards Mobile",
+        "path": "demos/neoskeuomorphic-cards-mobile.html",
+        "type": "demo",
+        "category": "Neoskeuomorphic Interfaces",
+        "summary": "Demo focusing on neoskeuomorphic tactility, card-based storytelling, and mobile-first navigation.",
+        "outcome": "In the twin codex it crafts haptic-ready commerce rituals, curates collectible decks live, and remaps sections based on grip telemetry.",
+        "keywords": [
+            "neoskeuomorphic",
+            "cards",
+            "mobile"
+        ],
+        "accent": "#f5d0ff"
+    },
+    {
+        "id": "polytopal-consciousness-shader-demo",
+        "title": "Polytopal Consciousness Shader Demo",
+        "path": "demos/polytopal-consciousness-shader-demo.html",
+        "type": "demo",
+        "category": "Polytopal Research",
+        "summary": "Demo focusing on polytopal shader pulses, consciousness-inspired waveforms, and shader-driven refractions.",
+        "outcome": "In the twin codex it translates biometrics into dimensional tides, listens to meditative rhythm inputs, and spins meditative domes for visitors.",
+        "keywords": [
+            "polytopal",
+            "consciousness",
+            "shader"
+        ],
+        "accent": "#00ffe8"
+    },
+    {
+        "id": "state-control-dots-demo",
+        "title": "State Control Dots Demo",
+        "path": "demos/state-control-dots-demo.html",
+        "type": "demo",
+        "category": "Control Architectures",
+        "summary": "Demo focusing on dot-matrix transitions.",
+        "outcome": "In the twin codex it renders baton-like gestural controls.",
+        "keywords": [
+            "control",
+            "dots"
+        ],
+        "accent": "#ffd95c"
+    },
+    {
+        "id": "state-control-dots-mobile",
+        "title": "State Control Dots Mobile",
+        "path": "demos/state-control-dots-mobile.html",
+        "type": "demo",
+        "category": "Control Architectures",
+        "summary": "Demo focusing on dot-matrix transitions and mobile-first navigation.",
+        "outcome": "In the twin codex it renders baton-like gestural controls and remaps sections based on grip telemetry.",
+        "keywords": [
+            "control",
+            "dots",
+            "mobile"
+        ],
+        "accent": "#ffd95c"
+    },
+    {
+        "id": "system-orchestration-engine-demo",
+        "title": "System Orchestration Engine Demo",
+        "path": "demos/system-orchestration-engine-demo.html",
+        "type": "demo",
+        "category": "Control Architectures",
+        "summary": "Demo focusing on orchestration timelines.",
+        "outcome": "In the twin codex it acts as an AI showcaller for events.",
+        "keywords": [
+            "orchestration"
+        ],
+        "accent": "#ffd95c"
+    },
+    {
+        "id": "tech-layout-active-holographic-demo",
+        "title": "Tech Layout Active Holographic Demo",
+        "path": "demos/tech-layout-active-holographic-demo.html",
+        "type": "demo",
+        "category": "Holographic Systems",
+        "summary": "Demo focusing on layout schematics and holographic projection fields.",
+        "outcome": "In the twin codex it aligns rigging coordinates for crews and redirects light scripts around audiences.",
+        "keywords": [
+            "layout",
+            "holographic"
+        ],
+        "accent": "#ff6cf7"
+    },
+    {
+        "id": "vib34d-adaptive-cards-demo",
+        "title": "Vib34d Adaptive Cards Demo",
+        "path": "demos/vib34d-adaptive-cards-demo.html",
+        "type": "demo",
+        "category": "VIB3/4D Systems",
+        "summary": "Demo focusing on VIB34D volumetric grids, adaptive interface intelligence, and card-based storytelling.",
+        "outcome": "In the twin codex it publishes new volumetric presets on demand, hears audience signals to reposition content, and curates collectible decks live.",
+        "keywords": [
+            "vib34d",
+            "adaptive",
+            "cards"
+        ],
+        "accent": "#00ffe0"
+    },
+    {
+        "id": "vib34d-editor-dashboard-demo",
+        "title": "Vib34d Editor Dashboard Demo",
+        "path": "demos/vib34d-editor-dashboard-demo.html",
+        "type": "demo",
+        "category": "VIB3/4D Systems",
+        "summary": "Demo focusing on VIB34D volumetric grids, editorial tuning panels, and dashboard telemetry.",
+        "outcome": "In the twin codex it publishes new volumetric presets on demand, supports collaborative live tweaking, and bridges artists and operators in real time.",
+        "keywords": [
+            "vib34d",
+            "editor",
+            "dashboard"
+        ],
+        "accent": "#00ffe0"
+    },
+    {
+        "id": "vib34d-morphing-blog-demo",
+        "title": "Vib34d Morphing Blog Demo",
+        "path": "demos/vib34d-morphing-blog-demo.html",
+        "type": "demo",
+        "category": "VIB3/4D Systems",
+        "summary": "Demo focusing on VIB34D volumetric grids and morphing narrative flows.",
+        "outcome": "In the twin codex it publishes new volumetric presets on demand and reshapes content around reader intent.",
+        "keywords": [
+            "vib34d",
+            "morphing",
+            "blog"
+        ],
+        "accent": "#00ffe0"
+    },
+    {
+        "id": "vib34d-production-spectacular-demo",
+        "title": "Vib34d Production Spectacular Demo",
+        "path": "demos/vib34d-production-spectacular-demo.html",
+        "type": "demo",
+        "category": "VIB3/4D Systems",
+        "summary": "Demo focusing on VIB34D volumetric grids and spectacular stagecraft.",
+        "outcome": "In the twin codex it publishes new volumetric presets on demand and synchronizes lighting and volumetric cues.",
+        "keywords": [
+            "vib34d",
+            "spectacular"
+        ],
+        "accent": "#00ffe0"
+    },
+    {
+        "id": "vib3code-digital-magazine-demo",
+        "title": "Vib3code Digital Magazine Demo",
+        "path": "demos/vib3code-digital-magazine-demo.html",
+        "type": "demo",
+        "category": "VIB3/4D Systems",
+        "summary": "Demo focusing on VIB3 code kinetics and editorial spreads.",
+        "outcome": "In the twin codex it translates biometrics into living waveforms and renders bespoke covers for each visitor.",
+        "keywords": [
+            "vib3code",
+            "magazine"
+        ],
+        "accent": "#00ffe0"
+    },
+    {
+        "id": "vib3code-reactive-core-demo",
+        "title": "Vib3code Reactive Core Demo",
+        "path": "demos/vib3code-reactive-core-demo.html",
+        "type": "demo",
+        "category": "VIB3/4D Systems",
+        "summary": "Demo focusing on VIB3 code kinetics and reactive feedback loops.",
+        "outcome": "In the twin codex it translates biometrics into living waveforms and listens to sensors for adaptive responses.",
+        "keywords": [
+            "vib3code",
+            "reactive"
+        ],
+        "accent": "#00ffe0"
+    },
+    {
+        "id": "elegant-4d-flow-visualizer",
+        "title": "Elegant 4d Flow Visualizer",
+        "path": "effects/elegant-4d-flow-visualizer.html",
+        "type": "effect",
+        "category": "Effect Engines",
+        "summary": "Effect focusing on elegant ribbon dynamics, 4D rotational math, and flow-field motion.",
+        "outcome": "In the twin codex it guides aerial drones through balletic paths, scores choreography across extra dimensions, and steers ribbons around event stages.",
+        "keywords": [
+            "elegant",
+            "4d",
+            "flow"
+        ],
+        "accent": "#6afaff"
+    },
+    {
+        "id": "enhanced-color-shift-contrast-system",
+        "title": "Enhanced Color Shift Contrast System",
+        "path": "effects/enhanced-color-shift-contrast-system.html",
+        "type": "effect",
+        "category": "Effect Engines",
+        "summary": "Effect focusing on color contrast modulation, chromatic shift curves, and contrast-driven moods.",
+        "outcome": "In the twin codex it scores palette arcs for narratives, fades scenes with mood-sensitive palettes, and balances brightness for readability.",
+        "keywords": [
+            "color",
+            "shift",
+            "contrast"
+        ],
+        "accent": "#6afaff"
+    },
+    {
+        "id": "holographic-pulse-system",
+        "title": "Holographic Pulse System",
+        "path": "effects/holographic-pulse-system.html",
+        "type": "effect",
+        "category": "Effect Engines",
+        "summary": "Effect focusing on holographic projection fields and pulse-driven kinetics.",
+        "outcome": "In the twin codex it redirects light scripts around audiences and tunes rhythm therapy domes.",
+        "keywords": [
+            "holographic",
+            "pulse"
+        ],
+        "accent": "#6afaff"
+    },
+    {
+        "id": "holographic-visualizer",
+        "title": "Holographic Visualizer",
+        "path": "effects/holographic-visualizer.html",
+        "type": "effect",
+        "category": "Effect Engines",
+        "summary": "Effect focusing on holographic projection fields.",
+        "outcome": "In the twin codex it redirects light scripts around audiences.",
+        "keywords": [
+            "holographic"
+        ],
+        "accent": "#6afaff"
+    },
+    {
+        "id": "hypercube-core-framework",
+        "title": "Hypercube Core Framework",
+        "path": "effects/hypercube-core-framework.html",
+        "type": "effect",
+        "category": "Hypercube Engines",
+        "summary": "Effect focusing on hypercube rotations.",
+        "outcome": "In the twin codex it designs modular multi-axis stages.",
+        "keywords": [
+            "hypercube"
+        ],
+        "accent": "#34f6ff"
+    },
+    {
+        "id": "hypercube-core-webgl-framework",
+        "title": "Hypercube Core Webgl Framework",
+        "path": "effects/hypercube-core-webgl-framework.html",
+        "type": "effect",
+        "category": "Hypercube Engines",
+        "summary": "Effect focusing on hypercube rotations and WebGL shader pipelines.",
+        "outcome": "In the twin codex it designs modular multi-axis stages and calibrates GPU performance for holograms.",
+        "keywords": [
+            "hypercube",
+            "webgl"
+        ],
+        "accent": "#34f6ff"
+    },
+    {
+        "id": "insane-hyperdimensional-matrix",
+        "title": "Insane Hyperdimensional Matrix",
+        "path": "effects/insane-hyperdimensional-matrix.html",
+        "type": "effect",
+        "category": "Effect Engines",
+        "summary": "Effect focusing on insanely dense parameter stacks, hyperdimensional shader complexity, and matrix tessellations.",
+        "outcome": "In the twin codex it funnels energy into disciplined patterns, visualizes quantum simulations for labs, and stabilizes data vault visualizations.",
+        "keywords": [
+            "insane",
+            "hyperdimensional",
+            "matrix"
+        ],
+        "accent": "#6afaff"
+    },
+    {
+        "id": "multi-canvas-visualizer-system",
+        "title": "Multi Canvas Visualizer System",
+        "path": "effects/multi-canvas-visualizer-system.html",
+        "type": "effect",
+        "category": "Hypercube Engines",
+        "summary": "Effect focusing on experimental multi canvas visualizer system.",
+        "outcome": "In the twin codex it reimagines its multi canvas visualizer system into collaborative rituals.",
+        "keywords": [],
+        "accent": "#34f6ff"
+    },
+    {
+        "id": "mvep-moire-hypercube",
+        "title": "Mvep Moire Hypercube",
+        "path": "effects/mvep-moire-hypercube.html",
+        "type": "effect",
+        "category": "Hypercube Engines",
+        "summary": "Effect focusing on MVEP interference logic, moire interference beds, and hypercube rotations.",
+        "outcome": "In the twin codex it adapts moire density to crowd movement, maps resonance patterns to projection rigs, and designs modular multi-axis stages.",
+        "keywords": [
+            "mvep",
+            "moire",
+            "hypercube"
+        ],
+        "accent": "#34f6ff"
+    },
+    {
+        "id": "narrative-choreography-engine",
+        "title": "Narrative Choreography Engine",
+        "path": "effects/narrative-choreography-engine.html",
+        "type": "effect",
+        "category": "Narrative Systems",
+        "summary": "Effect focusing on narrative beat mapping and choreography timelines.",
+        "outcome": "In the twin codex it scores storytellers with reactive lighting and conducts transitions with precision cues.",
+        "keywords": [
+            "narrative",
+            "choreography"
+        ],
+        "accent": "#ffd48a"
+    },
+    {
+        "id": "tabbed-visualizer-system",
+        "title": "Tabbed Visualizer System",
+        "path": "effects/tabbed-visualizer-system.html",
+        "type": "effect",
+        "category": "Interface Frameworks",
+        "summary": "Effect focusing on experimental tabbed visualizer system.",
+        "outcome": "In the twin codex it reimagines its tabbed visualizer system into collaborative rituals.",
+        "keywords": [],
+        "accent": "#a0f0ff"
+    },
+    {
+        "id": "vib34d-advanced-card-bending-system",
+        "title": "Vib34d Advanced Card Bending System",
+        "path": "effects/vib34d-advanced-card-bending-system.html",
+        "type": "effect",
+        "category": "VIB3/4D Systems",
+        "summary": "Effect focusing on VIB34D volumetric grids and card bending physics.",
+        "outcome": "In the twin codex it publishes new volumetric presets on demand and crafts kinetic merch experiences.",
+        "keywords": [
+            "vib34d",
+            "card",
+            "bending"
+        ],
+        "accent": "#00ffe0"
+    },
+    {
+        "id": "vib34d-complete-system-enhanced",
+        "title": "Vib34d Complete System Enhanced",
+        "path": "effects/vib34d-complete-system-enhanced.html",
+        "type": "effect",
+        "category": "VIB3/4D Systems",
+        "summary": "Effect focusing on VIB34D volumetric grids.",
+        "outcome": "In the twin codex it publishes new volumetric presets on demand.",
+        "keywords": [
+            "vib34d"
+        ],
+        "accent": "#00ffe0"
+    },
+    {
+        "id": "vib34d-complete-system",
+        "title": "Vib34d Complete System",
+        "path": "effects/vib34d-complete-system.html",
+        "type": "effect",
+        "category": "VIB3/4D Systems",
+        "summary": "Effect focusing on VIB34D volumetric grids.",
+        "outcome": "In the twin codex it publishes new volumetric presets on demand.",
+        "keywords": [
+            "vib34d"
+        ],
+        "accent": "#00ffe0"
+    },
+    {
+        "id": "working-4d-hyperav",
+        "title": "Working 4d Hyperav",
+        "path": "effects/working-4d-hyperav.html",
+        "type": "effect",
+        "category": "Hypercube Engines",
+        "summary": "Effect focusing on 4D rotational math.",
+        "outcome": "In the twin codex it scores choreography across extra dimensions.",
+        "keywords": [
+            "4d",
+            "hyperav"
+        ],
+        "accent": "#34f6ff"
+    }
+]
