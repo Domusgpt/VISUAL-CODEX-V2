@@ -18,6 +18,10 @@ An advanced interactive gallery showcasing 39 unique visual effects and style de
 ### View on GitHub Pages
 Visit: https://[your-username].github.io/visual-codex/
 
+### Available Systems
+- **Proper 4D System** (`gallery-proper-system.html`): Original curated polytopal showcase with WebGL backgrounds and reactive crystal wafers.
+- **Aurora Twin System** (`gallery-aurora-system.html`): Alternate curation featuring Aurora-inspired palettes, mobile-first groupings, and tooling-oriented heavy entries.
+
 ### Local Development
 ```bash
 cd visual_codex
