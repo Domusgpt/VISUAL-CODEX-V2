@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Codex Proper System</title>
+    <title>Visual Codex Twin System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/gallery-proper-system.css">
 </head>
-<body data-variant="primary" data-lens="summary">
+<body data-variant="twin" data-lens="outcome">
     <main class="codex-shell">
         <header class="codex-header">
-            <h1>Visual Codex Proper System</h1>
+            <h1>Visual Codex Twin System</h1>
             <p>
-                A fully refactored, data-driven index of every holographic, hypercube, and volumetric experience in the Visual Codex.
-                Filter, search, and switch between summary and outcome lenses to choreograph your next showcase.
+                A mirrored codex built on the same crystalline framework, yet tuned to explore alternate outcomes for every experience.
+                Shuffle narrative flows, orbit between categories, and let the outcome lens lead each expedition.
             </p>
-            <div class="utility-stack" role="toolbar" aria-label="Codex controls">
+            <div class="utility-stack" role="toolbar" aria-label="Twin codex controls">
                 <div class="filter-group">
-                    <label class="sr-only" for="codex-search">Search experiences</label>
-                    <input type="search" id="codex-search" name="codex-search" placeholder="Search the codex" data-role="search">
-                    <label class="sr-only" for="codex-category">Filter by category</label>
-                    <select id="codex-category" name="codex-category" data-role="category"></select>
+                    <label class="sr-only" for="twin-search">Search alternate outcomes</label>
+                    <input type="search" id="twin-search" name="twin-search" placeholder="Search alternate outcomes" data-role="search">
+                    <label class="sr-only" for="twin-category">Filter by category</label>
+                    <select id="twin-category" name="twin-category" data-role="category"></select>
                 </div>
                 <div class="type-group" role="group" aria-label="Filter by type">
                     <button type="button" class="control-button" data-role="type" data-type="all" aria-pressed="true">All</button>
@@ -31,18 +31,21 @@
                     <button type="button" class="control-button" data-role="type" data-type="effect" aria-pressed="false">Effects</button>
                 </div>
                 <div class="view-group" role="group" aria-label="Select layout view">
-                    <button type="button" class="control-button" data-role="view" data-view="grid" aria-pressed="true">Grid</button>
-                    <button type="button" class="control-button" data-role="view" data-view="list" aria-pressed="false">List</button>
+                    <button type="button" class="control-button" data-role="view" data-view="grid" aria-pressed="false">Grid</button>
+                    <button type="button" class="control-button" data-role="view" data-view="list" aria-pressed="true">Constellation</button>
                 </div>
-                <button type="button" class="control-button secondary" data-role="lens-toggle" aria-pressed="false">Outcome Lens</button>
+                <div class="view-group" role="group" aria-label="Outcome tools">
+                    <button type="button" class="control-button secondary" data-role="lens-toggle" aria-pressed="true">Show Summaries</button>
+                    <button type="button" class="control-button" data-role="shuffle">Shuffle Sequence</button>
+                </div>
             </div>
             <p>
-                Want to explore divergent outcomes? Visit the
-                <a href="gallery-proper-system-twin.html" class="control-button" style="display:inline-flex; margin-top:14px;">Twin System</a>
-                to shuffle alternate storylines.
+                Need the canonical curation? Return to the
+                <a href="gallery-proper-system.html" class="control-button" style="display:inline-flex; margin-top:14px;">Proper System</a>
+                for structured sequencing.
             </p>
         </header>
-        <section id="gallery" class="gallery-grid" data-view="grid" aria-live="polite" aria-label="Visual Codex entries"></section>
+        <section id="gallery" class="gallery-grid" data-view="list" aria-live="polite" aria-label="Visual Codex twin entries"></section>
     </main>
     <div id="detail-panel" class="detail-panel" hidden aria-hidden="true" tabindex="-1" role="dialog" aria-modal="true">
         <article class="detail-card"></article>
@@ -52,7 +55,7 @@
         initGallery({
             containerSelector: '#gallery',
             manifestPath: './data/visual-codex-manifest.json',
-            variant: 'primary'
+            variant: 'twin'
         });
     </script>
 </body>
