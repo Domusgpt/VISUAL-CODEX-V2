@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obsidian Depth Matrices</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --layer-transition-duration: 0.4s;
+            --layer-hover-scale: 1.04;
+            --layer-hover-lift: 4px;
+            --grid-accent: #ff8c32;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 20%, #210b2c 0%, #050208 60%);
+            color: #f5e3c8;
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.08;
+            transition: opacity 0.3s ease;
+            background:
+                repeating-linear-gradient(0deg, transparent, transparent 24px, rgba(255, 140, 50, 0.12) 24px, rgba(255, 140, 50, 0.12) 25px),
+                repeating-linear-gradient(90deg, transparent, transparent 24px, rgba(88, 169, 255, 0.16) 24px, rgba(88, 169, 255, 0.16) 25px);
+        }
+
+        .grid-overlay.active {
+            opacity: 0.18;
+            animation: matrixPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes matrixPulse {
+            0%, 100% { opacity: 0.14; }
+            50% { opacity: 0.2; }
+        }
+
+       .holographic-container {
+           position: absolute;
+           top: 0;
+           left: 0;
+           width: 100%;
+           height: 100%;
+           perspective: 1200px;
+           transform-style: preserve-3d;
+       }
+
+        .holographic-container.scene-atlas .background { transform: translateZ(-150px) rotateY(-7deg) rotateX(3deg); }
+        .holographic-container.scene-atlas .midground { transform: translateZ(-12px) rotateY(5deg); }
+        .holographic-container.scene-atlas .foreground { transform: translateZ(70px) rotateX(4deg); }
+        .holographic-container.scene-atlas .accent { transform: translateZ(140px) rotateY(-5deg); }
+
+        .holographic-container.scene-vortex .depth-layer { animation: vortexDrift 18s linear infinite; }
+        .holographic-container.scene-vortex .foreground { animation-duration: 14s; }
+        .holographic-container.scene-vortex .accent { animation-duration: 10s; }
+
+        @keyframes vortexDrift {
+            0% { transform: rotateY(0deg) translateZ(var(--scene-depth, 0px)); }
+            50% { transform: rotateY(180deg) translateZ(calc(var(--scene-depth, 0px) * 1.25)); }
+            100% { transform: rotateY(360deg) translateZ(var(--scene-depth, 0px)); }
+        }
+
+        .holographic-container.scene-orbitals .depth-layer { transform-origin: center; }
+        .holographic-container.scene-orbitals .background { animation: orbitalSway 16s ease-in-out infinite; }
+        .holographic-container.scene-orbitals .midground { animation: orbitalSway 12s ease-in-out infinite reverse; }
+        .holographic-container.scene-orbitals .foreground { animation: orbitalSway 9s ease-in-out infinite; }
+        .holographic-container.scene-orbitals .accent { animation: orbitalSway 6s ease-in-out infinite reverse; }
+
+        @keyframes orbitalSway {
+            0%, 100% { transform: translateZ(var(--scene-depth, 0px)) rotateZ(0deg); }
+            40% { transform: translateZ(calc(var(--scene-depth, 0px) * 1.15)) rotateZ(8deg); }
+            70% { transform: translateZ(calc(var(--scene-depth, 0px) * 0.8)) rotateZ(-6deg); }
+        }
+
+        .depth-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform var(--layer-transition-duration) ease-out;
+        }
+
+        .depth-layer.background { transform: translateZ(-120px); }
+        .depth-layer.midground { transform: translateZ(-10px); }
+        .depth-layer.foreground { transform: translateZ(60px); }
+        .depth-layer.accent { transform: translateZ(130px); }
+
+        .layer-element {
+            position: absolute;
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px solid rgba(255, 140, 50, 0.35);
+            background: linear-gradient(135deg, rgba(255, 140, 50, 0.12), rgba(90, 170, 255, 0.08));
+            box-shadow: 0 0 30px rgba(255, 140, 50, 0.18);
+            transition: transform var(--layer-transition-duration) ease, box-shadow 0.3s ease;
+        }
+
+        .layer-element:hover {
+            transform: translateY(-6px) scale(1.05);
+            box-shadow: 0 18px 40px rgba(255, 140, 50, 0.26);
+        }
+
+        .depth-layer.is-highlighted .layer-element {
+            box-shadow:
+                0 0 42px rgba(255, 140, 50, 0.4),
+                0 0 60px rgba(90, 170, 255, 0.35);
+            transform: translateY(-8px) scale(1.07);
+        }
+
+        .element-title {
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .element-desc {
+            font-size: 0.68rem;
+            opacity: 0.85;
+            line-height: 1.5;
+        }
+
+        .element-depth {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 0.6rem;
+            color: #ffdca8;
+        }
+
+        @media (max-width: 900px) {
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-overlay" id="gridOverlay"></div>
+
+    <div class="holographic-container" id="holoContainer">
+        <div class="depth-layer background" data-layer="void">
+            <div class="layer-element" style="top: 12%; left: 14%; width: 210px; height: 140px;">
+                <div class="element-depth">-120px</div>
+                <div class="element-title">VOID ARCHIVE</div>
+                <div class="element-desc">Diffuse starlight and thermal echoes mapped for background relief.</div>
+            </div>
+            <div class="layer-element" style="bottom: 18%; right: 20%; width: 180px; height: 120px;">
+                <div class="element-depth">-120px</div>
+                <div class="element-title">FRINGE ARRAY</div>
+                <div class="element-desc">Outer sensor lattice shimmering with amber telemetry.</div>
+            </div>
+        </div>
+
+        <div class="depth-layer midground" data-layer="core">
+            <div class="layer-element" style="top: 22%; left: 38%; width: 230px; height: 160px;">
+                <div class="element-depth">-10px</div>
+                <div class="element-title">CORE INDEX</div>
+                <div class="element-desc">Matrix operations rendered in molten gold with cyan infill.</div>
+            </div>
+            <div class="layer-element" style="bottom: 28%; right: 18%; width: 210px; height: 140px;">
+                <div class="element-depth">-10px</div>
+                <div class="element-title">SIGIL ARCH</div>
+                <div class="element-desc">Encrypted pathways etched into the midplane.</div>
+            </div>
+        </div>
+
+        <div class="depth-layer foreground" data-layer="relay">
+            <div class="layer-element" style="top: 18%; right: 22%; width: 240px; height: 170px;">
+                <div class="element-depth">+60px</div>
+                <div class="element-title">RELIEF CONDUIT</div>
+                <div class="element-desc">Primary interactive shell with bronze energy seams.</div>
+            </div>
+            <div class="layer-element" style="bottom: 24%; left: 16%; width: 220px; height: 150px;">
+                <div class="element-depth">+60px</div>
+                <div class="element-title">CHANNEL GATE</div>
+                <div class="element-desc">Entrance for signal routing and harmonic balancing.</div>
+            </div>
+        </div>
+
+        <div class="depth-layer accent" data-layer="flare">
+            <div class="layer-element" style="top: 42%; left: 46%; width: 190px; height: 140px;">
+                <div class="element-depth">+130px</div>
+                <div class="element-title">SOLAR NEXUS</div>
+                <div class="element-desc">Focused energy bloom with reactive crystalline shards.</div>
+            </div>
+            <div class="layer-element" style="bottom: 32%; right: 30%; width: 170px; height: 120px;">
+                <div class="element-depth">+130px</div>
+                <div class="element-title">EMBER ALERT</div>
+                <div class="element-desc">High-priority burst indicator streaming to the twin codex.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'static';
+        let currentScene = 'monolith';
+        let highlightTimer = null;
+        let perspectiveDistance = 1180;
+        let layerSeparation = 110;
+
+        function updateStatus(id, value) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = value;
+            }
+        }
+
+        const container = document.getElementById('holoContainer');
+        const layers = document.querySelectorAll('.depth-layer');
+        const elements = document.querySelectorAll('.layer-element');
+
+        const SCENE_CLASSES = {
+            monolith: ['scene-atlas'],
+            rift: ['scene-vortex'],
+            pulse: ['scene-orbitals']
+        };
+
+        function init() {
+            setupEventListeners();
+            updatePerspective();
+            updateLayerSeparation();
+            setLayerMode('static');
+            setScene('monolith');
+            startLayerHighlightCycle();
+            console.log('🜂 Obsidian Depth Matrices initialized');
+        }
+
+        function setupEventListeners() {
+            document.addEventListener('mousemove', handleMouseMove);
+
+            elements.forEach(element => {
+                element.addEventListener('mouseenter', function() {
+                    const layer = this.closest('.depth-layer').dataset.layer;
+                    updateStatus('activeLayer', layer.charAt(0).toUpperCase() + layer.slice(1));
+                    this.style.transform = this.style.transform + ' scale(1.06)';
+                });
+
+                element.addEventListener('mouseleave', function() {
+                    updateStatus('activeLayer', 'None');
+                    this.style.transform = this.style.transform.replace(' scale(1.06)', '');
+                    this.closest('.depth-layer').classList.remove('is-highlighted');
+                });
+            });
+        }
+
+        function updatePerspective(value) {
+            if (typeof value === 'number') {
+                perspectiveDistance = value;
+            }
+            container.style.perspective = perspectiveDistance + 'px';
+            updateStatus('perspectiveValue', perspectiveDistance + 'px');
+        }
+
+        function updateLayerSeparation(value) {
+            if (typeof value === 'number') {
+                layerSeparation = value;
+            }
+            const separation = layerSeparation;
+            updateStatus('separationValue', separation + 'px');
+
+            const backgroundLayer = document.querySelector('.background');
+            const midgroundLayer = document.querySelector('.midground');
+            const foregroundLayer = document.querySelector('.foreground');
+            const accentLayer = document.querySelector('[data-layer="flare"]');
+
+            if (currentScene === 'monolith') {
+                backgroundLayer.style.transform = `translateZ(-${separation}px)`;
+                midgroundLayer.style.transform = 'translateZ(-10px)';
+                foregroundLayer.style.transform = `translateZ(${separation * 0.55}px)`;
+                accentLayer.style.transform = `translateZ(${separation}px)`;
+            } else {
+                [backgroundLayer, midgroundLayer, foregroundLayer, accentLayer].forEach(layer => {
+                    layer.style.transform = '';
+                    layer.style.setProperty('--scene-depth', '');
+                });
+                backgroundLayer.style.setProperty('--scene-depth', `-${separation}px`);
+                midgroundLayer.style.setProperty('--scene-depth', '-10px');
+                foregroundLayer.style.setProperty('--scene-depth', `${separation * 0.55}px`);
+                accentLayer.style.setProperty('--scene-depth', `${separation}px`);
+            }
+
+            document.querySelector('.background .element-depth').textContent = `-${separation}px`;
+            document.querySelector('.midground .element-depth').textContent = '-10px';
+            document.querySelector('.foreground .element-depth').textContent = `+${Math.round(separation * 0.55)}px`;
+            document.querySelector('[data-layer="flare"] .element-depth').textContent = `+${separation}px`;
+        }
+
+        function handleMouseMove(e) {
+            const x = Math.round(e.clientX);
+            const y = Math.round(e.clientY);
+            updateStatus('mousePos', `${x}, ${y}`);
+
+            if (currentMode === 'rotating') {
+                const rotateY = (e.clientX / window.innerWidth - 0.5) * 18;
+                const rotateX = (e.clientY / window.innerHeight - 0.5) * -18;
+                container.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            }
+        }
+
+        function setLayerMode(mode, triggerButton) {
+            currentMode = mode;
+            const labelMap = { static: 'Anchored', rotating: 'Gyro Sweep', floating: 'Weightless' };
+            updateStatus('currentMode', labelMap[mode] || 'Anchored');
+
+            switch(mode) {
+                case 'static':
+                    container.style.transform = '';
+                    layers.forEach(layer => { layer.style.animation = ''; });
+                    break;
+                case 'rotating':
+                    layers.forEach(layer => {
+                        layer.style.animation = 'layerRotate 22s linear infinite';
+                    });
+                    break;
+                case 'floating':
+                    container.style.transform = '';
+                    layers.forEach((layer, index) => {
+                        layer.style.animation = `layerFloat 5s ease-in-out infinite ${index * 0.4}s`;
+                    });
+                    break;
+            }
+        }
+
+        function setScene(scene, triggerButton) {
+            currentScene = scene;
+            container.classList.remove('scene-atlas', 'scene-vortex', 'scene-orbitals');
+            (SCENE_CLASSES[scene] || []).forEach(cls => container.classList.add(cls));
+
+            const sceneLabels = {
+                monolith: 'Monolith',
+                rift: 'Rift Cascade',
+                pulse: 'Pulse Orbit'
+            };
+            updateStatus('currentScene', sceneLabels[scene] || 'Monolith');
+            updateLayerSeparation();
+            startLayerHighlightCycle();
+        }
+
+        function toggleGrid() {
+            document.getElementById('gridOverlay').classList.toggle('active');
+        }
+
+        function resetLayers() {
+            setLayerMode('static');
+            setScene('monolith');
+            perspectiveDistance = 1180;
+            layerSeparation = 110;
+            updatePerspective(perspectiveDistance);
+            updateLayerSeparation(layerSeparation);
+        }
+
+        function startLayerHighlightCycle() {
+            if (highlightTimer) {
+                clearInterval(highlightTimer);
+            }
+
+            const sequence = Array.from(layers);
+            sequence.forEach(layer => layer.classList.remove('is-highlighted'));
+
+            if (sequence.length) {
+                sequence[0].classList.add('is-highlighted');
+                const label = sequence[0].dataset.layer;
+                updateStatus('activeLayer', label.charAt(0).toUpperCase() + label.slice(1));
+            }
+
+            let index = 1;
+            highlightTimer = setInterval(() => {
+                sequence.forEach(layer => layer.classList.remove('is-highlighted'));
+                const layer = sequence[index % sequence.length];
+                layer.classList.add('is-highlighted');
+                const label = layer.dataset.layer;
+                updateStatus('activeLayer', label.charAt(0).toUpperCase() + label.slice(1));
+                index++;
+            }, 4500);
+        }
+
+        const dynamicStyles = document.createElement('style');
+        dynamicStyles.textContent = `
+            @keyframes layerRotate {
+                from { transform: rotateY(0deg); }
+                to { transform: rotateY(360deg); }
+            }
+            @keyframes layerFloat {
+                0%, 100% { transform: translateY(0) rotateX(0deg); }
+                30% { transform: translateY(-12px) rotateX(3deg); }
+                70% { transform: translateY(10px) rotateX(-2deg); }
+            }
+        `;
+        document.head.appendChild(dynamicStyles);
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

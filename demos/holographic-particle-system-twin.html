@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holographic Particle System Demo</title>
+    <title>Obsidian Particle Field - Twin Variant</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: #0a0a0f;
+            background: radial-gradient(circle at 30% 20%, #060b16 0%, #000108 60%);
             overflow: hidden;
             font-family: 'Courier New', monospace;
+            color: #d8f5ff;
         }
 
-        /* Particle System */
         .particle-system {
             position: fixed;
             top: 0;
@@ -26,8 +26,8 @@
 
         .particle {
             position: absolute;
-            width: 4px;
-            height: 4px;
+            width: 5px;
+            height: 5px;
             background: radial-gradient(circle, var(--color) 0%, transparent 70%);
             border-radius: 50%;
             opacity: 0;
@@ -35,7 +35,6 @@
             will-change: transform, opacity;
         }
 
-        /* Holographic Cards */
         .container {
             position: relative;
             width: 100%;
@@ -48,117 +47,48 @@
 
         .holographic-card {
             position: relative;
-            width: 300px;
-            height: 400px;
-            margin: 20px;
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            background: linear-gradient(135deg, 
-                rgba(0, 255, 255, 0.1) 0%, 
-                rgba(255, 0, 255, 0.1) 50%, 
-                rgba(255, 255, 0, 0.1) 100%);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            box-shadow:
-                0 10px 30px rgba(0, 0, 0, 0.3),
-                inset 0 1px 1px rgba(255, 255, 255, 0.1),
-                0 0 20px rgba(0, 255, 255, 0.5);
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            width: 320px;
+            height: 420px;
+            margin: 18px;
+            backdrop-filter: blur(18px);
+            background: linear-gradient(135deg, rgba(80, 150, 255, 0.14), rgba(180, 100, 255, 0.1));
+            border: 1px solid rgba(120, 200, 255, 0.35);
+            border-radius: 22px;
+            box-shadow: 0 18px 40px rgba(12, 40, 80, 0.4), 0 0 30px rgba(80, 180, 255, 0.24);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
             overflow: hidden;
             cursor: pointer;
-            z-index: 10;
         }
 
         .holographic-card::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
+            top: -60%;
+            left: -60%;
             width: 200%;
             height: 200%;
-            background: linear-gradient(
-                45deg,
-                transparent 30%,
-                rgba(255, 255, 255, 0.1) 50%,
-                transparent 70%
-            );
+            background: linear-gradient(45deg, transparent 35%, rgba(160, 220, 255, 0.16) 50%, transparent 65%);
             transform: rotate(45deg);
-            transition: all 0.6s;
             opacity: 0;
         }
 
         .holographic-card:hover::before {
-            animation: shimmer 0.6s;
             opacity: 1;
+            animation: sweep 0.7s ease;
         }
 
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        @keyframes sweep {
+            0% { transform: translateX(-80%) translateY(-80%) rotate(45deg); }
+            100% { transform: translateX(80%) translateY(80%) rotate(45deg); }
         }
 
         .holographic-card:hover {
-            transform: translateY(-10px) rotateX(-5deg) rotateY(5deg);
-            box-shadow:
-                0 20px 40px rgba(0, 255, 255, 0.4),
-                inset 0 1px 1px rgba(255, 255, 255, 0.2),
-                0 0 40px rgba(255, 0, 255, 0.4);
-            border-color: rgba(0, 255, 255, 0.6);
+            transform: translateY(-12px) rotateX(-6deg) rotateY(5deg);
+            box-shadow: 0 26px 60px rgba(20, 60, 120, 0.55), 0 0 50px rgba(90, 200, 255, 0.36);
         }
 
-        /* RGB Separation Effect */
-        .rgb-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-
-        .holographic-card:hover .rgb-layer {
-            opacity: 1;
-        }
-
-        .rgb-layer::before,
-        .rgb-layer::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 20px;
-            border: 2px solid transparent;
-        }
-
-        .rgb-layer::before {
-            border-color: rgba(255, 0, 0, 0.5);
-            transform: translate(-2px, -2px);
-            animation: rgbShift1 2s infinite;
-        }
-
-        .rgb-layer::after {
-            border-color: rgba(0, 0, 255, 0.5);
-            transform: translate(2px, 2px);
-            animation: rgbShift2 2s infinite;
-        }
-
-        @keyframes rgbShift1 {
-            0%, 100% { transform: translate(-2px, -2px); }
-            50% { transform: translate(2px, -2px); }
-        }
-
-        @keyframes rgbShift2 {
-            0%, 100% { transform: translate(2px, 2px); }
-            50% { transform: translate(-2px, 2px); }
-        }
-
-        /* Card Content */
         .card-content {
-            padding: 30px;
+            padding: 34px;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -171,44 +101,19 @@
 
         .card-title {
             font-size: 24px;
-            color: #00ffff;
-            text-shadow: 
-                0 0 10px rgba(0, 255, 255, 0.8),
-                0 0 20px rgba(0, 255, 255, 0.6),
-                0 0 30px rgba(0, 255, 255, 0.4);
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
+            color: #7ee8ff;
+            text-shadow: 0 0 18px rgba(126, 232, 255, 0.7);
+            letter-spacing: 3px;
+            margin-bottom: 18px;
         }
 
         .card-description {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 14px;
+            color: rgba(216, 245, 255, 0.82);
+            font-size: 15px;
             line-height: 1.6;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+            text-shadow: 0 0 8px rgba(140, 210, 255, 0.3);
         }
 
-        /* Depth Layers */
-        .depth-layer {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 10px,
-                rgba(0, 255, 255, 0.03) 10px,
-                rgba(0, 255, 255, 0.03) 11px
-            );
-            pointer-events: none;
-            opacity: 0.5;
-        }
-
-        /* Control Panel */
-
-        /* Moiré Pattern Overlay */
         .moire-overlay {
             position: fixed;
             top: 0;
@@ -216,64 +121,50 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            opacity: 0.1;
+            opacity: 0.08;
             z-index: 2;
-            background: 
-                repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 4px,
-                    rgba(255, 0, 255, 0.1) 4px,
-                    rgba(255, 0, 255, 0.1) 8px
-                ),
-                repeating-linear-gradient(
-                    90deg,
-                    transparent,
-                    transparent 4px,
-                    rgba(0, 255, 255, 0.1) 4px,
-                    rgba(0, 255, 255, 0.1) 8px
-                );
-            animation: moireShift 10s linear infinite;
+            background:
+                repeating-linear-gradient(0deg, transparent, transparent 6px, rgba(180, 100, 255, 0.16) 6px, rgba(180, 100, 255, 0.16) 12px),
+                repeating-linear-gradient(90deg, transparent, transparent 6px, rgba(90, 220, 255, 0.18) 6px, rgba(90, 220, 255, 0.18) 12px);
+            animation: moireShift 12s linear infinite;
         }
 
         @keyframes moireShift {
             0% { transform: translate(0, 0); }
-            100% { transform: translate(8px, 8px); }
+            100% { transform: translate(14px, 14px); }
         }
     </style>
 </head>
 <body>
     <div class="particle-system" id="particleSystem"></div>
     <div class="moire-overlay"></div>
-    
-    <div class="container" id="container">
-        <div class="holographic-card">
-            <div class="depth-layer"></div>
-            <div class="rgb-layer"></div>
-            <div class="card-content">
-                <h2 class="card-title">Holographic</h2>
-                <p class="card-description">Multi-layer RGB channel separation with Z-depth rendering</p>
-            </div>
-        </div>
-        
-        <div class="holographic-card">
-            <div class="depth-layer"></div>
-            <div class="rgb-layer"></div>
-            <div class="card-content">
-                <h2 class="card-title">Particle System</h2>
-                <p class="card-description">Dynamic floating particles with radial gradient effects</p>
-            </div>
-        </div>
-        
-        <div class="holographic-card">
-            <div class="depth-layer"></div>
-            <div class="rgb-layer"></div>
-            <div class="card-content">
-                <h2 class="card-title">Glassmorphism</h2>
-                <p class="card-description">Backdrop blur with layered transparency effects</p>
-            </div>
-        </div>
+        <button class="control-btn" onclick="toggleParticles()">Toggle Flux</button>
+        <button class="control-btn" onclick="cycleEmitter()">Cycle Pattern</button>
+        <button class="control-btn" onclick="changeLayout()">Shift Layout</button>
+        <button class="control-btn" onclick="toggleMoire()">Moire Overlay</button>
+        <button class="control-btn" onclick="randomizeColors()">Shift Palette</button>
+        <div class="control-status" id="emitterStatus">Emitter: Vertical Stream</div>
     </div>
+
+    <div class="container">
+        <div class="holographic-card">
+            <div class="card-content">
+                <h2 class="card-title">Obsidian Field</h2>
+                <p class="card-description">Twin codex rendition of the holographic field with indigo atmospherics.</p>
+            </div>
+        </div>
+        <div class="holographic-card">
+            <div class="card-content">
+                <h2 class="card-title">Particle Lattice</h2>
+                <p class="card-description">Complex lattice interplay between vertical flux and radial bursts.</p>
+            </div>
+        </div>
+        <div class="holographic-card">
+            <div class="card-content">
+                <h2 class="card-title">Glass Halo</h2>
+                <p class="card-description">Translucent overlays infused with teal and violet energy.</p>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -286,9 +177,9 @@
                 this.modes = ['vertical', 'spiral', 'pulse'];
                 this.modeIndex = 0;
                 this.palettes = [
-                    ['#00ffff', '#ff00ff', '#ffff00', '#ff0088', '#8000ff'],
-                    ['#ff7efc', '#00f5ff', '#ffd966', '#6bffb8', '#ff4d6d'],
-                    ['#c9f9ff', '#82d6ff', '#f087ff', '#fff5b7', '#8cffef']
+                    ['#7ee8ff', '#b695ff', '#f8b4ff', '#7cfef0', '#ffe6a7'],
+                    ['#55f0c1', '#7bd9ff', '#d696ff', '#fbf5c6', '#8df7ff'],
+                    ['#ffc857', '#00f5d4', '#5c7aff', '#f96d80', '#ffcbf2']
                 ];
                 this.paletteIndex = 0;
                 this.pointer = { x: 0.5, y: 0.5 };
@@ -300,38 +191,30 @@
                 requestAnimationFrame(this.update);
             }
 
-            currentMode() {
-                return this.modes[this.modeIndex];
-            }
-
-            currentPalette() {
-                return this.palettes[this.paletteIndex];
-            }
-
+            currentMode() { return this.modes[this.modeIndex]; }
+            currentPalette() { return this.palettes[this.paletteIndex]; }
             randomColor() {
                 const palette = this.currentPalette();
                 return palette[Math.floor(Math.random() * palette.length)];
             }
 
             spawnParticle() {
-                if (this.particles.size > 260) {
-                    return;
-                }
+                if (this.particles.size > 260) return;
 
-                const element = document.createElement('div');
-                element.className = 'particle';
-                element.style.setProperty('--color', this.randomColor());
-                this.root.appendChild(element);
+                const el = document.createElement('div');
+                el.className = 'particle';
+                el.style.setProperty('--color', this.randomColor());
+                this.root.appendChild(el);
 
                 const particle = {
-                    el: element,
-                    life: Math.random() * 250,
+                    el,
+                    life: Math.random() * 200,
                     maxLife: 3200 + Math.random() * 2200,
                     x: 0,
                     y: 0,
                     vx: 0,
                     vy: 0,
-                    scale: 0.4 + Math.random() * 0.8
+                    scale: 0.45 + Math.random() * 0.9
                 };
 
                 const width = window.innerWidth;
@@ -342,36 +225,35 @@
                 switch (this.currentMode()) {
                     case 'vertical':
                         particle.x = Math.random() * width;
-                        particle.y = height + 40;
-                        particle.vx = (Math.random() - 0.5) * 60;
-                        particle.vy = -(90 + Math.random() * 120);
-                        particle.maxLife = 5200 + Math.random() * 1800;
+                        particle.y = height + 30;
+                        particle.vx = (Math.random() - 0.5) * 70;
+                        particle.vy = -(80 + Math.random() * 120);
+                        particle.maxLife = 5200 + Math.random() * 1600;
                         break;
                     case 'spiral':
-                        const radius = 40 + Math.random() * 160;
+                        const radius = 60 + Math.random() * 150;
                         const angle = this.angleCursor;
-                        this.angleCursor += 0.35;
+                        this.angleCursor += 0.32;
                         particle.x = width / 2 + Math.cos(angle) * radius;
                         particle.y = height / 2 + Math.sin(angle) * radius;
                         const tangent = angle + Math.PI / 2;
-                        const speed = 80 + Math.random() * 90;
+                        const speed = 90 + Math.random() * 95;
                         particle.vx = Math.cos(tangent) * speed;
                         particle.vy = Math.sin(tangent) * speed;
-                        particle.maxLife = 4400 + Math.random() * 1400;
+                        particle.maxLife = 4400 + Math.random() * 1200;
                         break;
                     case 'pulse':
                         const emissionAngle = Math.random() * Math.PI * 2;
-                        const emissionRadius = 10 + Math.random() * 40;
+                        const emissionRadius = 14 + Math.random() * 48;
                         particle.x = pointerX + Math.cos(emissionAngle) * emissionRadius;
                         particle.y = pointerY + Math.sin(emissionAngle) * emissionRadius;
-                        const burstSpeed = 140 + Math.random() * 140;
+                        const burstSpeed = 150 + Math.random() * 160;
                         particle.vx = Math.cos(emissionAngle) * burstSpeed;
                         particle.vy = Math.sin(emissionAngle) * burstSpeed;
-                        particle.maxLife = 2200 + Math.random() * 900;
+                        particle.maxLife = 2100 + Math.random() * 1000;
                         break;
                 }
 
-                element.dataset.mode = this.currentMode();
                 this.particles.add(particle);
             }
 
@@ -383,28 +265,28 @@
                 particle.y += particle.vy * (delta / 1000);
 
                 if (this.currentMode() === 'vertical') {
-                    particle.x += Math.sin(particle.life / 360) * 10;
+                    particle.x += Math.sin(particle.life / 380) * 12;
                 }
 
                 if (this.currentMode() === 'spiral') {
-                    particle.vx *= 0.995;
-                    particle.vy *= 0.995;
+                    particle.vx *= 0.992;
+                    particle.vy *= 0.992;
                 }
 
                 const fadeIn = Math.min(1, progress / 0.2);
                 const fadeOut = 1 - Math.max(0, (progress - 0.7) / 0.3);
                 const opacity = Math.max(0, Math.min(1, fadeIn * fadeOut));
 
-                const influenceX = (this.pointer.x - 0.5) * 40;
-                const influenceY = (this.pointer.y - 0.5) * 40;
+                const influenceX = (this.pointer.x - 0.5) * 36;
+                const influenceY = (this.pointer.y - 0.5) * 36;
 
                 particle.el.style.opacity = opacity;
                 particle.el.style.transform = `translate3d(${particle.x + influenceX}px, ${particle.y + influenceY}px, 0) scale(${particle.scale})`;
 
                 if (
                     particle.life > particle.maxLife ||
-                    particle.x < -200 || particle.x > window.innerWidth + 200 ||
-                    particle.y < -200 || particle.y > window.innerHeight + 200
+                    particle.x < -220 || particle.x > window.innerWidth + 220 ||
+                    particle.y < -220 || particle.y > window.innerHeight + 220
                 ) {
                     this.root.removeChild(particle.el);
                     this.particles.delete(particle);
@@ -423,7 +305,7 @@
                 this.spawnAccumulator += delta;
 
                 const mode = this.currentMode();
-                const spawnInterval = mode === 'pulse' ? 90 : mode === 'spiral' ? 70 : 110;
+                const spawnInterval = mode === 'pulse' ? 80 : mode === 'spiral' ? 70 : 110;
 
                 while (this.spawnAccumulator > spawnInterval) {
                     this.spawnAccumulator -= spawnInterval;
@@ -461,15 +343,14 @@
         }
 
         const particleController = new ParticleController(particleSystem);
-        window.particleController = particleController;
 
-        function formatEmitter(mode, running = particleController.isRunning) {
+        function formatEmitter(mode) {
             const titles = {
                 vertical: 'Vertical Stream',
-                spiral: 'Spiral Conduit',
+                spiral: 'Spiral Glyph',
                 pulse: 'Pulse Burst'
             };
-            return `Emitter: ${titles[mode]}${running ? '' : ' (Paused)'}`;
+            return `Emitter: ${titles[mode]}${particleController.isRunning ? '' : ' (Paused)'}`;
         }
 
         function updateEmitterStatus(mode) {
@@ -480,37 +361,27 @@
         }
 
         updateEmitterStatus(particleController.currentMode());
-
-        for (let i = 0; i < 80; i++) {
+        for (let i = 0; i < 90; i++) {
             particleController.spawnParticle();
         }
 
-        // Mouse interaction
         document.addEventListener('mousemove', (e) => {
-            const cards = document.querySelectorAll('.holographic-card');
             const x = e.clientX / window.innerWidth - 0.5;
             const y = e.clientY / window.innerHeight - 0.5;
 
             particleController.setPointer(x + 0.5, y + 0.5);
 
-            cards.forEach((card) => {
-                const rotateY = x * 10;
-                const rotateX = -y * 10;
-                const translateZ = Math.abs(x * y) * 50;
-
-                card.style.transform = `
-                    rotateX(${rotateX}deg)
-                    rotateY(${rotateY}deg)
-                    translateZ(${translateZ}px)
-                `;
+            document.querySelectorAll('.holographic-card').forEach(card => {
+                const rotateY = x * 12;
+                const rotateX = -y * 12;
+                const translateZ = Math.abs(x * y) * 60;
+                card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(${translateZ}px)`;
             });
         });
 
-        // Console helper functions
         function toggleParticles() {
-            const running = particleController.toggle();
+            particleController.toggle();
             updateEmitterStatus(particleController.currentMode());
-            return running;
         }
 
         function cycleEmitter() {
@@ -519,7 +390,7 @@
         }
 
         function changeLayout() {
-            const container = document.getElementById('container');
+            const container = document.querySelector('.container');
             const layouts = ['row', 'column', 'row-reverse'];
             const currentLayout = container.style.flexDirection || 'row';
             const nextIndex = (layouts.indexOf(currentLayout) + 1) % layouts.length;
@@ -528,32 +399,29 @@
 
         function toggleMoire() {
             const moire = document.querySelector('.moire-overlay');
-            moire.style.opacity = moire.style.opacity === '0' ? '0.1' : '0';
+            moire.style.opacity = moire.style.opacity === '0' ? '0.08' : '0';
         }
 
         function randomizeColors() {
             particleController.shiftPalette();
-            const cards = document.querySelectorAll('.holographic-card');
-            cards.forEach(card => {
+            document.querySelectorAll('.holographic-card').forEach(card => {
                 const hue = Math.random() * 360;
                 card.style.filter = `hue-rotate(${hue}deg)`;
             });
         }
 
-        // Card click handler
-        document.querySelectorAll('.holographic-card').forEach((card) => {
+        document.querySelectorAll('.holographic-card').forEach(card => {
             card.addEventListener('click', () => {
-                card.style.animation = 'pulse 0.5s ease-out';
-                setTimeout(() => card.style.animation = '', 500);
+                card.style.animation = 'pulse 0.6s ease';
+                setTimeout(() => card.style.animation = '', 600);
             });
         });
 
-        // Add pulse animation
         const style = document.createElement('style');
         style.textContent = `
             @keyframes pulse {
                 0% { transform: scale(1); }
-                50% { transform: scale(1.05); }
+                40% { transform: scale(1.08); }
                 100% { transform: scale(1); }
             }
         `;
