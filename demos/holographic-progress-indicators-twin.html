@@ -30,7 +30,7 @@
             text-align: center;
             font-size: 2.5rem;
             margin-bottom: 40px;
-            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            background: linear-gradient(45deg, #ffc75f, #845ec2, #ff6f91);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -48,7 +48,7 @@
         .scroll-progress-container {
             position: relative;
             background: rgba(0, 0, 0, 0.6);
-            border: 1px solid #00ffff;
+            border: 1px solid #ffc75f;
             border-radius: 20px;
             padding: 30px;
             backdrop-filter: blur(10px);
@@ -75,10 +75,10 @@
             width: 100%;
             height: 65%;
             background: linear-gradient(to top,
-                #00ffff 0%,
-                #ff00ff 30%,
-                #ffff00 60%,
-                #ff0080 100%
+                #ffc75f 0%,
+                #845ec2 30%,
+                #ff6f91 60%,
+                #ff9671 100%
             );
             border-radius: 4px;
             transition: all 0.3s ease;
@@ -100,15 +100,15 @@
         .progress-label {
             position: absolute;
             left: 20px;
-            color: #00ffff;
+            color: #ffc75f;
             font-size: 0.8rem;
-            text-shadow: 0 0 8px #00ffff;
+            text-shadow: 0 0 8px #ffc75f;
         }
         
         /* CIRCULAR PROGRESS INDICATORS */
         .circular-progress-container {
             background: rgba(0, 0, 0, 0.6);
-            border: 1px solid #ff00ff;
+            border: 1px solid #845ec2;
             border-radius: 20px;
             padding: 30px;
             backdrop-filter: blur(10px);
@@ -130,10 +130,10 @@
             border-radius: 50%;
             background: conic-gradient(
                 from 0deg,
-                #00ffff 0%,
-                #ff00ff 30%,
-                #ffff00 60%,
-                #00ffff 100%
+                #ffc75f 0%,
+                #845ec2 30%,
+                #ff6f91 60%,
+                #ffc75f 100%
             );
             mask: radial-gradient(circle at center, transparent 45px, black 46px);
             -webkit-mask: radial-gradient(circle at center, transparent 45px, black 46px);
@@ -158,15 +158,15 @@
             align-items: center;
             justify-content: center;
             border: 1px solid rgba(0, 255, 255, 0.3);
-            color: #00ffff;
+            color: #ffc75f;
             font-weight: bold;
-            text-shadow: 0 0 10px #00ffff;
+            text-shadow: 0 0 10px #ffc75f;
         }
         
         /* HORIZONTAL BAR PROGRESS */
         .horizontal-progress-container {
             background: rgba(0, 0, 0, 0.6);
-            border: 1px solid #ffff00;
+            border: 1px solid #ff6f91;
             border-radius: 20px;
             padding: 30px;
             backdrop-filter: blur(10px);
@@ -191,9 +191,9 @@
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg,
-                #ffff00 0%,
-                #ff00ff 50%,
-                #00ffff 100%
+                #ff6f91 0%,
+                #845ec2 50%,
+                #ffc75f 100%
             );
             border-radius: 4px;
             transition: width 0.5s ease;
@@ -213,16 +213,16 @@
         .progress-fill.p4 { width: 45%; }
         
         .bar-label {
-            color: #ffff00;
+            color: #ff6f91;
             font-size: 0.7rem;
             margin-bottom: 5px;
-            text-shadow: 0 0 8px #ffff00;
+            text-shadow: 0 0 8px #ff6f91;
         }
         
         /* SEGMENTED PROGRESS */
         .segmented-progress-container {
             background: rgba(0, 0, 0, 0.6);
-            border: 1px solid #ff0080;
+            border: 1px solid #ff9671;
             border-radius: 20px;
             padding: 30px;
             backdrop-filter: blur(10px);
@@ -246,7 +246,7 @@
         }
         
         .progress-segment.active {
-            background: linear-gradient(90deg, #ff0080, #ff00ff, #8000ff);
+            background: linear-gradient(90deg, #ff9671, #845ec2, #8000ff);
             box-shadow: 0 0 10px rgba(255, 0, 128, 0.6);
             animation: segmentGlow 1.5s ease-in-out infinite;
         }
@@ -261,10 +261,10 @@
         .segment-16 .progress-segment { flex: 1; }
         
         .segment-label {
-            color: #ff0080;
+            color: #ff9671;
             font-size: 0.7rem;
             margin-bottom: 5px;
-            text-shadow: 0 0 8px #ff0080;
+            text-shadow: 0 0 8px #ff9671;
         }
         
         /* CONTROLS */
@@ -281,7 +281,7 @@
 </head>
 <body>
     <div class="demo-container">
-        <h1 class="demo-title">HOLOGRAPHIC PROGRESS INDICATORS</h1>
+        <h1 class="demo-title">TWIN PROGRESS MATRICES</h1>
         
         <div class="indicators-grid">
             <!-- Vertical Scroll Progress -->
@@ -295,17 +295,17 @@
             
             <!-- Circular Progress -->
             <div class="circular-progress-container">
-                <h3 style="color: #ff00ff; text-shadow: 0 0 10px #ff00ff;">CIRCULAR PROGRESS</h3>
+                <h3 style="color: #845ec2; text-shadow: 0 0 10px #845ec2;">CIRCULAR PROGRESS</h3>
                 <div class="circular-progress">
                     <div class="progress-ring"></div>
                     <div class="progress-center">75%</div>
                 </div>
-                <p style="color: #ff00ff; font-size: 0.7rem;">Animated Ring</p>
+                <p style="color: #845ec2; font-size: 0.7rem;">Animated Ring</p>
             </div>
             
             <!-- Horizontal Bars -->
             <div class="horizontal-progress-container">
-                <h3 style="color: #ffff00; text-shadow: 0 0 10px #ffff00;">HORIZONTAL BARS</h3>
+                <h3 style="color: #ff6f91; text-shadow: 0 0 10px #ff6f91;">HORIZONTAL BARS</h3>
                 
                 <div>
                     <div class="bar-label">Processing Task 1</div>
@@ -338,7 +338,7 @@
             
             <!-- Segmented Progress -->
             <div class="segmented-progress-container">
-                <h3 style="color: #ff0080; text-shadow: 0 0 10px #ff0080;">SEGMENTED PROGRESS</h3>
+                <h3 style="color: #ff9671; text-shadow: 0 0 10px #ff9671;">SEGMENTED PROGRESS</h3>
                 
                 <div>
                     <div class="segment-label">8 Segments</div>
@@ -368,10 +368,10 @@
     <script>
         const segmentsCatalog = { segments8: 8, segments12: 12, segments16: 16 };
         const progressScenes = [
-            { name: 'Baseline Sequence', vertical: 65, bars: [25, 60, 85, 45], segments: { segments8: 5, segments12: 8, segments16: 11 } },
-            { name: 'Quantum Uplink', vertical: 78, bars: [48, 72, 92, 58], segments: { segments8: 6, segments12: 9, segments16: 13 } },
-            { name: 'Nebula Expansion', vertical: 54, bars: [32, 48, 70, 38], segments: { segments8: 4, segments12: 6, segments16: 9 } },
-            { name: 'Chrono Recovery', vertical: 90, bars: [68, 82, 97, 74], segments: { segments8: 8, segments12: 11, segments16: 15 } }
+            { name: 'Amber Relay', vertical: 58, bars: [30, 56, 78, 42], segments: { segments8: 4, segments12: 7, segments16: 10 } },
+            { name: 'Saffron Pulse', vertical: 74, bars: [44, 68, 88, 60], segments: { segments8: 6, segments12: 9, segments16: 12 } },
+            { name: 'Violet Surge', vertical: 62, bars: [38, 52, 82, 48], segments: { segments8: 5, segments12: 8, segments16: 11 } },
+            { name: 'Rose Continuum', vertical: 86, bars: [65, 80, 95, 70], segments: { segments8: 8, segments12: 11, segments16: 14 } }
         ];
 
         let animationsEnabled = true;
@@ -535,7 +535,7 @@
             setSegments(segmentKey, segmentsCatalog[segmentKey], active, true);
         }, 4000);
 
-        console.log('🎨 Holographic Progress Indicators Demo loaded - data-driven sequences with scene cycling');
+        console.log('🎨 Holographic Progress Indicators Demo loaded - twin codex sequences with saffron scenes');
     </script>
 </body>
 </html>
