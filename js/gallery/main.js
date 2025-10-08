@@ -7,6 +7,8 @@ import { initContextStatus, initServerStatusCheck } from './status.js';
 let currentFilter = 'all';
 const contextPool = new WebGLContextPool(6);
 const lazyLoader = createLazyLoader(contextPool);
+const TWIN_STORAGE_PREFIX = 'gallery:twin:';
+let pendingEffectHighlight = null;
 
 function createLivePreview(effect) {
     const lazyIframe = document.createElement('div');
@@ -107,6 +109,8 @@ function createInfo(effect) {
 function createCard(effect) {
     const card = document.createElement('div');
     card.className = 'effect-card';
+    card.id = `effect-${effect.id}`;
+    card.dataset.effectId = effect.id;
     card.addEventListener('click', () => openModal(effect));
 
     const preview = document.createElement('div');
@@ -150,6 +154,24 @@ function renderGallery() {
             lazyLoader.observeCard(card);
         }
     });
+
+    requestAnimationFrame(() => {
+        const hashReRendered = highlightEffectFromHash();
+        if (hashReRendered) {
+            return;
+        }
+
+        const storageReRendered = highlightEffectFromStorage();
+        if (storageReRendered) {
+            return;
+        }
+
+        if (pendingEffectHighlight) {
+            if (highlightEffectById(pendingEffectHighlight)) {
+                pendingEffectHighlight = null;
+            }
+        }
+    });
 }
 
 function setFilter(filter) {
@@ -188,6 +210,86 @@ function init() {
     initMouseTracking();
     initContextStatus(contextPool);
     initServerStatusCheck();
+    initHashNavigation();
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+function highlightCard(card, behavior = 'smooth') {
+    if (!card) return;
+
+    if (behavior) {
+        card.scrollIntoView({ behavior, block: 'center' });
+    }
+
+    card.classList.add('effect-card--highlight');
+    window.setTimeout(() => {
+        card.classList.remove('effect-card--highlight');
+    }, 2600);
+}
+
+function highlightEffectFromHash(behavior = 'smooth') {
+    const { hash } = window.location;
+    if (!hash || !hash.startsWith('#effect-')) {
+        return false;
+    }
+
+    const match = hash.match(/^#effect-(.+)$/);
+    if (!match) {
+        return false;
+    }
+
+    if (highlightEffectById(match[1], behavior)) {
+        pendingEffectHighlight = null;
+        return false;
+    }
+
+    pendingEffectHighlight = match[1];
+    if (currentFilter !== 'all') {
+        setFilter('all');
+        return true;
+    }
+
+    return false;
+}
+
+function highlightEffectFromStorage() {
+    try {
+        const stored = localStorage.getItem(`${TWIN_STORAGE_PREFIX}last`);
+        if (!stored) {
+            return false;
+        }
+
+        localStorage.removeItem(`${TWIN_STORAGE_PREFIX}last`);
+
+        if (highlightEffectById(stored)) {
+            pendingEffectHighlight = null;
+            return false;
+        }
+
+        pendingEffectHighlight = stored;
+        if (currentFilter !== 'all') {
+            setFilter('all');
+            return true;
+        }
+
+        return false;
+    } catch (error) {
+        console.debug('[gallery] unable to read twin storage', error);
+        return false;
+    }
+}
+
+function highlightEffectById(effectId, behavior = 'smooth') {
+    const card = document.getElementById(`effect-${effectId}`);
+    if (!card) {
+        return false;
+    }
+
+    highlightCard(card, behavior);
+    return true;
+}
+
+function initHashNavigation() {
+    window.addEventListener('hashchange', () => highlightEffectFromHash());
+}
