@@ -32,6 +32,72 @@
             perspective: 1200px;
             transform-style: preserve-3d;
         }
+
+        .holographic-container.scene-atlas .background {
+            transform: translateZ(-140px) rotateY(-8deg) rotateX(4deg);
+        }
+
+        .holographic-container.scene-atlas .midground {
+            transform: translateZ(-10px) rotateY(6deg) rotateX(-2deg);
+        }
+
+        .holographic-container.scene-atlas .foreground {
+            transform: translateZ(70px) rotateY(-4deg) rotateX(3deg);
+        }
+
+        .holographic-container.scene-atlas .accent {
+            transform: translateZ(140px) rotateY(8deg) rotateX(-3deg);
+        }
+
+        .holographic-container.scene-vortex .depth-layer {
+            animation: sceneVortex 18s linear infinite;
+        }
+
+        .holographic-container.scene-vortex .foreground {
+            animation-duration: 14s;
+        }
+
+        .holographic-container.scene-vortex .accent {
+            animation-duration: 10s;
+        }
+
+        @keyframes sceneVortex {
+            0% { transform: rotateY(0deg) translateZ(var(--scene-depth, 0px)); }
+            50% { transform: rotateY(180deg) translateZ(calc(var(--scene-depth, 0px) * 1.2)); }
+            100% { transform: rotateY(360deg) translateZ(var(--scene-depth, 0px)); }
+        }
+
+        .scene-vortex .background { --scene-depth: -100px; }
+        .scene-vortex .midground { --scene-depth: 0px; }
+        .scene-vortex .foreground { --scene-depth: 60px; }
+        .scene-vortex .accent { --scene-depth: 130px; }
+
+        .holographic-container.scene-orbitals .depth-layer {
+            transform-origin: center;
+        }
+
+        .holographic-container.scene-orbitals .background {
+            animation: orbitDrift 16s ease-in-out infinite;
+        }
+
+        .holographic-container.scene-orbitals .midground {
+            animation: orbitDrift 12s ease-in-out infinite reverse;
+        }
+
+        .holographic-container.scene-orbitals .foreground {
+            animation: orbitDrift 9s ease-in-out infinite;
+        }
+
+        .holographic-container.scene-orbitals .accent {
+            animation: orbitDrift 6s ease-in-out infinite reverse;
+        }
+
+        @keyframes orbitDrift {
+            0%, 100% { transform: translateZ(var(--scene-depth, 0px)) rotateZ(0deg) rotateX(0deg); }
+            25% { transform: translateZ(calc(var(--scene-depth, 0px) * 1.2)) rotateZ(6deg) rotateX(3deg); }
+            50% { transform: translateZ(calc(var(--scene-depth, 0px) * 0.7)) rotateZ(-4deg) rotateX(-2deg); }
+            75% { transform: translateZ(calc(var(--scene-depth, 0px) * 1.1)) rotateZ(8deg) rotateX(4deg); }
+        }
         
         /* DEPTH LAYERS */
         .depth-layer {
@@ -47,21 +113,25 @@
         .depth-layer.background {
             z-index: 1;
             transform: translateZ(-100px);
+            --scene-depth: -100px;
         }
-        
+
         .depth-layer.midground {
             z-index: 5;
             transform: translateZ(0px);
+            --scene-depth: 0px;
         }
-        
+
         .depth-layer.foreground {
             z-index: 10;
             transform: translateZ(50px);
+            --scene-depth: 50px;
         }
-        
+
         .depth-layer.accent {
             z-index: 15;
             transform: translateZ(100px);
+            --scene-depth: 100px;
         }
         
         /* Layer Content Styling */
@@ -79,10 +149,17 @@
         .layer-element:hover {
             background: rgba(0, 255, 255, 0.2);
             border-color: rgba(0, 255, 255, 0.6);
-            box-shadow: 
+            box-shadow:
                 0 0 30px rgba(0, 255, 255, 0.4),
                 inset 0 0 20px rgba(0, 255, 255, 0.1);
             transform: scale(1.05);
+        }
+
+        .depth-layer.is-highlighted .layer-element {
+            box-shadow:
+                0 0 40px rgba(0, 255, 255, 0.5),
+                0 0 80px rgba(255, 0, 255, 0.3);
+            transform: scale(1.08);
         }
         
         /* Background Layer Elements */
@@ -192,88 +269,8 @@
         }
         
         /* Controls */
-        .depth-controls {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid #00ffff;
-            border-radius: 15px;
-            padding: 20px;
-            z-index: 1000;
-            backdrop-filter: blur(15px);
-        }
-        
-        .control-title {
-            color: #00ffff;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            text-shadow: 0 0 10px #00ffff;
-        }
-        
-        .control-group {
-            margin-bottom: 15px;
-        }
-        
-        .control-label {
-            display: block;
-            color: #ffffff;
-            font-size: 0.8rem;
-            margin-bottom: 5px;
-        }
-        
-        .control-slider {
-            width: 200px;
-            margin-bottom: 10px;
-        }
-        
-        .control-button {
-            background: rgba(0, 255, 255, 0.2);
-            border: 1px solid #00ffff;
-            color: #00ffff;
-            padding: 8px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 5px;
-            font-family: inherit;
-            font-size: 0.7rem;
-            transition: all 0.3s ease;
-        }
-        
-        .control-button:hover {
-            background: rgba(0, 255, 255, 0.4);
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
-        }
-        
-        .control-button.active {
-            background: rgba(255, 255, 0, 0.3);
-            border-color: #ffff00;
-            color: #ffff00;
-        }
         
         /* Status Display */
-        .status-display {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid #ff00ff;
-            border-radius: 15px;
-            padding: 15px;
-            z-index: 1000;
-            backdrop-filter: blur(15px);
-            color: #ff00ff;
-        }
-        
-        .status-item {
-            font-size: 0.8rem;
-            margin: 5px 0;
-        }
-        
-        .status-value {
-            color: #ffffff;
-            font-weight: bold;
-        }
         
         /* Grid Overlay */
         .grid-overlay {
@@ -314,16 +311,6 @@
         }
         
         @media (max-width: 768px) {
-            .depth-controls {
-                position: fixed;
-                top: 10px;
-                left: 10px;
-                padding: 15px;
-            }
-            
-            .control-slider {
-                width: 150px;
-            }
             
             .layer-element {
                 padding: 15px;
@@ -333,41 +320,7 @@
 </head>
 <body>
     <div class="grid-overlay" id="gridOverlay"></div>
-    
-    <div class="depth-controls">
-        <div class="control-title">DEPTH SYSTEM</div>
-        
-        <div class="control-group">
-            <label class="control-label">Perspective Distance</label>
-            <input type="range" class="control-slider" id="perspectiveSlider" min="800" max="2000" value="1200">
-            <span class="status-value" id="perspectiveValue">1200px</span>
-        </div>
-        
-        <div class="control-group">
-            <label class="control-label">Layer Separation</label>
-            <input type="range" class="control-slider" id="separationSlider" min="50" max="200" value="100">
-            <span class="status-value" id="separationValue">100px</span>
-        </div>
-        
-        <div class="control-group">
-            <button class="control-button active" onclick="setLayerMode('static')">Static Layers</button>
-            <button class="control-button" onclick="setLayerMode('rotating')">Rotating Mode</button>
-            <button class="control-button" onclick="setLayerMode('floating')">Floating Mode</button>
-        </div>
-        
-        <div class="control-group">
-            <button class="control-button" onclick="toggleGrid()">Toggle Grid</button>
-            <button class="control-button" onclick="resetLayers()">Reset Layers</button>
-        </div>
-    </div>
-    
-    <div class="status-display">
-        <div class="status-item">Mode: <span class="status-value" id="currentMode">Static Layers</span></div>
-        <div class="status-item">Active Layer: <span class="status-value" id="activeLayer">None</span></div>
-        <div class="status-item">Mouse: <span class="status-value" id="mousePos">0, 0</span></div>
-        <div class="status-item">Depth: <span class="status-value" id="depthLevel">4 Layers</span></div>
-    </div>
-    
+
     <div class="holographic-container" id="holoContainer">
         <!-- BACKGROUND DEPTH LAYER -->
         <div class="depth-layer background" data-layer="background">
@@ -440,75 +393,93 @@
         let currentMode = 'static';
         let isRotating = false;
         let isFloating = false;
-        
+        let currentScene = 'atlas';
+        let highlightTimer = null;
+        let perspectiveDistance = 1200;
+        let layerSeparation = 100;
+
+        function updateStatus(id, value) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = value;
+            }
+        }
+
         // Layer management
         const container = document.getElementById('holoContainer');
         const layers = document.querySelectorAll('.depth-layer');
         const elements = document.querySelectorAll('.layer-element');
-        
-        // Control elements
-        const perspectiveSlider = document.getElementById('perspectiveSlider');
-        const separationSlider = document.getElementById('separationSlider');
-        const perspectiveValue = document.getElementById('perspectiveValue');
-        const separationValue = document.getElementById('separationValue');
-        
-        // Status elements
-        const currentModeDisplay = document.getElementById('currentMode');
-        const activeLayerDisplay = document.getElementById('activeLayer');
-        const mousePosDisplay = document.getElementById('mousePos');
+
         
         // Initialize
         function init() {
             setupEventListeners();
             updatePerspective();
             updateLayerSeparation();
+            setLayerMode('static');
+            setScene('atlas');
+            startLayerHighlightCycle();
             console.log('🌌 Holographic Depth System initialized - 4 layers with 3D transforms');
         }
         
         function setupEventListeners() {
-            // Perspective control
-            perspectiveSlider.addEventListener('input', updatePerspective);
-            separationSlider.addEventListener('input', updateLayerSeparation);
-            
-            // Mouse tracking
             document.addEventListener('mousemove', handleMouseMove);
-            
-            // Element interactions
+
             elements.forEach(element => {
                 element.addEventListener('mouseenter', function() {
                     const layer = this.closest('.depth-layer').dataset.layer;
-                    activeLayerDisplay.textContent = layer.charAt(0).toUpperCase() + layer.slice(1);
+                    updateStatus('activeLayer', layer.charAt(0).toUpperCase() + layer.slice(1));
                     this.style.transform = this.style.transform + ' scale(1.1)';
                 });
-                
+
                 element.addEventListener('mouseleave', function() {
-                    activeLayerDisplay.textContent = 'None';
+                    updateStatus('activeLayer', 'None');
                     this.style.transform = this.style.transform.replace(' scale(1.1)', '');
+                    this.closest('.depth-layer').classList.remove('is-highlighted');
                 });
-                
+
                 element.addEventListener('click', function() {
                     console.log('Layer element clicked:', this.querySelector('.element-title').textContent);
                 });
             });
         }
-        
-        function updatePerspective() {
-            const value = perspectiveSlider.value;
-            container.style.perspective = value + 'px';
-            perspectiveValue.textContent = value + 'px';
+
+        function updatePerspective(value) {
+            if (typeof value === 'number') {
+                perspectiveDistance = value;
+            }
+            container.style.perspective = perspectiveDistance + 'px';
+            updateStatus('perspectiveValue', perspectiveDistance + 'px');
         }
-        
-        function updateLayerSeparation() {
-            const separation = parseInt(separationSlider.value);
-            separationValue.textContent = separation + 'px';
-            
-            // Update layer positions
-            document.querySelector('.background').style.transform = `translateZ(-${separation}px)`;
-            document.querySelector('.midground').style.transform = 'translateZ(0px)';
-            document.querySelector('.foreground').style.transform = `translateZ(${separation/2}px)`;
-            document.querySelector('.accent').style.transform = `translateZ(${separation}px)`;
-            
-            // Update depth indicators
+
+        function updateLayerSeparation(value) {
+            if (typeof value === 'number') {
+                layerSeparation = value;
+            }
+            const separation = layerSeparation;
+            updateStatus('separationValue', separation + 'px');
+
+            const backgroundLayer = document.querySelector('.background');
+            const midgroundLayer = document.querySelector('.midground');
+            const foregroundLayer = document.querySelector('.foreground');
+            const accentLayer = document.querySelector('.accent');
+
+            if (currentScene === 'atlas') {
+                backgroundLayer.style.transform = `translateZ(-${separation}px)`;
+                midgroundLayer.style.transform = 'translateZ(0px)';
+                foregroundLayer.style.transform = `translateZ(${separation/2}px)`;
+                accentLayer.style.transform = `translateZ(${separation}px)`;
+            } else {
+                [backgroundLayer, midgroundLayer, foregroundLayer, accentLayer].forEach(layer => {
+                    layer.style.transform = '';
+                });
+
+                backgroundLayer.style.setProperty('--scene-depth', `-${separation}px`);
+                midgroundLayer.style.setProperty('--scene-depth', '0px');
+                foregroundLayer.style.setProperty('--scene-depth', `${separation/2}px`);
+                accentLayer.style.setProperty('--scene-depth', `${separation}px`);
+            }
+
             document.querySelector('.background .element-depth').textContent = `-${separation}px`;
             document.querySelector('.foreground .element-depth').textContent = `+${separation/2}px`;
             document.querySelector('.accent .element-depth').textContent = `+${separation}px`;
@@ -517,7 +488,7 @@
         function handleMouseMove(e) {
             const x = Math.round(e.clientX);
             const y = Math.round(e.clientY);
-            mousePosDisplay.textContent = `${x}, ${y}`;
+            updateStatus('mousePos', `${x}, ${y}`);
             
             if (currentMode === 'rotating') {
                 const rotateY = (e.clientX / window.innerWidth - 0.5) * 20;
@@ -526,16 +497,11 @@
             }
         }
         
-        function setLayerMode(mode) {
+        function setLayerMode(mode, triggerButton) {
             currentMode = mode;
-            currentModeDisplay.textContent = mode.charAt(0).toUpperCase() + mode.slice(1) + ' Mode';
-            
+            updateStatus('currentMode', mode.charAt(0).toUpperCase() + mode.slice(1) + ' Mode');
+
             // Update button states
-            document.querySelectorAll('.control-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
             switch(mode) {
                 case 'static':
                     isRotating = false;
@@ -564,22 +530,95 @@
                     break;
             }
         }
-        
+
+        function setScene(scene, triggerButton) {
+            currentScene = scene;
+
+            container.classList.remove('scene-atlas', 'scene-vortex', 'scene-orbitals');
+
+            switch(scene) {
+                case 'atlas':
+                    container.classList.add('scene-atlas');
+                    updateStatus('currentScene', 'Atlas Stack');
+                    break;
+                case 'vortex':
+                    container.classList.add('scene-vortex');
+                    updateStatus('currentScene', 'Vortex Bloom');
+                    break;
+                case 'orbitals':
+                    container.classList.add('scene-orbitals');
+                    updateStatus('currentScene', 'Orbitals');
+                    break;
+            }
+
+            updateLayerSeparation();
+            startLayerHighlightCycle();
+        }
+
         function toggleGrid() {
             const grid = document.getElementById('gridOverlay');
             grid.classList.toggle('active');
         }
-        
+
         function resetLayers() {
             container.style.transform = '';
             layers.forEach(layer => {
                 layer.style.animation = '';
             });
             setLayerMode('static');
-            perspectiveSlider.value = 1200;
-            separationSlider.value = 100;
-            updatePerspective();
-            updateLayerSeparation();
+            setScene('atlas');
+            perspectiveDistance = 1200;
+            layerSeparation = 100;
+            updatePerspective(perspectiveDistance);
+            updateLayerSeparation(layerSeparation);
+        }
+
+        function startLayerHighlightCycle() {
+            if (highlightTimer) {
+                clearInterval(highlightTimer);
+            }
+
+            const highlightOrder = Array.from(layers);
+
+            highlightOrder.forEach(layer => layer.classList.remove('is-highlighted'));
+            if (highlightOrder.length) {
+                const firstLayer = highlightOrder[0];
+                firstLayer.classList.add('is-highlighted');
+                const label = firstLayer.dataset.layer.charAt(0).toUpperCase() + firstLayer.dataset.layer.slice(1);
+                updateStatus('activeLayer', label);
+            }
+
+            let index = 1;
+
+            highlightTimer = setInterval(() => {
+                highlightOrder.forEach(layer => layer.classList.remove('is-highlighted'));
+                const layer = highlightOrder[index % highlightOrder.length];
+                layer.classList.add('is-highlighted');
+                const label = layer.dataset.layer.charAt(0).toUpperCase() + layer.dataset.layer.slice(1);
+                updateStatus('activeLayer', label);
+                index++;
+            }, 4000);
+        }
+            const highlightOrder = Array.from(layers);
+
+            highlightOrder.forEach(layer => layer.classList.remove('is-highlighted'));
+            if (highlightOrder.length) {
+                const firstLayer = highlightOrder[0];
+                firstLayer.classList.add('is-highlighted');
+                const label = firstLayer.dataset.layer.charAt(0).toUpperCase() + firstLayer.dataset.layer.slice(1);
+                activeLayerDisplay.textContent = label;
+            }
+
+            let index = 1;
+
+            highlightTimer = setInterval(() => {
+                highlightOrder.forEach(layer => layer.classList.remove('is-highlighted'));
+                const layer = highlightOrder[index % highlightOrder.length];
+                layer.classList.add('is-highlighted');
+                const label = layer.dataset.layer.charAt(0).toUpperCase() + layer.dataset.layer.slice(1);
+                activeLayerDisplay.textContent = label;
+                index++;
+            }, 4000);
         }
         
         // Add CSS animations
