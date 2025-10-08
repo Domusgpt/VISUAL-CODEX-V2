@@ -11,12 +11,24 @@ An advanced interactive gallery showcasing 39 unique visual effects and style de
 - **39 Visual Effects**: Holographic systems, 4D visualizers, particle effects, CSS animations
 - **Lazy Loading**: Efficient iframe loading prevents WebGL context overload
 - **Interactive Previews**: Mouse, scroll, and click interactions
+- **Dataset Switcher**: Floating control for instant swapping between gallery datasets without leaving the page
+- **Control Deck Analytics**: Inline insights panel with tag filters, section metrics, and curated callouts for each dataset
+- **Instant Search**: New codex search overlays surface matching sections, wafers, and demos as you type (with keyboard-accessible clear control)
+- **Deep Link Sharing**: Copyable section and card permalinks with history-aware URLs for quick collaboration
+- **Session Memory**: Optional per-dataset preferences remember your last section, spotlight, tag focus, and search state when you return
+- **Keyboard Navigation**: Arrow keys, bracket cycling, number spotlights, `/` to focus search, and `Shift + ?` to open an in-app shortcut guide with `Alt + Shift + D` control deck toggles
+- **Accessibility Aware**: Honors `prefers-reduced-motion` and falls back to CSS backgrounds when WebGL is unavailable
 - **Responsive Design**: Mobile-optimized with VaporWave aesthetics
 
 ## 🚀 Quick Start
 
 ### View on GitHub Pages
 Visit: https://[your-username].github.io/visual-codex/
+
+### Available Systems
+- **Proper 4D System** (`gallery-proper-system.html?gallery=proper`): Original curated polytopal showcase with WebGL backgrounds and reactive crystal wafers.
+- **Aurora Twin System** (`gallery-aurora-system.html?gallery=twin`): Alternate curation featuring Aurora-inspired palettes, mobile-first groupings, and tooling-oriented heavy entries.
+- You can also stay on either shell and use the in-page dataset switcher to jump between modes; query parameters (`?gallery=...`) keep the view in sync.
 
 ### Local Development
 ```bash
