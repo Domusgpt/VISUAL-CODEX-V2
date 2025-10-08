@@ -203,13 +203,13 @@ class ParameterScrollController {
 - [x] Add live preview activation on hover ✅ (Auto-loading iframes with staggered entrance)
 - [x] Test section transitions with momentum ✅ (Transitions working with crystal breaking/reforming)
 
-### PHASE 2 - Demo Systems Rebuild  
-- [ ] Restore all 35 holographic demos
-- [ ] Implement 5-item pagination system
-- [ ] Build click-to-expand modal system
-- [ ] Add infinite scroll to expanded views
-- [ ] Implement mouse reactivity in expanded views
-- [ ] Add scrolling parallax effects to parallax demos
+### PHASE 2 - Demo Systems Rebuild
+- [x] Restore all 35 holographic demos ✅ (Parallax mega demo now paginates through the full catalog with 10-up groupings)
+- [x] Implement 5-item pagination system ✅ (Main gallery renders 5 cards per page with keyboard + progress controls)
+- [x] Build click-to-expand modal system ✅ (Modal rebuilt with navigation overlay, contextual info, and storage-aware highlighting)
+- [x] Add infinite scroll to expanded views ✅ (Wheel/keyboard navigation loops through effects without closing the modal)
+- [x] Implement mouse reactivity in expanded views ✅ (Fullscreen preview responds to pointer position via neon spotlight shader)
+- [x] Add scrolling parallax effects to parallax demos ✅ (Page wheel input advances paginated sets while preserving layer motion)
 
 ### PHASE 3 - Parameter-Only Scroll
 - [x] Implement scroll event prevention ✅ (preventDefault on wheel events)
@@ -217,6 +217,25 @@ class ParameterScrollController {
 - [x] Add visual parameter feedback ✅ (Real-time slider and indicator updates)
 - [x] Test smooth parameter transitions ✅ (Smooth parameter accumulation with clamping)
 - [x] Ensure no actual page movement ✅ (Page stays fixed, only parameters change)
+
+### PHASE 4 - Automated Regression Safety Nets
+- [x] Establish Node-based test runner ✅ (`npm test` now executes `node --test tests`)
+- [x] Add pagination controller unit coverage ✅ (`tests/pagination.test.mjs` validates empty/small sets and navigation bounds)
+- [x] Validate pagination controls DOM rendering ✅ (`tests/pagination-dom.test.mjs` exercises button states, indicator math, and progress width)
+- [ ] Capture modal navigation loop regressions ⏳ (Author Playwright coverage for wheel + keyboard interactions)
+- [ ] Add parallax pagination smoke checks on mobile ⏳ (Simulate 35-card cycling with viewport overrides)
+- [ ] Document QA playbook for gallery modules ⏳ (Map scenarios to automated/manual coverage)
+
+## 🗒️ WORK SESSION LOG
+
+### Session 4A — DOM Pagination Regression Guards
+- **Date**: 2024-05-11
+- **Focus**: Stabilize the pagination controls markup so button wiring, progress math, and indicator text don't regress as new filters land.
+- **Actions**:
+  - Introduced `jsdom` harnessing under `npm test` to emulate the gallery shell without a browser runtime.
+  - Authored `tests/pagination-dom.test.mjs` to assert hide/show behavior, button enablement, indicator text, and progress bar width through real click events.
+- **Plan Impact**: Phase 4 now tracks DOM rendering coverage as complete, freeing the next work session to concentrate on modal loop automation.
+
 
 ## 🎨 DESIGN PRINCIPLES TO MAINTAIN
 
