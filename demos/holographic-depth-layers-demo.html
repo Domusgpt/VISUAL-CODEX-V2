@@ -13,6 +13,11 @@
             box-sizing: border-box;
         }
         
+        :root {
+            --layer-float-distance: 10px;
+            --layer-float-tilt: 2deg;
+        }
+
         body {
             background: radial-gradient(ellipse at center, #1a0033 0%, #000000 70%);
             color: white;
@@ -20,6 +25,12 @@
             overflow: hidden;
             height: 100vh;
             cursor: crosshair;
+            transition: background 0.6s ease, filter 0.6s ease;
+        }
+
+        body.reduced-motion-active {
+            background: radial-gradient(ellipse at center, #120024 0%, #000000 70%);
+            filter: saturate(0.85);
         }
         
         /* HOLOGRAPHIC DEPTH SYSTEM */
@@ -42,6 +53,10 @@
             height: 100%;
             transform-style: preserve-3d;
             transition: transform 0.3s ease-out;
+        }
+
+        body.reduced-motion-active .depth-layer {
+            transition-duration: 0.55s;
         }
         
         .depth-layer.background {
@@ -75,14 +90,24 @@
             transition: all 0.4s ease;
             cursor: pointer;
         }
-        
+
         .layer-element:hover {
             background: rgba(0, 255, 255, 0.2);
             border-color: rgba(0, 255, 255, 0.6);
-            box-shadow: 
+            box-shadow:
                 0 0 30px rgba(0, 255, 255, 0.4),
                 inset 0 0 20px rgba(0, 255, 255, 0.1);
             transform: scale(1.05);
+        }
+
+        body.reduced-motion-active .layer-element {
+            transition-duration: 0.55s;
+        }
+
+        body.reduced-motion-active .layer-element:hover {
+            box-shadow:
+                0 0 18px rgba(0, 255, 255, 0.28),
+                inset 0 0 14px rgba(0, 255, 255, 0.08);
         }
         
         /* Background Layer Elements */
@@ -214,14 +239,47 @@
         .control-group {
             margin-bottom: 15px;
         }
-        
+
+        .motion-group {
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+            padding-top: 12px;
+            margin-top: 12px;
+        }
+
         .control-label {
             display: block;
             color: #ffffff;
             font-size: 0.8rem;
             margin-bottom: 5px;
         }
-        
+
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .toggle-label input {
+            width: 18px;
+            height: 18px;
+            accent-color: #00ffff;
+        }
+
+        .toggle-status {
+            font-size: 0.75rem;
+            color: #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .assistive-text {
+            font-size: 0.68rem;
+            color: rgba(179, 255, 255, 0.8);
+            line-height: 1.4;
+            margin-top: 6px;
+        }
+
         .control-slider {
             width: 200px;
             margin-bottom: 10px;
@@ -307,6 +365,11 @@
             opacity: 0.3;
             animation: gridPulse 2s ease-in-out infinite;
         }
+
+        body.reduced-motion-active .grid-overlay.active {
+            opacity: 0.22;
+            animation-duration: 4s;
+        }
         
         @keyframes gridPulse {
             0%, 100% { opacity: 0.2; }
@@ -329,6 +392,25 @@
                 padding: 15px;
             }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            body {
+                filter: saturate(0.85);
+            }
+
+            :root {
+                --layer-float-distance: 6px;
+                --layer-float-tilt: 1.2deg;
+            }
+
+            .layer-element:hover {
+                transform: scale(1.04);
+            }
+
+            .grid-overlay.active {
+                animation-duration: 4s;
+            }
+        }
     </style>
 </head>
 <body>
@@ -336,7 +418,7 @@
     
     <div class="depth-controls">
         <div class="control-title">DEPTH SYSTEM</div>
-        
+
         <div class="control-group">
             <label class="control-label">Perspective Distance</label>
             <input type="range" class="control-slider" id="perspectiveSlider" min="800" max="2000" value="1200">
@@ -350,14 +432,25 @@
         </div>
         
         <div class="control-group">
-            <button class="control-button active" onclick="setLayerMode('static')">Static Layers</button>
-            <button class="control-button" onclick="setLayerMode('rotating')">Rotating Mode</button>
-            <button class="control-button" onclick="setLayerMode('floating')">Floating Mode</button>
+            <button class="control-button active" data-mode="static" onclick="setLayerMode(event, 'static')">Static Layers</button>
+            <button class="control-button" data-mode="rotating" onclick="setLayerMode(event, 'rotating')">Rotating Mode</button>
+            <button class="control-button" data-mode="floating" onclick="setLayerMode(event, 'floating')">Floating Mode</button>
         </div>
-        
+
         <div class="control-group">
             <button class="control-button" onclick="toggleGrid()">Toggle Grid</button>
             <button class="control-button" onclick="resetLayers()">Reset Layers</button>
+        </div>
+
+        <div class="control-group motion-group">
+            <label class="control-label toggle-label" for="reducedMotionToggle">
+                <span>Reduced Motion</span>
+                <input type="checkbox" id="reducedMotionToggle" aria-describedby="reducedMotionAssist">
+                <span class="toggle-status" id="reducedMotionStatus">Off</span>
+            </label>
+            <p class="assistive-text" id="reducedMotionAssist">
+                Syncs with your system preference and softens layer animations when enabled.
+            </p>
         </div>
     </div>
     
@@ -440,31 +533,42 @@
         let currentMode = 'static';
         let isRotating = false;
         let isFloating = false;
-        
+        let motionFactor = 1;
+
         // Layer management
         const container = document.getElementById('holoContainer');
         const layers = document.querySelectorAll('.depth-layer');
         const elements = document.querySelectorAll('.layer-element');
-        
+        const modeButtons = document.querySelectorAll('.control-button[data-mode]');
+
         // Control elements
         const perspectiveSlider = document.getElementById('perspectiveSlider');
         const separationSlider = document.getElementById('separationSlider');
         const perspectiveValue = document.getElementById('perspectiveValue');
         const separationValue = document.getElementById('separationValue');
-        
+        const reducedMotionToggle = document.getElementById('reducedMotionToggle');
+        const reducedMotionStatus = document.getElementById('reducedMotionStatus');
+        const reducedMotionAssist = document.getElementById('reducedMotionAssist');
+
         // Status elements
         const currentModeDisplay = document.getElementById('currentMode');
         const activeLayerDisplay = document.getElementById('activeLayer');
         const mousePosDisplay = document.getElementById('mousePos');
-        
+
+        // Motion preference management
+        const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let systemPrefersReducedMotion = motionQuery.matches;
+        let userMotionPreference = null;
+
         // Initialize
         function init() {
             setupEventListeners();
+            setupMotionPreferences();
             updatePerspective();
             updateLayerSeparation();
             console.log('🌌 Holographic Depth System initialized - 4 layers with 3D transforms');
         }
-        
+
         function setupEventListeners() {
             // Perspective control
             perspectiveSlider.addEventListener('input', updatePerspective);
@@ -472,26 +576,94 @@
             
             // Mouse tracking
             document.addEventListener('mousemove', handleMouseMove);
-            
+
             // Element interactions
             elements.forEach(element => {
                 element.addEventListener('mouseenter', function() {
                     const layer = this.closest('.depth-layer').dataset.layer;
                     activeLayerDisplay.textContent = layer.charAt(0).toUpperCase() + layer.slice(1);
-                    this.style.transform = this.style.transform + ' scale(1.1)';
+                    const scaleTarget = 1 + 0.1 * motionFactor;
+                    this.style.transform = `scale(${scaleTarget.toFixed(2)})`;
                 });
-                
+
                 element.addEventListener('mouseleave', function() {
                     activeLayerDisplay.textContent = 'None';
-                    this.style.transform = this.style.transform.replace(' scale(1.1)', '');
+                    this.style.transform = '';
                 });
-                
+
                 element.addEventListener('click', function() {
                     console.log('Layer element clicked:', this.querySelector('.element-title').textContent);
                 });
             });
         }
-        
+
+        function setupMotionPreferences() {
+            reducedMotionToggle.addEventListener('change', function(event) {
+                userMotionPreference = event.target.checked;
+                applyMotionPreference(getCurrentMotionPreference());
+            });
+
+            const motionListener = (event) => {
+                systemPrefersReducedMotion = event.matches;
+                if (userMotionPreference === null) {
+                    applyMotionPreference(getCurrentMotionPreference());
+                } else {
+                    updateMotionAssistiveText();
+                }
+            };
+
+            if (typeof motionQuery.addEventListener === 'function') {
+                motionQuery.addEventListener('change', motionListener);
+            } else if (typeof motionQuery.addListener === 'function') {
+                motionQuery.addListener(motionListener);
+            }
+
+            applyMotionPreference(getCurrentMotionPreference());
+        }
+
+        function getCurrentMotionPreference() {
+            return userMotionPreference !== null ? userMotionPreference : systemPrefersReducedMotion;
+        }
+
+        function applyMotionPreference(isReduced) {
+            motionFactor = isReduced ? 0.35 : 1;
+            document.body.classList.toggle('reduced-motion-active', isReduced);
+            reducedMotionToggle.checked = isReduced;
+            reducedMotionStatus.textContent = isReduced ? 'On' : 'Off';
+            updateMotionAssistiveText();
+            syncLayerAnimations();
+        }
+
+        function updateMotionAssistiveText() {
+            const source = userMotionPreference === null ? 'system preference' : 'manual override';
+            reducedMotionAssist.textContent = `${source.charAt(0).toUpperCase() + source.slice(1)} active — rotation, float distance, and hover energy scale with calmer settings.`;
+        }
+
+        function syncLayerAnimations() {
+            if (currentMode === 'rotating') {
+                const duration = (20 / Math.max(motionFactor, 0.15)).toFixed(2);
+                layers.forEach(layer => {
+                    layer.style.animation = `layerRotate ${duration}s linear infinite`;
+                });
+            } else if (currentMode === 'floating') {
+                const baseDuration = 4 / Math.max(motionFactor, 0.15);
+                layers.forEach((layer, index) => {
+                    const duration = (baseDuration).toFixed(2);
+                    const delay = ((index * 0.5) / Math.max(motionFactor, 0.15)).toFixed(2);
+                    layer.style.animation = `layerFloat ${duration}s ease-in-out infinite ${delay}s`;
+                });
+            } else {
+                layers.forEach(layer => {
+                    layer.style.animation = '';
+                });
+            }
+
+            const floatDistance = (10 * motionFactor).toFixed(2) + 'px';
+            const floatTilt = (2 * motionFactor).toFixed(2) + 'deg';
+            document.documentElement.style.setProperty('--layer-float-distance', floatDistance);
+            document.documentElement.style.setProperty('--layer-float-tilt', floatTilt);
+        }
+
         function updatePerspective() {
             const value = perspectiveSlider.value;
             container.style.perspective = value + 'px';
@@ -505,62 +677,70 @@
             // Update layer positions
             document.querySelector('.background').style.transform = `translateZ(-${separation}px)`;
             document.querySelector('.midground').style.transform = 'translateZ(0px)';
-            document.querySelector('.foreground').style.transform = `translateZ(${separation/2}px)`;
+            document.querySelector('.foreground').style.transform = `translateZ(${separation / 2}px)`;
             document.querySelector('.accent').style.transform = `translateZ(${separation}px)`;
-            
+
             // Update depth indicators
-            document.querySelector('.background .element-depth').textContent = `-${separation}px`;
-            document.querySelector('.foreground .element-depth').textContent = `+${separation/2}px`;
-            document.querySelector('.accent .element-depth').textContent = `+${separation}px`;
+            document.querySelectorAll('.background .element-depth').forEach(depth => {
+                depth.textContent = `-${separation}px`;
+            });
+            document.querySelectorAll('.foreground .element-depth').forEach(depth => {
+                depth.textContent = `+${Math.round(separation / 2)}px`;
+            });
+            document.querySelectorAll('.accent .element-depth').forEach(depth => {
+                depth.textContent = `+${separation}px`;
+            });
         }
-        
+
         function handleMouseMove(e) {
             const x = Math.round(e.clientX);
             const y = Math.round(e.clientY);
             mousePosDisplay.textContent = `${x}, ${y}`;
-            
+
             if (currentMode === 'rotating') {
-                const rotateY = (e.clientX / window.innerWidth - 0.5) * 20;
-                const rotateX = (e.clientY / window.innerHeight - 0.5) * -20;
+                const rotateY = (e.clientX / window.innerWidth - 0.5) * 20 * motionFactor;
+                const rotateX = (e.clientY / window.innerHeight - 0.5) * -20 * motionFactor;
                 container.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
             }
         }
-        
-        function setLayerMode(mode) {
+
+        function setLayerMode(evt, mode) {
             currentMode = mode;
             currentModeDisplay.textContent = mode.charAt(0).toUpperCase() + mode.slice(1) + ' Mode';
-            
+
             // Update button states
-            document.querySelectorAll('.control-button').forEach(btn => {
+            modeButtons.forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
-            
+            if (evt && evt.currentTarget) {
+                evt.currentTarget.classList.add('active');
+            } else {
+                modeButtons.forEach(btn => {
+                    if (btn.dataset.mode === mode) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+
             switch(mode) {
                 case 'static':
                     isRotating = false;
                     isFloating = false;
                     container.style.transform = '';
-                    layers.forEach(layer => {
-                        layer.style.animation = '';
-                    });
+                    syncLayerAnimations();
                     break;
-                    
+
                 case 'rotating':
                     isRotating = true;
                     isFloating = false;
-                    layers.forEach(layer => {
-                        layer.style.animation = 'layerRotate 20s linear infinite';
-                    });
+                    syncLayerAnimations();
                     break;
-                    
+
                 case 'floating':
                     isRotating = false;
                     isFloating = true;
                     container.style.transform = '';
-                    layers.forEach((layer, index) => {
-                        layer.style.animation = `layerFloat 4s ease-in-out infinite ${index * 0.5}s`;
-                    });
+                    syncLayerAnimations();
                     break;
             }
         }
@@ -575,7 +755,7 @@
             layers.forEach(layer => {
                 layer.style.animation = '';
             });
-            setLayerMode('static');
+            setLayerMode(null, 'static');
             perspectiveSlider.value = 1200;
             separationSlider.value = 100;
             updatePerspective();
@@ -592,9 +772,9 @@
             
             @keyframes layerFloat {
                 0%, 100% { transform: translateY(0) rotateX(0deg); }
-                25% { transform: translateY(-10px) rotateX(2deg); }
+                25% { transform: translateY(calc(-1 * var(--layer-float-distance, 10px))) rotateX(var(--layer-float-tilt, 2deg)); }
                 50% { transform: translateY(0) rotateX(0deg); }
-                75% { transform: translateY(10px) rotateX(-2deg); }
+                75% { transform: translateY(var(--layer-float-distance, 10px)) rotateX(calc(-1 * var(--layer-float-tilt, 2deg))); }
             }
         `;
         document.head.appendChild(style);

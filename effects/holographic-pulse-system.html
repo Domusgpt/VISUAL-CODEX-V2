@@ -20,7 +20,7 @@
             overflow: hidden;
             height: 100vh;
             background: radial-gradient(ellipse at center, #1a0033 0%, #000000 70%);
-            
+
             /* Holographic Variables */
             --pulse-intensity: 1.0;
             --glow-radius: 40px;
@@ -30,6 +30,97 @@
             --depth-layers: 5;
             --reality-distortion: 0.0;
             --dimensional-phase: 0deg;
+        }
+
+        body.reduced-motion-active {
+            --pulse-intensity: 0.55;
+            --glow-radius: 18px;
+            --shimmer-speed: 6s;
+            --hologram-opacity: 0.6;
+            --color-cycle-speed: 5s;
+            --reality-distortion: 0.0;
+            background: radial-gradient(ellipse at center, #120022 0%, #000000 70%);
+        }
+
+        .motion-toolbar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(5, 5, 20, 0.85);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            color: #aefbff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            z-index: 1200;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .motion-toolbar .toggle-input {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .motion-toolbar input[type="checkbox"] {
+            accent-color: #00ffff;
+            width: 16px;
+            height: 16px;
+        }
+
+        .motion-status {
+            font-variant: all-small-caps;
+            letter-spacing: 1px;
+            color: #66f6ff;
+        }
+
+        body.reduced-motion-active .hologram-card.pulsing-aura {
+            animation-duration: calc(var(--color-cycle-speed) * 2);
+        }
+
+        body.reduced-motion-active .hologram-card.shimmer-waves::before {
+            animation-duration: calc(var(--shimmer-speed) * 1.5);
+        }
+
+        body.reduced-motion-active .hologram-card.interference-pattern {
+            animation-duration: 3s;
+        }
+
+        body.reduced-motion-active .hologram-card.quantum-flicker {
+            animation-duration: 1.2s;
+        }
+
+        body.reduced-motion-active .hologram-card.reality-tear {
+            animation-duration: 8s;
+        }
+
+        body.reduced-motion-active .rgb-layer::before,
+        body.reduced-motion-active .rgb-layer::after {
+            animation-duration: 4s;
+        }
+
+        body.reduced-motion-active .card-title {
+            animation-duration: 6s;
+        }
+
+        body.reduced-motion-active .hologram-card:hover {
+            transform: translateY(-10px) translateZ(20px) rotateX(4deg) rotateY(2deg);
+            backdrop-filter: blur(20px) saturate(180%) hue-rotate(15deg);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body {
+                --pulse-intensity: 0.55;
+                --glow-radius: 18px;
+                --shimmer-speed: 6s;
+                --hologram-opacity: 0.6;
+                --color-cycle-speed: 5s;
+                --reality-distortion: 0.0;
+            }
         }
         
         .holographic-stage {
@@ -419,7 +510,7 @@
 
         .hologram-controls {
             position: fixed;
-            top: 20px;
+            top: 90px;
             right: 20px;
             background: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(20px);
@@ -513,6 +604,13 @@
     </style>
 </head>
 <body>
+    <div class="motion-toolbar" role="region" aria-label="Motion preferences">
+        <label class="toggle-input" for="pulseReducedMotion">
+            <input type="checkbox" id="pulseReducedMotion">
+            Reduced Motion
+        </label>
+        <span class="motion-status" id="pulseMotionStatus" aria-live="polite">Off</span>
+    </div>
     <div class="info-panel">
         <div class="info-title">Holographic Pulse</div>
         <div class="info-item"><span class="info-key">System:</span> Multi-layer Hologram Engine</div>
@@ -637,21 +735,28 @@
                     colorCycleSpeed: 3.0,
                     realityDistortion: 0.0
                 };
-                
+
+                this.motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+                this.hasMotionOverride = false;
+                this.reducedMotionActive = this.motionQuery.matches;
+                this.motionToggle = null;
+                this.motionStatus = null;
+                this.quantumIntervalId = null;
+
                 this.init();
             }
-            
+
             init() {
                 this.setupControls();
-                this.applyParameters();
+                this.setupMotionControls();
+                this.syncMotionState(this.reducedMotionActive, { updateToggle: true });
                 this.setupCardInteractions();
-                this.startQuantumFluctuation();
                 console.log('✨ Holographic Pulse System initialized');
             }
             
             setupControls() {
                 const controls = [
-                    'pulseIntensity', 'glowRadius', 'shimmerSpeed', 
+                    'pulseIntensity', 'glowRadius', 'shimmerSpeed',
                     'hologramOpacity', 'colorCycleSpeed', 'realityDistortion'
                 ];
                 
@@ -683,17 +788,69 @@
                     }
                 });
             }
+
+            setupMotionControls() {
+                this.motionToggle = document.getElementById('pulseReducedMotion');
+                this.motionStatus = document.getElementById('pulseMotionStatus');
+
+                const applySystemPreference = (matches) => {
+                    if (!this.hasMotionOverride) {
+                        this.syncMotionState(matches, { updateToggle: true });
+                    }
+                };
+
+                if (this.motionToggle) {
+                    this.motionToggle.checked = this.reducedMotionActive;
+                    this.motionToggle.addEventListener('change', (event) => {
+                        this.hasMotionOverride = true;
+                        this.syncMotionState(event.target.checked, { updateToggle: false });
+                    });
+                }
+
+                if (typeof this.motionQuery.addEventListener === 'function') {
+                    this.motionQuery.addEventListener('change', (event) => applySystemPreference(event.matches));
+                } else if (typeof this.motionQuery.addListener === 'function') {
+                    this.motionQuery.addListener((event) => applySystemPreference(event.matches));
+                }
+            }
+
+            syncMotionState(shouldReduce, { updateToggle = true } = {}) {
+                this.reducedMotionActive = shouldReduce;
+
+                document.body.classList.toggle('reduced-motion-active', shouldReduce);
+
+                if (this.motionStatus) {
+                    this.motionStatus.textContent = shouldReduce ? 'On' : 'Off';
+                }
+
+                if (updateToggle && this.motionToggle) {
+                    this.motionToggle.checked = shouldReduce;
+                }
+
+                this.applyParameters();
+                this.startQuantumFluctuation();
+            }
             
             applyParameters() {
                 const root = document.documentElement;
-                
-                // Apply CSS custom properties
-                root.style.setProperty('--pulse-intensity', this.params.pulseIntensity);
-                root.style.setProperty('--glow-radius', this.params.glowRadius + 'px');
-                root.style.setProperty('--shimmer-speed', this.params.shimmerSpeed + 's');
-                root.style.setProperty('--hologram-opacity', this.params.hologramOpacity);
-                root.style.setProperty('--color-cycle-speed', this.params.colorCycleSpeed + 's');
-                root.style.setProperty('--reality-distortion', this.params.realityDistortion);
+
+                const intensityScale = this.reducedMotionActive ? 0.6 : 1;
+                const glowScale = this.reducedMotionActive ? 0.55 : 1;
+                const shimmerScale = this.reducedMotionActive ? 1.8 : 1;
+                const colorCycleScale = this.reducedMotionActive ? 1.6 : 1;
+                const opacityValue = this.reducedMotionActive
+                    ? Math.min(this.params.hologramOpacity, 0.65)
+                    : this.params.hologramOpacity;
+                const distortionValue = this.reducedMotionActive
+                    ? Math.min(this.params.realityDistortion, 0.3)
+                    : this.params.realityDistortion;
+
+                root.style.setProperty('--pulse-intensity', (this.params.pulseIntensity * intensityScale).toFixed(2));
+                root.style.setProperty('--glow-radius', (this.params.glowRadius * glowScale).toFixed(1) + 'px');
+                root.style.setProperty('--shimmer-speed', (this.params.shimmerSpeed * shimmerScale).toFixed(2) + 's');
+                root.style.setProperty('--hologram-opacity', opacityValue.toFixed(2));
+                root.style.setProperty('--color-cycle-speed', (this.params.colorCycleSpeed * colorCycleScale).toFixed(2) + 's');
+                root.style.setProperty('--reality-distortion', distortionValue.toFixed(2));
             }
             
             setupCardInteractions() {
@@ -722,25 +879,33 @@
             }
             
             enhanceHologram(card) {
-                const intensity = this.params.pulseIntensity * 2;
-                const glowSize = this.params.glowRadius * 2;
-                
-                card.style.setProperty('--pulse-intensity', intensity);
-                card.style.setProperty('--glow-radius', glowSize + 'px');
-                card.style.setProperty('--hologram-opacity', Math.min(1, this.params.hologramOpacity * 1.5));
-                
+                const motionScale = this.reducedMotionActive ? 0.6 : 1;
+                const intensity = this.params.pulseIntensity * (1 + motionScale);
+                const glowSize = this.params.glowRadius * (1 + 0.5 * motionScale);
+
+                card.style.setProperty('--pulse-intensity', intensity.toFixed(2));
+                card.style.setProperty('--glow-radius', (glowSize * (this.reducedMotionActive ? 0.8 : 1)).toFixed(1) + 'px');
+                const targetOpacity = Math.min(1, this.params.hologramOpacity * (1 + 0.5 * motionScale));
+                card.style.setProperty('--hologram-opacity', targetOpacity.toFixed(2));
+
                 // Add temporary extreme holographic class
                 card.classList.add('extreme-hologram');
             }
-            
+
             normalizeHologram(card) {
-                card.style.setProperty('--pulse-intensity', this.params.pulseIntensity);
-                card.style.setProperty('--glow-radius', this.params.glowRadius + 'px');
-                card.style.setProperty('--hologram-opacity', this.params.hologramOpacity);
-                
+                const intensity = this.params.pulseIntensity * (this.reducedMotionActive ? 0.6 : 1);
+                const glowSize = this.params.glowRadius * (this.reducedMotionActive ? 0.55 : 1);
+                const opacityValue = this.reducedMotionActive
+                    ? Math.min(this.params.hologramOpacity, 0.65)
+                    : this.params.hologramOpacity;
+
+                card.style.setProperty('--pulse-intensity', intensity.toFixed(2));
+                card.style.setProperty('--glow-radius', glowSize.toFixed(1) + 'px');
+                card.style.setProperty('--hologram-opacity', opacityValue.toFixed(2));
+
                 card.classList.remove('extreme-hologram');
             }
-            
+
             createParallaxHologram(card, event) {
                 const rect = card.getBoundingClientRect();
                 const centerX = rect.left + rect.width / 2;
@@ -750,57 +915,73 @@
                 const deltaY = (event.clientY - centerY) / (rect.height / 2);
                 
                 // Create holographic parallax effect
-                const rotateY = deltaX * 15 * this.params.pulseIntensity;
-                const rotateX = -deltaY * 15 * this.params.pulseIntensity;
-                const translateZ = Math.abs(deltaX + deltaY) * 20;
-                
+                const motionScale = this.reducedMotionActive ? 0.4 : 1;
+                const rotateY = deltaX * 15 * this.params.pulseIntensity * motionScale;
+                const rotateX = -deltaY * 15 * this.params.pulseIntensity * motionScale;
+                const translateZ = Math.abs(deltaX + deltaY) * 20 * motionScale;
+                const baseLift = this.reducedMotionActive ? -10 : -20;
+                const baseRotateX = this.reducedMotionActive ? 6 : 10;
+                const baseRotateY = this.reducedMotionActive ? 3 : 5;
+
                 card.style.transform = `
-                    translateY(-20px) 
-                    translateZ(${40 + translateZ}px) 
-                    rotateX(${10 + rotateX}deg) 
-                    rotateY(${5 + rotateY}deg)
+                    translateY(${baseLift}px)
+                    translateZ(${20 + translateZ}px)
+                    rotateX(${baseRotateX + rotateX}deg)
+                    rotateY(${baseRotateY + rotateY}deg)
                 `;
             }
-            
+
             triggerHolographicBurst(card) {
-                // Create temporary burst effect
+                const motionScale = this.reducedMotionActive ? 0.3 : 1;
+                const burstScale = this.reducedMotionActive ? 1.05 : 1.2;
+                const burstDepth = this.reducedMotionActive ? 30 : 80;
+                const resetDelay = this.reducedMotionActive ? 600 : 1000;
+
                 card.style.animation = 'none';
-                card.style.transform = 'scale(1.2) translateZ(80px)';
-                card.style.filter = 'saturate(300%) brightness(200%) hue-rotate(90deg)';
-                
+                card.style.transform = `scale(${burstScale}) translateZ(${burstDepth}px)`;
+                card.style.filter = this.reducedMotionActive
+                    ? 'saturate(180%) brightness(150%) hue-rotate(45deg)'
+                    : 'saturate(300%) brightness(200%) hue-rotate(90deg)';
+
                 const originalBoxShadow = card.style.boxShadow;
                 card.style.boxShadow = `
-                    0 0 100px rgba(0, 255, 255, 1),
-                    0 0 200px rgba(255, 0, 255, 0.8),
-                    0 0 300px rgba(255, 255, 0, 0.6),
-                    0 0 400px rgba(255, 255, 255, 0.4)
+                    0 0 ${80 * motionScale + 40}px rgba(0, 255, 255, 0.9),
+                    0 0 ${160 * motionScale + 40}px rgba(255, 0, 255, 0.7),
+                    0 0 ${240 * motionScale + 40}px rgba(255, 255, 0, 0.5),
+                    0 0 ${320 * motionScale + 40}px rgba(255, 255, 255, 0.3)
                 `;
-                
-                // Reset after burst
+
                 setTimeout(() => {
                     card.style.animation = '';
                     card.style.transform = '';
                     card.style.filter = '';
                     card.style.boxShadow = originalBoxShadow;
-                }, 1000);
+                }, resetDelay);
             }
-            
+
             startQuantumFluctuation() {
-                // Add subtle quantum fluctuations to all holograms
-                setInterval(() => {
+                if (this.quantumIntervalId) {
+                    clearInterval(this.quantumIntervalId);
+                }
+
+                const intervalDelay = this.reducedMotionActive ? 400 : 100;
+                const fluctuationScale = this.reducedMotionActive ? 0.35 : 1;
+
+                this.quantumIntervalId = setInterval(() => {
                     const cards = document.querySelectorAll('.hologram-card');
-                    
+
                     cards.forEach(card => {
-                        const fluctuation = (Math.random() - 0.5) * 0.1 * this.params.realityDistortion;
-                        const currentOpacity = this.params.hologramOpacity;
-                        
-                        card.style.setProperty('--hologram-opacity', currentOpacity + fluctuation);
-                        
-                        // Random dimensional phase shifts
-                        const phaseShift = Math.random() * 360;
-                        card.style.setProperty('--dimensional-phase', phaseShift + 'deg');
+                        const fluctuation = (Math.random() - 0.5) * 0.1 * this.params.realityDistortion * fluctuationScale;
+                        const currentOpacity = this.reducedMotionActive
+                            ? Math.min(this.params.hologramOpacity, 0.65)
+                            : this.params.hologramOpacity;
+
+                        card.style.setProperty('--hologram-opacity', (currentOpacity + fluctuation).toFixed(2));
+
+                        const phaseShift = Math.random() * 360 * fluctuationScale;
+                        card.style.setProperty('--dimensional-phase', phaseShift.toFixed(2) + 'deg');
                     });
-                }, 100);
+                }, intervalDelay);
             }
             
             // Preset holographic configurations

@@ -20,6 +20,13 @@
             min-height: 100vh;
             overflow-x: hidden;
             cursor: crosshair;
+            filter: brightness(2.5) contrast(1.8) saturate(2.0);
+            transition: filter 0.6s ease, background 0.6s ease;
+        }
+
+        body.reduced-motion-active {
+            filter: brightness(1.7) contrast(1.4) saturate(1.6);
+            cursor: default;
         }
         
         .demo-header {
@@ -32,6 +39,9 @@
             border-radius: 15px;
             border: 1px solid #00ffff;
             backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
         
         .demo-title {
@@ -45,15 +55,41 @@
             color: #ff00ff;
             font-size: 0.8rem;
         }
-        
-        /* AGGRESSIVE BRIGHTNESS ENHANCEMENT */
-        body {
-            filter: brightness(2.5) contrast(1.8) saturate(2.0);
+
+        .motion-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.72rem;
+            color: #00ffff;
+        }
+
+        .motion-controls input {
+            width: 16px;
+            height: 16px;
+            accent-color: #00ffff;
+            cursor: pointer;
+        }
+
+        .motion-status {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .motion-assist {
+            font-size: 0.62rem;
+            color: rgba(179, 255, 255, 0.8);
+            line-height: 1.4;
         }
         
         /* FORCE ALL VISUALIZERS TO BE BRIGHTER */
         .holographic-container {
             filter: brightness(3.0) contrast(2.0) saturate(2.5) !important;
+        }
+
+        body.reduced-motion-active .holographic-container {
+            filter: brightness(2.2) contrast(1.6) saturate(2.0) !important;
         }
         
         .layer {
@@ -117,12 +153,17 @@
             perspective: 1000px;
             z-index: 1;
         }
-        
+
         .holographic-container:hover {
             border-color: rgba(0, 255, 255, 0.8);
             transform: scale(2.0) rotateX(2deg) rotateY(2deg);
             box-shadow: 0 0 50px rgba(0, 255, 255, 0.6);
             z-index: 100;
+        }
+
+        body.reduced-motion-active .holographic-container:hover {
+            transform: scale(1.35) rotateX(1deg) rotateY(1deg);
+            box-shadow: 0 0 32px rgba(0, 255, 255, 0.45);
         }
         
         /* PRESENTATION MODE - 75% SCREEN FILL */
@@ -326,6 +367,12 @@
         .holographic-container.active-3 .layer { filter: hue-rotate(180deg) brightness(6.5) contrast(3.5) saturate(4.2) !important; transform: scale(1.15); }
         .holographic-container.active-4 .layer { filter: hue-rotate(240deg) brightness(5.8) saturate(4.8) contrast(3.1) !important; transform: scale(0.95); }
         .holographic-container.active-5 .layer { filter: hue-rotate(300deg) brightness(6.2) contrast(3.3) saturate(4.6) !important; transform: scale(1.08); }
+
+        body.reduced-motion-active .holographic-container.active-1 .layer { filter: hue-rotate(60deg) brightness(3.6) saturate(2.4) contrast(2.1) !important; transform: scale(1.04); }
+        body.reduced-motion-active .holographic-container.active-2 .layer { filter: hue-rotate(120deg) brightness(3.4) saturate(2.5) contrast(2.0) !important; transform: scale(1.03); }
+        body.reduced-motion-active .holographic-container.active-3 .layer { filter: hue-rotate(180deg) brightness(3.8) contrast(2.2) saturate(2.3) !important; transform: scale(1.05); }
+        body.reduced-motion-active .holographic-container.active-4 .layer { filter: hue-rotate(240deg) brightness(3.5) saturate(2.2) contrast(2.0) !important; transform: scale(0.97); }
+        body.reduced-motion-active .holographic-container.active-5 .layer { filter: hue-rotate(300deg) brightness(3.7) contrast(2.1) saturate(2.4) !important; transform: scale(1.04); }
         
         /* BOOST ALL GRADIENT OPACITIES */
         .parallax-1 .layer:nth-child(1) { background: repeating-linear-gradient(45deg, rgba(255,100,150,0.8) 0px, rgba(255,100,150,0.8) 8px, transparent 8px, transparent 32px), repeating-linear-gradient(135deg, rgba(100,255,150,0.7) 0px, rgba(100,255,150,0.7) 6px, transparent 6px, transparent 28px); mix-blend-mode: screen; }
@@ -333,14 +380,26 @@
         .parallax-3 .layer:nth-child(1) { background: conic-gradient(from 0deg at 50% 50%, rgba(100,150,255,0.9) 0%, rgba(255,100,150,0.8) 120deg, rgba(150,255,100,0.9) 240deg, rgba(100,150,255,0.8) 360deg); mix-blend-mode: hard-light; }
         
         /* MOUSE REACTIVE TRANSFORMS */
-        .holographic-container.mouse-reactive .layer:nth-child(1) { 
+        .holographic-container.mouse-reactive .layer:nth-child(1) {
             transition: transform 0.3s ease;
         }
-        .holographic-container.mouse-reactive .layer:nth-child(2) { 
+        .holographic-container.mouse-reactive .layer:nth-child(2) {
             transition: transform 0.4s ease;
         }
-        .holographic-container.mouse-reactive .layer:nth-child(3) { 
+        .holographic-container.mouse-reactive .layer:nth-child(3) {
             transition: transform 0.5s ease;
+        }
+
+        body.reduced-motion-active .holographic-container.mouse-reactive .layer:nth-child(1) {
+            transition-duration: 0.45s;
+        }
+
+        body.reduced-motion-active .holographic-container.mouse-reactive .layer:nth-child(2) {
+            transition-duration: 0.55s;
+        }
+
+        body.reduced-motion-active .holographic-container.mouse-reactive .layer:nth-child(3) {
+            transition-duration: 0.65s;
         }
         
         @media (max-width: 768px) {
@@ -349,14 +408,30 @@
                 grid-template-rows: repeat(7, 1fr);
             }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            body {
+                filter: brightness(1.7) contrast(1.4) saturate(1.6);
+            }
+
+            .holographic-container:hover {
+                transform: scale(1.35) rotateX(1deg) rotateY(1deg);
+            }
+        }
     </style>
 </head>
 <body>
     <div class="demo-header">
         <div class="demo-title">HOLOGRAPHIC PARALLAX SYSTEMS</div>
         <div class="demo-counter">35 Unique Variations - Hover: 2x Scale | Click: 75% Screen</div>
+        <label class="motion-controls">
+            <input type="checkbox" id="reducedMotionToggle" aria-describedby="reducedMotionAssist">
+            <span>Reduced Motion</span>
+            <span class="motion-status" id="reducedMotionStatus">Intense</span>
+        </label>
+        <p class="motion-assist" id="reducedMotionAssist">Matches your system preference and calms parallax offsets, hover scaling, and random activation cadence.</p>
     </div>
-    
+
     <div class="presentation-overlay" id="presentationOverlay"></div>
     
     <div class="parallax-grid" id="parallaxGrid">
@@ -369,6 +444,75 @@
         let mouseX = 0.5;
         let mouseY = 0.5;
         let currentPresentationContainer = null;
+        const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let systemPrefersReducedMotion = motionQuery.matches;
+        let userMotionPreference = null;
+        let motionFactor = systemPrefersReducedMotion ? 0.35 : 1;
+        let randomActivationIntervalId = null;
+        let autoCycleIntervalId = null;
+        let autoCycleTimeoutId = null;
+        const reducedMotionToggle = document.getElementById('reducedMotionToggle');
+        const reducedMotionStatus = document.getElementById('reducedMotionStatus');
+        const reducedMotionAssist = document.getElementById('reducedMotionAssist');
+
+        function setupMotionControls() {
+            reducedMotionToggle.addEventListener('change', (event) => {
+                userMotionPreference = event.target.checked;
+                applyMotionPreference(getMotionPreference());
+            });
+
+            const motionListener = (event) => {
+                systemPrefersReducedMotion = event.matches;
+                if (userMotionPreference === null) {
+                    applyMotionPreference(getMotionPreference());
+                } else {
+                    updateMotionAssistiveText();
+                }
+            };
+
+            if (typeof motionQuery.addEventListener === 'function') {
+                motionQuery.addEventListener('change', motionListener);
+            } else if (typeof motionQuery.addListener === 'function') {
+                motionQuery.addListener(motionListener);
+            }
+
+            applyMotionPreference(getMotionPreference());
+        }
+
+        function getMotionPreference() {
+            return userMotionPreference !== null ? userMotionPreference : systemPrefersReducedMotion;
+        }
+
+        function applyMotionPreference(isReduced) {
+            motionFactor = isReduced ? 0.35 : 1;
+            document.body.classList.toggle('reduced-motion-active', isReduced);
+            reducedMotionToggle.checked = isReduced;
+            reducedMotionStatus.textContent = isReduced ? 'Calm' : 'Intense';
+            updateMotionAssistiveText();
+            restartTimedCycles();
+        }
+
+        function updateMotionAssistiveText() {
+            const source = userMotionPreference === null ? 'System preference' : 'Manual override';
+            reducedMotionAssist.textContent = `${source} active — easing hover scale, parallax offsets, and random activation cadence.`;
+        }
+
+        function getMotionIntervalMultiplier() {
+            return Math.max(motionFactor, 0.2);
+        }
+
+        function restartTimedCycles() {
+            clearInterval(randomActivationIntervalId);
+            clearInterval(autoCycleIntervalId);
+            clearTimeout(autoCycleTimeoutId);
+
+            if (!parallaxGrid.children.length) {
+                return;
+            }
+
+            startRandomActivations();
+            scheduleAutoCycle();
+        }
         
         // Create 35 holographic containers
         function createHolographicContainers() {
@@ -437,19 +581,22 @@
         
         // Random activation states
         function activateRandomState(container) {
+            if (!container) {
+                return;
+            }
             // Remove all active states
             container.classList.remove('active-1', 'active-2', 'active-3', 'active-4', 'active-5');
-            
+
             // Add random active state
             const randomState = Math.floor(Math.random() * 5) + 1;
             container.classList.add(`active-${randomState}`);
-            
+
             // Remove after random duration
-            const duration = 2000 + Math.random() * 3000; // 2-5 seconds
+            const duration = (2000 + Math.random() * 3000) / getMotionIntervalMultiplier();
             setTimeout(() => {
                 container.classList.remove(`active-${randomState}`);
             }, duration);
-            
+
             console.log(`Activated state ${randomState} for container ${container.id}`);
         }
         
@@ -457,15 +604,16 @@
         document.addEventListener('mousemove', (e) => {
             mouseX = e.clientX / window.innerWidth;
             mouseY = e.clientY / window.innerHeight;
-            
+
             // Apply subtle mouse reactive transforms
             document.querySelectorAll('.holographic-container').forEach((container, index) => {
-                const intensity = 0.02 + (index % 5) * 0.01; // Vary intensity
+                const motionScale = Math.min(motionFactor, 1);
+                const intensity = (0.02 + (index % 5) * 0.01) * motionScale; // Vary intensity
                 const offsetX = (mouseX - 0.5) * intensity * 20;
                 const offsetY = (mouseY - 0.5) * intensity * 20;
-                
+
                 container.classList.add('mouse-reactive');
-                
+
                 const layers = container.querySelectorAll('.layer');
                 layers[0].style.transform = `translate(${offsetX * 0.5}px, ${offsetY * 0.5}px) translateZ(${layers[0].style.transform?.match(/translateZ\(([^)]+)\)/)?.[1] || '0px'})`;
                 layers[1].style.transform = `translate(${offsetX * 0.8}px, ${offsetY * 0.8}px) translateZ(${layers[1].style.transform?.match(/translateZ\(([^)]+)\)/)?.[1] || '0px'})`;
@@ -476,12 +624,13 @@
         // Scroll reactive effects
         let scrollPosition = 0;
         document.addEventListener('wheel', (e) => {
-            scrollPosition += e.deltaY * 0.001;
-            
+            const motionScale = Math.min(motionFactor, 1);
+            scrollPosition += e.deltaY * 0.001 * motionScale;
+
             document.querySelectorAll('.holographic-container').forEach((container, index) => {
                 const phase = (scrollPosition + index * 0.1) % (Math.PI * 2);
-                const intensity = Math.sin(phase) * 0.1;
-                
+                const intensity = Math.sin(phase) * 0.1 * motionScale;
+
                 const layers = container.querySelectorAll('.layer');
                 layers.forEach((layer, layerIndex) => {
                     const currentTransform = layer.style.transform || '';
@@ -499,40 +648,58 @@
         
         // Random activation cycle
         function startRandomActivations() {
-            setInterval(() => {
+            clearInterval(randomActivationIntervalId);
+            const interval = Math.round(2000 / getMotionIntervalMultiplier());
+            randomActivationIntervalId = setInterval(() => {
                 const containers = document.querySelectorAll('.holographic-container');
+                if (!containers.length) {
+                    return;
+                }
                 const randomContainer = containers[Math.floor(Math.random() * containers.length)];
-                
-                if (Math.random() < 0.3) { // 30% chance every 2 seconds
+
+                if (Math.random() < 0.3) {
                     activateRandomState(randomContainer);
                 }
-            }, 2000);
+            }, interval);
         }
-        
+
         // Auto-cycle demo
         function startAutoCycle() {
+            clearInterval(autoCycleIntervalId);
             let currentIndex = 0;
-            setInterval(() => {
+            const interval = Math.round(500 / getMotionIntervalMultiplier());
+            autoCycleIntervalId = setInterval(() => {
                 const containers = document.querySelectorAll('.holographic-container');
-                if (containers[currentIndex]) {
-                    activateRandomState(containers[currentIndex]);
+                if (!containers.length) {
+                    return;
+                }
+                const container = containers[currentIndex % containers.length];
+                if (container) {
+                    activateRandomState(container);
                 }
                 currentIndex = (currentIndex + 1) % containers.length;
-            }, 500); // Cycle through all containers every 17.5 seconds
+            }, interval);
         }
-        
+
+        function scheduleAutoCycle() {
+            clearTimeout(autoCycleTimeoutId);
+            const delay = Math.round(5000 / getMotionIntervalMultiplier());
+            autoCycleTimeoutId = setTimeout(() => {
+                startAutoCycle();
+            }, delay);
+        }
+
         // Initialize
+        setupMotionControls();
         createHolographicContainers();
-        startRandomActivations();
-        
-        // Optional: Start auto-cycle after 5 seconds
-        setTimeout(startAutoCycle, 5000);
-        
+        restartTimedCycles();
+
         console.log('🌈 10 Holographic Parallax Systems loaded - ULTRA BRIGHT!');
         console.log('💫 Hover: 2x scale with active focus');
         console.log('🎭 Click: 75% screen presentation mode');
         console.log('🔄 ESC or click overlay to exit presentation');
         console.log('✨ Mouse parallax + scroll rotation effects');
+        console.log('🧘 Reduced motion toggle syncs with system preferences for calmer pacing.');
     </script>
 </body>
 </html>
