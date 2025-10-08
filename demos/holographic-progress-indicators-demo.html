@@ -19,6 +19,12 @@
             font-family: 'Orbitron', 'Courier New', monospace;
             min-height: 100vh;
             padding: 40px 20px;
+            transition: background 0.6s ease, filter 0.6s ease;
+        }
+
+        body.reduced-motion-active {
+            background: radial-gradient(ellipse at center, #12002a 0%, #000000 70%);
+            filter: saturate(0.88);
         }
         
         .demo-container {
@@ -276,11 +282,45 @@
             margin-top: 30px;
             backdrop-filter: blur(10px);
         }
-        
+
         .controls-title {
             color: #00ffff;
             margin-bottom: 15px;
             text-shadow: 0 0 10px #00ffff;
+        }
+
+        .motion-controls {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .motion-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.75rem;
+            color: #00ffff;
+        }
+
+        .motion-toggle input {
+            width: 18px;
+            height: 18px;
+            accent-color: #00ffff;
+            cursor: pointer;
+        }
+
+        .toggle-status {
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .assistive-text {
+            font-size: 0.68rem;
+            color: rgba(179, 255, 255, 0.8);
+            margin-top: 6px;
+            line-height: 1.4;
         }
         
         .control-button {
@@ -306,13 +346,33 @@
         }
         
         .control-button:hover {
-            background: linear-gradient(135deg, 
+            background: linear-gradient(135deg,
                 rgba(0, 255, 255, 0.25) 0%,
                 rgba(255, 0, 255, 0.2) 50%,
                 rgba(0, 255, 255, 0.25) 100%
             );
             transform: translateY(-2px) scale(1.05);
             box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        body.reduced-motion-active .control-button:hover {
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 0 14px rgba(0, 255, 255, 0.25);
+        }
+
+        body.reduced-motion-active .scroll-fill,
+        body.reduced-motion-active .progress-ring,
+        body.reduced-motion-active .progress-fill,
+        body.reduced-motion-active .progress-segment.active {
+            animation-duration: 4s;
+        }
+
+        body.reduced-motion-active .progress-ring {
+            animation-duration: 6s;
+        }
+
+        body.reduced-motion-active .scroll-fill {
+            transition-duration: 0.45s;
         }
         
         @media (max-width: 768px) {
@@ -321,6 +381,19 @@
             }
             .demo-title {
                 font-size: 2rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body {
+                filter: saturate(0.88);
+            }
+
+            .scroll-fill,
+            .progress-ring,
+            .progress-fill,
+            .progress-segment.active {
+                animation-duration: 4s;
             }
         }
     </style>
@@ -414,24 +487,39 @@
             <button class="control-button" onclick="animateProgress()">Animate All</button>
             <button class="control-button" onclick="randomizeProgress()">Randomize Values</button>
             <button class="control-button" onclick="resetProgress()">Reset All</button>
-            <button class="control-button" onclick="toggleAnimations()">Toggle Animations</button>
+            <button class="control-button" id="toggleAnimationsButton" onclick="toggleAnimations()">Pause Animations</button>
+
+            <div class="motion-controls">
+                <label class="motion-toggle" for="reducedMotionToggle">
+                    <span>Reduced Motion</span>
+                    <input type="checkbox" id="reducedMotionToggle" aria-describedby="reducedMotionAssist">
+                    <span class="toggle-status" id="reducedMotionStatus">Active</span>
+                </label>
+                <p class="assistive-text" id="reducedMotionAssist">Honors your system preference and calms pulses, rotations, and shimmer loops.</p>
+            </div>
         </div>
     </div>
-    
+
     <script>
         let animationsEnabled = true;
-        
+        let motionFactor = 1;
+        const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let systemPrefersReducedMotion = motionQuery.matches;
+        let userMotionPreference = null;
+        let randomUpdateIntervalId = null;
+        const toggleAnimationsButton = document.getElementById('toggleAnimationsButton');
+
         // Initialize segmented progress indicators
         function initializeSegments() {
             createSegments('segments8', 8, 5);
             createSegments('segments12', 12, 8);
             createSegments('segments16', 16, 11);
         }
-        
+
         function createSegments(containerId, count, activeCount) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
-            
+
             for (let i = 0; i < count; i++) {
                 const segment = document.createElement('div');
                 segment.className = 'progress-segment';
@@ -440,56 +528,66 @@
                 }
                 container.appendChild(segment);
             }
+
+            refreshAnimationStates();
         }
-        
+
         function animateProgress() {
             // Animate vertical progress
             const verticalProgress = document.getElementById('verticalProgress');
             let height = 0;
             const targetHeight = 85;
-            
+
+            const normalized = Math.max(motionFactor, 0.2);
+            const step = 2 * normalized;
+            const intervalDelay = 50 / normalized;
+
             const verticalInterval = setInterval(() => {
-                height += 2;
-                verticalProgress.style.height = height + '%';
-                
+                height += step;
+                verticalProgress.style.height = Math.min(height, targetHeight) + '%';
+
                 if (height >= targetHeight) {
                     clearInterval(verticalInterval);
                 }
-            }, 50);
-            
+            }, intervalDelay);
+
             // Animate horizontal bars
             const progressFills = document.querySelectorAll('.progress-fill');
             progressFills.forEach((fill, index) => {
+                const delay = (index * 200) / normalized;
                 setTimeout(() => {
                     const targetWidth = Math.random() * 90 + 10;
                     fill.style.width = targetWidth + '%';
-                }, index * 200);
+                }, delay);
             });
-            
+
             // Animate segments
             setTimeout(() => {
                 animateSegments('segments8', 8);
                 animateSegments('segments12', 12);
                 animateSegments('segments16', 16);
-            }, 500);
+            }, 500 / normalized);
         }
-        
+
         function animateSegments(containerId, count) {
             const container = document.getElementById(containerId);
             const segments = container.querySelectorAll('.progress-segment');
             const targetActive = Math.floor(Math.random() * count) + 1;
-            
+            const normalized = Math.max(motionFactor, 0.2);
+
             segments.forEach((segment, index) => {
+                const delay = (index * 100) / normalized;
                 setTimeout(() => {
                     if (index < targetActive) {
                         segment.classList.add('active');
                     } else {
                         segment.classList.remove('active');
                     }
-                }, index * 100);
+                    refreshAnimationStates();
+                }, delay);
             });
         }
-        
+
         function randomizeProgress() {
             // Randomize vertical progress
             const verticalProgress = document.getElementById('verticalProgress');
@@ -524,34 +622,91 @@
             createSegments('segments16', 16, 11);
         }
         
+        function setAnimationPlayState(isRunning) {
+            const animatedElements = document.querySelectorAll('.scroll-fill, .progress-ring, .progress-fill, .progress-segment.active');
+
+            animatedElements.forEach(element => {
+                element.style.animationPlayState = isRunning ? 'running' : 'paused';
+            });
+        }
+
+        function refreshAnimationStates() {
+            setAnimationPlayState(animationsEnabled);
+        }
+
         function toggleAnimations() {
             animationsEnabled = !animationsEnabled;
-            
-            const animatedElements = document.querySelectorAll('.scroll-fill, .progress-ring, .progress-fill, .progress-segment.active');
-            
-            animatedElements.forEach(element => {
-                if (animationsEnabled) {
-                    element.style.animationPlayState = 'running';
-                } else {
-                    element.style.animationPlayState = 'paused';
-                }
-            });
-            
+            toggleAnimationsButton.textContent = animationsEnabled ? 'Pause Animations' : 'Resume Animations';
+            refreshAnimationStates();
+
             console.log(`Animations ${animationsEnabled ? 'enabled' : 'disabled'}`);
         }
-        
-        // Initialize the demo
-        initializeSegments();
-        
-        // Add continuous random updates
-        setInterval(() => {
-            if (Math.random() < 0.3) { // 30% chance every 2 seconds
-                const randomContainer = ['segments8', 'segments12', 'segments16'][Math.floor(Math.random() * 3)];
-                const counts = { segments8: 8, segments12: 12, segments16: 16 };
-                animateSegments(randomContainer, counts[randomContainer]);
+
+        // Motion preference controls
+        const reducedMotionToggle = document.getElementById('reducedMotionToggle');
+        const reducedMotionStatus = document.getElementById('reducedMotionStatus');
+        const reducedMotionAssist = document.getElementById('reducedMotionAssist');
+
+        function setupMotionControls() {
+            reducedMotionToggle.addEventListener('change', (event) => {
+                userMotionPreference = event.target.checked;
+                applyMotionPreference(getMotionPreference());
+            });
+
+            const motionListener = (event) => {
+                systemPrefersReducedMotion = event.matches;
+                if (userMotionPreference === null) {
+                    applyMotionPreference(getMotionPreference());
+                } else {
+                    updateMotionAssistiveText();
+                }
+            };
+
+            if (typeof motionQuery.addEventListener === 'function') {
+                motionQuery.addEventListener('change', motionListener);
+            } else if (typeof motionQuery.addListener === 'function') {
+                motionQuery.addListener(motionListener);
             }
-        }, 2000);
-        
+
+            applyMotionPreference(getMotionPreference());
+        }
+
+        function getMotionPreference() {
+            return userMotionPreference !== null ? userMotionPreference : systemPrefersReducedMotion;
+        }
+
+        function applyMotionPreference(isReduced) {
+            motionFactor = isReduced ? 0.35 : 1;
+            document.body.classList.toggle('reduced-motion-active', isReduced);
+            reducedMotionToggle.checked = isReduced;
+            reducedMotionStatus.textContent = isReduced ? 'Calm' : 'Active';
+            updateMotionAssistiveText();
+            refreshAnimationStates();
+            scheduleRandomUpdates();
+        }
+
+        function updateMotionAssistiveText() {
+            const source = userMotionPreference === null ? 'System preference' : 'Manual override';
+            reducedMotionAssist.textContent = `${source} active — easing shimmer loops, slowing ring rotations, and softening fill transitions.`;
+        }
+
+        function scheduleRandomUpdates() {
+            clearInterval(randomUpdateIntervalId);
+            const normalized = Math.max(motionFactor, 0.2);
+            randomUpdateIntervalId = setInterval(() => {
+                if (Math.random() < 0.3) {
+                    const randomContainer = ['segments8', 'segments12', 'segments16'][Math.floor(Math.random() * 3)];
+                    const counts = { segments8: 8, segments12: 12, segments16: 16 };
+                    animateSegments(randomContainer, counts[randomContainer]);
+                }
+            }, 2000 / normalized);
+        }
+
+        // Initialize the demo
+        setupMotionControls();
+        initializeSegments();
+        scheduleRandomUpdates();
+
         console.log('🎨 Holographic Progress Indicators Demo loaded - 4 indicator types with animations');
     </script>
 </body>

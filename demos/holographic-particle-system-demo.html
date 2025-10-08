@@ -13,6 +13,10 @@
             font-family: 'Courier New', monospace;
         }
 
+        body.reduced-motion-active {
+            background: #05050a;
+        }
+
         /* Particle System */
         .particle-system {
             position: fixed;
@@ -34,11 +38,51 @@
             animation: floatParticle 8s infinite linear;
         }
 
+        body.reduced-motion-active .particle {
+            animation-duration: 16s;
+            opacity: 0.6;
+        }
+
         @keyframes floatParticle {
             0% { opacity: 0; transform: translateY(100vh) scale(0); }
             10% { opacity: 1; transform: translateY(90vh) scale(1); }
             90% { opacity: 1; transform: translateY(10vh) scale(1); }
             100% { opacity: 0; transform: translateY(0) scale(0); }
+        }
+
+        .motion-toolbar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: rgba(8, 10, 24, 0.85);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            color: #aefbff;
+            font-size: 12px;
+            z-index: 120;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .motion-toolbar .toggle-input {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .motion-toolbar input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #00ffff;
+        }
+
+        .motion-status {
+            font-variant: all-small-caps;
+            letter-spacing: 1px;
+            color: #66f6ff;
         }
 
         /* Holographic Cards */
@@ -112,6 +156,18 @@
             border-color: rgba(0, 255, 255, 0.6);
         }
 
+        body.reduced-motion-active .holographic-card {
+            transition-duration: 0.6s;
+        }
+
+        body.reduced-motion-active .holographic-card:hover {
+            transform: translateY(-6px) rotateX(-2deg) rotateY(2deg);
+            box-shadow:
+                0 12px 24px rgba(0, 255, 255, 0.25),
+                inset 0 1px 1px rgba(255, 255, 255, 0.2),
+                0 0 26px rgba(255, 0, 255, 0.3);
+        }
+
         /* RGB Separation Effect */
         .rgb-layer {
             position: absolute;
@@ -150,6 +206,11 @@
             border-color: rgba(0, 0, 255, 0.5);
             transform: translate(2px, 2px);
             animation: rgbShift2 2s infinite;
+        }
+
+        body.reduced-motion-active .rgb-layer::before,
+        body.reduced-motion-active .rgb-layer::after {
+            animation-duration: 4s;
         }
 
         @keyframes rgbShift1 {
@@ -215,7 +276,7 @@
         /* Control Panel */
         .controls {
             position: fixed;
-            top: 20px;
+            top: 80px;
             right: 20px;
             background: rgba(0, 0, 0, 0.8);
             border: 1px solid rgba(0, 255, 255, 0.5);
@@ -256,7 +317,7 @@
             pointer-events: none;
             opacity: 0.1;
             z-index: 2;
-            background: 
+            background:
                 repeating-linear-gradient(
                     0deg,
                     transparent,
@@ -274,6 +335,29 @@
             animation: moireShift 10s linear infinite;
         }
 
+        body.reduced-motion-active .moire-overlay {
+            animation-duration: 20s;
+            opacity: 0.06;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body {
+                background: #05050a;
+            }
+
+            .particle {
+                animation-duration: 16s;
+            }
+
+            .holographic-card:hover {
+                transform: translateY(-6px) rotateX(-2deg) rotateY(2deg);
+            }
+
+            .moire-overlay {
+                animation-duration: 20s;
+            }
+        }
+
         @keyframes moireShift {
             0% { transform: translate(0, 0); }
             100% { transform: translate(8px, 8px); }
@@ -281,6 +365,13 @@
     </style>
 </head>
 <body>
+    <div class="motion-toolbar" role="region" aria-label="Motion preferences">
+        <label class="toggle-input" for="demoReducedMotion">
+            <input type="checkbox" id="demoReducedMotion">
+            Reduced Motion
+        </label>
+        <span class="motion-status" id="demoMotionStatus" aria-live="polite">Off</span>
+    </div>
     <div class="particle-system" id="particleSystem"></div>
     <div class="moire-overlay"></div>
     
@@ -325,51 +416,109 @@
         // Particle System
         const particleColors = ['#00ffff', '#ff00ff', '#ffff00', '#ff0088', '#8000ff'];
         const particleSystem = document.getElementById('particleSystem');
-        
+        const motionToggle = document.getElementById('demoReducedMotion');
+        const motionStatus = document.getElementById('demoMotionStatus');
+        const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+        let reducedMotionActive = motionQuery.matches;
+        let hasMotionOverride = false;
+        let particleIntervalId = null;
+        let particlesPaused = false;
+
         function createParticle() {
             const particle = document.createElement('div');
             particle.className = 'particle';
             particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDelay = Math.random() * 8 + 's';
+            const delayRange = reducedMotionActive ? 12 : 8;
+            particle.style.animationDelay = Math.random() * delayRange + 's';
+            particle.style.animationDuration = reducedMotionActive ? '16s' : '8s';
             particle.style.setProperty('--color', particleColors[Math.floor(Math.random() * particleColors.length)]);
             particleSystem.appendChild(particle);
-            
-            setTimeout(() => particle.remove(), 8000);
+
+            const lifetime = reducedMotionActive ? 16000 : 8000;
+            setTimeout(() => particle.remove(), lifetime);
         }
-        
-        // Create particles continuously
-        setInterval(createParticle, 200);
-        
-        // Initial particles
-        for (let i = 0; i < 40; i++) {
-            setTimeout(createParticle, i * 200);
+
+        function primeInitialParticles() {
+            if (particlesPaused) {
+                return;
+            }
+            const count = reducedMotionActive ? 20 : 40;
+            const cadence = reducedMotionActive ? 400 : 200;
+            for (let i = 0; i < count; i++) {
+                setTimeout(createParticle, i * cadence);
+            }
         }
-        
-        // Mouse interaction
-        document.addEventListener('mousemove', (e) => {
-            const cards = document.querySelectorAll('.holographic-card');
-            const x = e.clientX / window.innerWidth - 0.5;
-            const y = e.clientY / window.innerHeight - 0.5;
-            
-            cards.forEach((card, index) => {
-                const rotateY = x * 10;
-                const rotateX = -y * 10;
-                const translateZ = Math.abs(x * y) * 50;
-                
-                card.style.transform = `
-                    rotateX(${rotateX}deg) 
-                    rotateY(${rotateY}deg) 
-                    translateZ(${translateZ}px)
-                `;
+
+        function restartParticleLoop() {
+            if (particleIntervalId) {
+                clearInterval(particleIntervalId);
+            }
+
+            if (particlesPaused) {
+                return;
+            }
+
+            const intervalDelay = reducedMotionActive ? 600 : 200;
+            particleIntervalId = setInterval(createParticle, intervalDelay);
+        }
+
+        function syncMotionState(shouldReduce, { updateToggle = true } = {}) {
+            reducedMotionActive = shouldReduce;
+            document.body.classList.toggle('reduced-motion-active', shouldReduce);
+
+            if (motionStatus) {
+                motionStatus.textContent = shouldReduce ? 'On' : 'Off';
+            }
+
+            if (updateToggle && motionToggle) {
+                motionToggle.checked = shouldReduce;
+            }
+
+            restartParticleLoop();
+        }
+
+        function handleSystemPreference(event) {
+            if (!hasMotionOverride) {
+                syncMotionState(event.matches, { updateToggle: true });
+                primeInitialParticles();
+            }
+        }
+
+        if (typeof motionQuery.addEventListener === 'function') {
+            motionQuery.addEventListener('change', handleSystemPreference);
+        } else if (typeof motionQuery.addListener === 'function') {
+            motionQuery.addListener(handleSystemPreference);
+        }
+
+        if (motionToggle) {
+            motionToggle.checked = reducedMotionActive;
+            motionToggle.addEventListener('change', (event) => {
+                hasMotionOverride = true;
+                syncMotionState(event.target.checked, { updateToggle: false });
+                primeInitialParticles();
             });
-        });
-        
+        }
+
+        syncMotionState(reducedMotionActive, { updateToggle: true });
+        primeInitialParticles();
+
         // Control Functions
         function toggleParticles() {
             const system = document.getElementById('particleSystem');
-            system.style.display = system.style.display === 'none' ? 'block' : 'none';
+            const wasHidden = system.style.display === 'none';
+            system.style.display = wasHidden ? 'block' : 'none';
+
+            particlesPaused = system.style.display === 'none';
+            if (particlesPaused) {
+                if (particleIntervalId) {
+                    clearInterval(particleIntervalId);
+                }
+            } else {
+                restartParticleLoop();
+            }
         }
-        
+
         function changeLayout() {
             const container = document.getElementById('container');
             const layouts = ['row', 'column', 'row-reverse'];
@@ -380,7 +529,8 @@
         
         function toggleMoire() {
             const moire = document.querySelector('.moire-overlay');
-            moire.style.opacity = moire.style.opacity === '0' ? '0.1' : '0';
+            const activeOpacity = reducedMotionActive ? '0.06' : '0.1';
+            moire.style.opacity = moire.style.opacity === '0' ? activeOpacity : '0';
         }
         
         function randomizeColors() {
@@ -390,15 +540,36 @@
                 card.style.filter = `hue-rotate(${hue}deg)`;
             });
         }
-        
+
+        // Mouse interaction
+        document.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.holographic-card');
+            const x = e.clientX / window.innerWidth - 0.5;
+            const y = e.clientY / window.innerHeight - 0.5;
+            const motionScale = reducedMotionActive ? 0.5 : 1;
+
+            cards.forEach((card) => {
+                const rotateY = x * 10 * motionScale;
+                const rotateX = -y * 10 * motionScale;
+                const translateZ = Math.abs(x * y) * 50 * motionScale;
+
+                card.style.transform = `
+                    rotateX(${rotateX}deg)
+                    rotateY(${rotateY}deg)
+                    translateZ(${translateZ}px)
+                `;
+            });
+        });
+
         // Card click handler
         document.querySelectorAll('.holographic-card').forEach((card, index) => {
             card.addEventListener('click', () => {
-                card.style.animation = 'pulse 0.5s ease-out';
-                setTimeout(() => card.style.animation = '', 500);
+                const duration = reducedMotionActive ? 0.8 : 0.5;
+                card.style.animation = `pulse ${duration}s ease-out`;
+                setTimeout(() => card.style.animation = '', duration * 1000);
             });
         });
-        
+
         // Add pulse animation
         const style = document.createElement('style');
         style.textContent = `
