@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holographic Visualizer</title>
+    <title>Holographic Visualizer Twin Twin</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: #000;
+            background: radial-gradient(circle at 30% 30%, #12021d 0%, #000308 70%);
             overflow: hidden;
         }
         #visualizer-canvas {
@@ -44,12 +44,12 @@
                 this.holographicLayers = [];
                 this.energyLoops = [];
                 this.prismBursts = [];
-                this.scene = 'pulse-field';
+                this.scene = 'ember-field';
                 
                 this.currentTheme = {
-                    primary: '#00d9ff',
-                    secondary: '#ff10f0', 
-                    accent: '#ffcc00',
+                    primary: '#ff9f1c',
+                    secondary: '#2ec4b6',
+                    accent: '#cbf3f0',
                     intensity: 1.0
                 };
                 
@@ -189,7 +189,7 @@
                 this.renderHolographicLayers();
                 this.renderWaves();
                 this.renderGeometries();
-                if (this.scene === 'pulse-field') {
+                if (this.scene === 'ember-field') {
                     this.renderEnergyLoops();
                 } else {
                     this.renderPrismBursts();
@@ -544,7 +544,7 @@
             };
 
             HolographicVisualizer.prototype.setScene = function(sceneName) {
-                if (sceneName !== 'pulse-field' && sceneName !== 'prism-shards') {
+                if (sceneName !== 'ember-field' && sceneName !== 'nebula-veils') {
                     return;
                 }
 
@@ -554,7 +554,7 @@
 
                 this.scene = sceneName;
 
-                if (sceneName === 'pulse-field') {
+                if (sceneName === 'ember-field') {
                     this.geometries = [
                         { type: 'hypercube', rotation: 0, scale: 1 },
                         { type: 'torus', rotation: 0, scale: 0.8 },
@@ -596,25 +596,25 @@
         // Theme switching function
         function setTheme(themeName) {
             var themes = {
-                cyber: {
-                    primary: '#00d9ff',
-                    secondary: '#ff10f0',
-                    accent: '#ffcc00'
+                solar: {
+                    primary: '#ff9f1c',
+                    secondary: '#ffbf69',
+                    accent: '#ffe66d'
                 },
-                vaporwave: {
-                    primary: '#ff00ff',
-                    secondary: '#00ffff',
-                    accent: '#ffff00'
+                lagoon: {
+                    primary: '#2ec4b6',
+                    secondary: '#1b9aaa',
+                    accent: '#cbf3f0'
                 },
-                matrix: {
-                    primary: '#00ff00',
-                    secondary: '#008800',
-                    accent: '#44ff44'
+                umbra: {
+                    primary: '#5a189a',
+                    secondary: '#240046',
+                    accent: '#ffadad'
                 },
-                synthwave: {
-                    primary: '#ff7efc',
-                    secondary: '#00f5ff',
-                    accent: '#ffd966'
+                velvet: {
+                    primary: '#ef476f',
+                    secondary: '#ffd166',
+                    accent: '#06d6a0'
                 }
             };
 
