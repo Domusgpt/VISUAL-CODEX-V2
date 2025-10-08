@@ -1,0 +1,13 @@
+{
+  "name": "visual-codex-v2",
+  "version": "1.0.0",
+  "description": "**NO PERMISSIONS GRANTED. VIEWING FOR DEMONSTRATION ONLY.**",
+  "main": "test-gallery-puppeteer.js",
+  "scripts": {
+    "test": "node --test tests"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

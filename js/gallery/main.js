@@ -3,12 +3,15 @@ import { openModal, initModal, openFullscreen } from './modal.js';
 import { WebGLContextPool } from './context-pool.js';
 import { createLazyLoader } from './lazy-loader.js';
 import { initContextStatus, initServerStatusCheck } from './status.js';
+import { PaginationController } from './pagination.js';
 
 let currentFilter = 'all';
 const contextPool = new WebGLContextPool(6);
 const lazyLoader = createLazyLoader(contextPool);
+const pagination = new PaginationController({ itemsPerPage: 5 });
 const TWIN_STORAGE_PREFIX = 'gallery:twin:';
 let pendingEffectHighlight = null;
+let filteredEffects = [...effects];
 
 function createLivePreview(effect) {
     const lazyIframe = document.createElement('div');
@@ -104,12 +107,15 @@ function createInfo(effect) {
     return info;
 }
 
-function createCard(effect) {
+function createCard(effect, globalIndex) {
     const card = document.createElement('div');
     card.className = 'effect-card';
     card.id = `effect-${effect.id}`;
     card.dataset.effectId = effect.id;
-    card.addEventListener('click', () => openModal(effect));
+    card.addEventListener('click', () => openModal(effect, {
+        list: filteredEffects,
+        index: globalIndex
+    }));
 
     const preview = document.createElement('div');
     preview.className = 'effect-preview';
@@ -130,28 +136,54 @@ function createCard(effect) {
     return card;
 }
 
-function getFilteredEffects() {
+function updateFilteredEffects() {
     if (currentFilter === 'all') {
-        return effects;
+        filteredEffects = [...effects];
+    } else {
+        filteredEffects = effects.filter(effect => effect.tags.includes(currentFilter));
     }
-    return effects.filter(effect => effect.tags.includes(currentFilter));
+    pagination.setTotal(filteredEffects.length);
 }
 
-function renderGallery() {
+function renderGallery({ skipFilterUpdate = false } = {}) {
     const gallery = document.getElementById('gallery');
     if (!gallery) return;
+
+    if (!skipFilterUpdate) {
+        updateFilteredEffects();
+    } else {
+        pagination.setTotal(filteredEffects.length);
+    }
 
     contextPool.reset();
     lazyLoader.disconnect();
     gallery.innerHTML = '';
 
-    getFilteredEffects().forEach(effect => {
-        const card = createCard(effect);
-        gallery.appendChild(card);
-        if (effect.hasRealCode && effect.file) {
-            lazyLoader.observeCard(card);
-        }
-    });
+    if (!filteredEffects.length) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'gallery-empty-state';
+        emptyState.innerHTML = `
+            <div class="gallery-empty-state__glow"></div>
+            <div class="gallery-empty-state__content">
+                <h2>No effects in this filter yet</h2>
+                <p>Try selecting another technology tag or reset to view all experiences.</p>
+                <button type="button" class="gallery-empty-state__reset" data-action="reset-filter">Reset Filters</button>
+            </div>
+        `;
+        gallery.appendChild(emptyState);
+    } else {
+        const { start, end } = pagination.getVisibleRange();
+        const visibleEffects = filteredEffects.slice(start, end);
+
+        visibleEffects.forEach((effect, index) => {
+            const globalIndex = start + index;
+            const card = createCard(effect, globalIndex);
+            gallery.appendChild(card);
+            if (effect.hasRealCode && effect.file) {
+                lazyLoader.observeCard(card);
+            }
+        });
+    }
 
     requestAnimationFrame(() => {
         const hashReRendered = highlightEffectFromHash();
@@ -177,6 +209,7 @@ function setFilter(filter) {
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.filter === filter);
     });
+    pagination.reset();
     renderGallery();
 }
 
@@ -201,9 +234,53 @@ function initMouseTracking() {
     });
 }
 
+function handlePaginationKeydown(event) {
+    const target = event.target;
+    if (!target) {
+        return;
+    }
+
+    if (target instanceof HTMLElement) {
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+            return;
+        }
+    }
+
+    if (event.key === 'ArrowRight' || event.key === 'PageDown') {
+        pagination.next();
+    } else if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+        pagination.previous();
+    } else if (event.key === 'Home') {
+        pagination.goTo(0);
+    } else if (event.key === 'End') {
+        pagination.goTo(pagination.totalPages - 1);
+    }
+}
+
+function handleGlobalClick(event) {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+        return;
+    }
+
+    if (target.matches('[data-action="reset-filter"]')) {
+        event.preventDefault();
+        setFilter('all');
+    }
+}
+
 function init() {
     initModal();
     initFilters();
+    const paginationControls = document.getElementById('paginationControls');
+    if (paginationControls) {
+        pagination.attach(paginationControls);
+        pagination.setOnChange(() => renderGallery({ skipFilterUpdate: true }));
+    }
+
+    document.addEventListener('keydown', handlePaginationKeydown, { passive: true });
+    document.addEventListener('click', handleGlobalClick);
+
     renderGallery();
     initMouseTracking();
     initContextStatus(contextPool);
@@ -212,6 +289,25 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+function getFilteredEffectIndex(effectId) {
+    return filteredEffects.findIndex(effect => String(effect.id) === String(effectId));
+}
+
+function ensureEffectOnCurrentPage(effectId) {
+    const index = getFilteredEffectIndex(effectId);
+    if (index === -1) {
+        return false;
+    }
+
+    if (pagination.containsIndex(index)) {
+        return false;
+    }
+
+    pendingEffectHighlight = effectId;
+    pagination.goToIndex(index);
+    return true;
+}
 
 function highlightCard(card, behavior = 'smooth') {
     if (!card) return;
@@ -237,12 +333,17 @@ function highlightEffectFromHash(behavior = 'smooth') {
         return false;
     }
 
-    if (highlightEffectById(match[1], behavior)) {
+    const effectId = match[1];
+    if (highlightEffectById(effectId, behavior)) {
         pendingEffectHighlight = null;
         return false;
     }
 
-    pendingEffectHighlight = match[1];
+    if (pendingEffectHighlight === effectId) {
+        return true;
+    }
+
+    pendingEffectHighlight = effectId;
     if (currentFilter !== 'all') {
         setFilter('all');
         return true;
@@ -265,6 +366,10 @@ function highlightEffectFromStorage() {
             return false;
         }
 
+        if (pendingEffectHighlight === stored) {
+            return true;
+        }
+
         pendingEffectHighlight = stored;
         if (currentFilter !== 'all') {
             setFilter('all');
@@ -281,6 +386,11 @@ function highlightEffectFromStorage() {
 function highlightEffectById(effectId, behavior = 'smooth') {
     const card = document.getElementById(`effect-${effectId}`);
     if (!card) {
+        const pending = ensureEffectOnCurrentPage(effectId);
+        if (pending) {
+            return false;
+        }
+
         return false;
     }
 
