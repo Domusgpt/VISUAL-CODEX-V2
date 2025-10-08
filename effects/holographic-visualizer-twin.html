@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holographic Visualizer Twin</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at 40% 15%, #1b021f 0%, #050111 35%, #000 100%);
+            overflow: hidden;
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+            letter-spacing: 0.08em;
+        }
+        #visualizer-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="visualizer-canvas"></canvas>
+
+    <script>
+        (function() {
+            'use strict';
+
+            function RiftVisualizer() {
+                this.canvas = null;
+                this.ctx = null;
+                this.animationId = null;
+                this.time = 0;
+                this.isRunning = false;
+
+                this.mouseX = 0.5;
+                this.mouseY = 0.5;
+                this.mouseSensitivity = 1.0;
+
+                this.particles = [];
+                this.auroraBands = [];
+                this.latticePlanes = [];
+                this.crystalSpires = [];
+                this.emberTrails = [];
+                this.quantumSpirals = [];
+                this.riftColumns = [];
+                this.echoBursts = [];
+                this.vectorOrbits = [];
+
+                this.scene = 'ember-veil';
+                this.sceneTimeline = [];
+                this.sceneIndex = 0;
+                this.sceneChangedAt = 0;
+
+                this.currentTheme = {
+                    primary: '#ff9f1c',
+                    secondary: '#ff3366',
+                    accent: '#ffd23f',
+                    intensity: 1.45
+                };
+
+                this.init();
+            }
+
+            RiftVisualizer.prototype.init = function() {
+                this.canvas = document.getElementById('visualizer-canvas');
+                if (!this.canvas) {
+                    console.warn('Visualizer canvas missing');
+                    return;
+                }
+
+                this.ctx = this.canvas.getContext('2d');
+                this.resizeCanvas();
+                this.bindEvents();
+                this.seedParticles();
+                this.seedAuroraBands();
+                this.seedLatticePlanes();
+                this.seedCrystalSpires();
+                this.seedEmberTrails();
+                this.seedQuantumSpirals();
+                this.seedRiftColumns();
+                this.seedEchoBursts();
+                this.seedVectorOrbits();
+                this.setupSceneDirector();
+
+                this.start();
+            };
+
+            RiftVisualizer.prototype.resizeCanvas = function() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            };
+
+            RiftVisualizer.prototype.bindEvents = function() {
+                var self = this;
+                window.addEventListener('resize', function() {
+                    self.resizeCanvas();
+                });
+                document.addEventListener('mousemove', function(e) {
+                    self.mouseX = e.clientX / window.innerWidth;
+                    self.mouseY = e.clientY / window.innerHeight;
+                });
+            };
+
+            RiftVisualizer.prototype.seedParticles = function() {
+                this.particles = [];
+                var particleCount = 220;
+                for (var i = 0; i < particleCount; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        z: Math.random() * 1200,
+                        vx: (Math.random() - 0.5) * 1.6,
+                        vy: (Math.random() - 0.5) * 1.6,
+                        vz: (Math.random() - 0.5) * 5,
+                        size: Math.random() * 2 + 0.6,
+                        drift: Math.random() * Math.PI * 2,
+                        life: Math.random(),
+                        layer: Math.floor(Math.random() * 4)
+                    });
+                }
+            };
+
+            RiftVisualizer.prototype.seedAuroraBands = function() {
+                this.auroraBands = [];
+                for (var i = 0; i < 5; i++) {
+                    this.auroraBands.push({
+                        height: 120 + i * 55,
+                        offset: Math.random() * Math.PI * 2,
+                        turbulence: 0.4 + Math.random() * 0.5,
+                        parallax: 0.35 + i * 0.1
+                    });
+                }
+            };
+
+            RiftVisualizer.prototype.seedLatticePlanes = function() {
+                this.latticePlanes = [];
+                for (var i = 0; i < 7; i++) {
+                    this.latticePlanes.push({
+                        rotation: Math.random() * Math.PI * 2,
+                        depth: -400 + i * 120,
+                        spacing: 60 + Math.random() * 40,
+                        glow: 0.05 + Math.random() * 0.12
+                    });
+                }
+            };
+
+            RiftVisualizer.prototype.seedCrystalSpires = function() {
+                this.crystalSpires = [];
+                for (var i = 0; i < 18; i++) {
+                    this.crystalSpires.push({
+                        baseAngle: Math.random() * Math.PI * 2,
+                        radius: 80 + Math.random() * 280,
+                        height: 80 + Math.random() * 180,
+                        twist: 0.4 + Math.random() * 0.8,
+                        shardCount: 3 + Math.floor(Math.random() * 4)
+                    });
+                }
+            };
+
+            RiftVisualizer.prototype.seedEmberTrails = function() {
+                this.emberTrails = [];
+                for (var i = 0; i < 40; i++) {
+                    this.emberTrails.push({
+                        radius: 60 + Math.random() * 280,
+                        angle: Math.random() * Math.PI * 2,
+                        speed: 0.8 + Math.random() * 1.4,
+                        pulse: Math.random(),
+                        thickness: 2 + Math.random() * 4
+                    });
+                }
+            };
+
+            RiftVisualizer.prototype.seedQuantumSpirals = function() {
+                this.quantumSpirals = [];
+                for (var i = 0; i < 6; i++) {
+                    this.quantumSpirals.push({
+                        radius: 100 + i * 60,
+                        rotation: Math.random() * Math.PI * 2,
+                        expansion: 0.6 + Math.random() * 0.5,
+                        banding: 4 + Math.floor(Math.random() * 6)
+                    });
+                }
+            };
+
+            RiftVisualizer.prototype.seedRiftColumns = function() {
+                this.riftColumns = [];
+                for (var i = 0; i < 10; i++) {
+                    this.riftColumns.push({
+                        x: Math.random() * this.canvas.width,
+                        width: 40 + Math.random() * 120,
+                        energy: Math.random(),
+                        ascent: Math.random() * Math.PI * 2,
+                        scroll: Math.random() * 0.4 + 0.1
+                    });
+                }
+            };
+
+            RiftVisualizer.prototype.seedEchoBursts = function() {
+                this.echoBursts = [];
+                for (var i = 0; i < 24; i++) {
+                    this.echoBursts.push({
+                        origin: Math.random() * Math.PI * 2,
+                        radius: 90 + Math.random() * 260,
+                        drift: Math.random() * 0.5 + 0.1,
+                        fade: 0.2 + Math.random() * 0.4
+                    });
+                }
+            };
+
+            RiftVisualizer.prototype.seedVectorOrbits = function() {
+                this.vectorOrbits = [];
+                for (var i = 0; i < 32; i++) {
+                    this.vectorOrbits.push({
+                        radius: 120 + Math.random() * 360,
+                        angle: Math.random() * Math.PI * 2,
+                        speed: 0.006 + Math.random() * 0.01,
+                        glyphSize: 18 + Math.random() * 36,
+                        flip: Math.random() < 0.5 ? -1 : 1
+                    });
+                }
+            };
+
+            RiftVisualizer.prototype.setupSceneDirector = function() {
+                var self = this;
+                this.sceneTimeline = [
+                    {
+                        name: 'ember-veil',
+                        duration: 19000,
+                        intensity: 1.5,
+                        theme: { primary: '#ff9f1c', secondary: '#ff3366', accent: '#ffd23f' },
+                        onEnter: function() {
+                            self.seedEmberTrails();
+                            self.seedRiftColumns();
+                        }
+                    },
+                    {
+                        name: 'ion-lattice',
+                        duration: 22000,
+                        intensity: 1.2,
+                        theme: { primary: '#37f2ff', secondary: '#7a5cff', accent: '#d9fffd' },
+                        onEnter: function() {
+                            self.seedLatticePlanes();
+                            self.seedQuantumSpirals();
+                        }
+                    },
+                    {
+                        name: 'singularity-rain',
+                        duration: 23000,
+                        intensity: 1.35,
+                        theme: { primary: '#4df2ce', secondary: '#aaf7ff', accent: '#ffe4f3' },
+                        onEnter: function() {
+                            self.seedEchoBursts();
+                            self.seedAuroraBands();
+                        }
+                    }
+                ];
+
+                this.sceneIndex = 0;
+                this.sceneChangedAt = performance.now();
+                this.applyScene(this.sceneTimeline[0]);
+            };
+
+            RiftVisualizer.prototype.applyScene = function(scene) {
+                this.scene = scene.name;
+                this.currentTheme.primary = scene.theme.primary;
+                this.currentTheme.secondary = scene.theme.secondary;
+                this.currentTheme.accent = scene.theme.accent;
+                this.currentTheme.intensity = scene.intensity;
+                if (typeof scene.onEnter === 'function') {
+                    scene.onEnter();
+                }
+            };
+
+            RiftVisualizer.prototype.updateSceneDirector = function() {
+                if (!this.sceneTimeline.length) return;
+                var now = performance.now();
+                var current = this.sceneTimeline[this.sceneIndex];
+                if (now - this.sceneChangedAt >= current.duration) {
+                    this.sceneIndex = (this.sceneIndex + 1) % this.sceneTimeline.length;
+                    this.sceneChangedAt = now;
+                    current = this.sceneTimeline[this.sceneIndex];
+                    this.applyScene(current);
+                }
+            };
+
+            RiftVisualizer.prototype.render = function() {
+                if (!this.isRunning) return;
+                this.time += 0.016 * this.currentTheme.intensity;
+                this.updateSceneDirector();
+
+                this.clearBackdrop();
+                this.renderAuroraBands();
+                this.renderLatticePlanes();
+                this.renderVectorOrbits();
+
+                if (this.scene === 'ember-veil') {
+                    this.renderEmberTrails();
+                    this.renderRiftColumns();
+                } else if (this.scene === 'ion-lattice') {
+                    this.renderCrystalSpires();
+                    this.renderQuantumSpirals();
+                } else if (this.scene === 'singularity-rain') {
+                    this.renderEchoBursts();
+                    this.renderSingularityRain();
+                }
+
+                this.renderParticles();
+                this.renderSpectralVeil();
+
+                var self = this;
+                this.animationId = requestAnimationFrame(function() {
+                    self.render();
+                });
+            };
+
+            RiftVisualizer.prototype.clearBackdrop = function() {
+                var ctx = this.ctx;
+                var gradient = ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+                var primary = this.hexToRgb(this.currentTheme.primary);
+                var secondary = this.hexToRgb(this.currentTheme.secondary);
+                gradient.addColorStop(0, 'rgba(' + Math.floor(primary.r * 255) + ', ' + Math.floor(primary.g * 255) + ', ' + Math.floor(primary.b * 255) + ', 0.24)');
+                gradient.addColorStop(1, 'rgba(' + Math.floor(secondary.r * 255) + ', ' + Math.floor(secondary.g * 255) + ', ' + Math.floor(secondary.b * 255) + ', 0.08)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            };
+
+            RiftVisualizer.prototype.renderAuroraBands = function() {
+                var ctx = this.ctx;
+                var centerY = this.canvas.height / 2;
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                for (var i = 0; i < this.auroraBands.length; i++) {
+                    var band = this.auroraBands[i];
+                    ctx.save();
+                    ctx.translate(0, centerY);
+                    ctx.globalAlpha = 0.08 + 0.25 * Math.sin(this.time * 0.5 + band.offset);
+                    ctx.fillStyle = this.interpolateColors(
+                        this.currentTheme.primary,
+                        this.currentTheme.accent,
+                        0.5 + 0.5 * Math.sin(this.time * band.turbulence)
+                    );
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    for (var x = 0; x <= this.canvas.width; x += 16) {
+                        var offset = Math.sin(x * 0.008 + this.time * band.turbulence + band.offset) * band.height;
+                        ctx.lineTo(x, -offset * band.parallax);
+                    }
+                    ctx.lineTo(this.canvas.width, this.canvas.height);
+                    ctx.lineTo(0, this.canvas.height);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+                ctx.restore();
+            };
+
+            RiftVisualizer.prototype.renderLatticePlanes = function() {
+                var ctx = this.ctx;
+                var centerX = this.canvas.width / 2;
+                var centerY = this.canvas.height / 2;
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                for (var i = 0; i < this.latticePlanes.length; i++) {
+                    var plane = this.latticePlanes[i];
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(plane.rotation + this.time * 0.02 * (i % 2 === 0 ? 1 : -1));
+                    ctx.scale(1, 0.6 + i * 0.1);
+                    ctx.globalAlpha = plane.glow;
+                    ctx.strokeStyle = this.currentTheme.secondary;
+                    ctx.lineWidth = 1;
+                    var spacing = plane.spacing;
+                    for (var x = -600; x <= 600; x += spacing) {
+                        ctx.beginPath();
+                        ctx.moveTo(x, -400);
+                        ctx.lineTo(x, 400);
+                        ctx.stroke();
+                    }
+                    for (var y = -400; y <= 400; y += spacing) {
+                        ctx.beginPath();
+                        ctx.moveTo(-600, y);
+                        ctx.lineTo(600, y);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+                ctx.restore();
+            };
+
+            RiftVisualizer.prototype.renderVectorOrbits = function() {
+                var ctx = this.ctx;
+                var centerX = this.canvas.width / 2;
+                var centerY = this.canvas.height / 2;
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                for (var i = 0; i < this.vectorOrbits.length; i++) {
+                    var orbit = this.vectorOrbits[i];
+                    orbit.angle += orbit.speed * this.currentTheme.intensity * orbit.flip;
+                    var x = centerX + Math.cos(orbit.angle) * orbit.radius;
+                    var y = centerY + Math.sin(orbit.angle) * orbit.radius;
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(orbit.angle * orbit.flip);
+                    ctx.globalAlpha = 0.05 + 0.18 * Math.sin(this.time * 0.9 + orbit.angle);
+                    ctx.strokeStyle = this.currentTheme.accent;
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.rect(-orbit.glyphSize / 2, -orbit.glyphSize / 2, orbit.glyphSize, orbit.glyphSize);
+                    ctx.moveTo(-orbit.glyphSize / 2, 0);
+                    ctx.lineTo(orbit.glyphSize / 2, 0);
+                    ctx.moveTo(0, -orbit.glyphSize / 2);
+                    ctx.lineTo(0, orbit.glyphSize / 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                ctx.restore();
+            };
+
+            RiftVisualizer.prototype.renderEmberTrails = function() {
+                var ctx = this.ctx;
+                var centerX = this.canvas.width / 2 + (this.mouseX - 0.5) * 160 * this.mouseSensitivity;
+                var centerY = this.canvas.height / 2 + (this.mouseY - 0.5) * 160 * this.mouseSensitivity;
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                for (var i = 0; i < this.emberTrails.length; i++) {
+                    var trail = this.emberTrails[i];
+                    trail.angle += trail.speed * 0.01 * this.currentTheme.intensity;
+                    trail.pulse += 0.01;
+                    var alpha = 0.12 + 0.4 * Math.sin(trail.pulse * Math.PI * 2);
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(trail.angle);
+                    ctx.globalAlpha = alpha;
+                    ctx.strokeStyle = this.interpolateColors(
+                        this.currentTheme.primary,
+                        this.currentTheme.accent,
+                        (Math.sin(this.time * 1.1 + trail.angle) * 0.5 + 0.5)
+                    );
+                    ctx.lineWidth = trail.thickness;
+                    ctx.beginPath();
+                    ctx.moveTo(trail.radius, -trail.thickness * 3);
+                    ctx.lineTo(trail.radius + 80, 0);
+                    ctx.lineTo(trail.radius, trail.thickness * 3);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                ctx.restore();
+            };
+
+            RiftVisualizer.prototype.renderRiftColumns = function() {
+                var ctx = this.ctx;
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                for (var i = 0; i < this.riftColumns.length; i++) {
+                    var column = this.riftColumns[i];
+                    column.energy += column.scroll * this.currentTheme.intensity * 0.015;
+                    var baseHeight = this.canvas.height * (0.4 + 0.4 * Math.sin(this.time * 0.5 + column.energy));
+                    ctx.save();
+                    ctx.translate(column.x, this.canvas.height - baseHeight / 2);
+                    ctx.globalAlpha = 0.08 + 0.22 * Math.sin(this.time * 1.4 + column.energy);
+                    ctx.fillStyle = this.currentTheme.secondary;
+                    ctx.fillRect(-column.width / 2, -baseHeight / 2, column.width, baseHeight);
+                    ctx.globalAlpha *= 0.6;
+                    ctx.fillStyle = this.currentTheme.accent;
+                    ctx.fillRect(-column.width / 6, -baseHeight / 2, column.width / 3, baseHeight);
+                    ctx.restore();
+                }
+                ctx.restore();
+            };
+
+            RiftVisualizer.prototype.renderCrystalSpires = function() {
+                var ctx = this.ctx;
+                var centerX = this.canvas.width / 2;
+                var centerY = this.canvas.height / 2;
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                for (var i = 0; i < this.crystalSpires.length; i++) {
+                    var spire = this.crystalSpires[i];
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(spire.baseAngle + this.time * 0.04);
+                    ctx.globalAlpha = 0.14 + 0.26 * Math.sin(this.time * 0.9 + spire.baseAngle);
+                    ctx.fillStyle = this.interpolateColors(
+                        this.currentTheme.secondary,
+                        this.currentTheme.accent,
+                        (Math.sin(this.time + spire.baseAngle) * 0.5 + 0.5)
+                    );
+                    for (var j = 0; j < spire.shardCount; j++) {
+                        var shardHeight = spire.height * (1 - j / spire.shardCount);
+                        var shardRadius = spire.radius + j * 14;
+                        ctx.beginPath();
+                        ctx.moveTo(shardRadius, 0);
+                        ctx.lineTo(shardRadius + shardHeight, -shardHeight * spire.twist);
+                        ctx.lineTo(shardRadius + shardHeight * 0.2, shardHeight * spire.twist);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+                ctx.restore();
+            };
+
+            RiftVisualizer.prototype.renderQuantumSpirals = function() {
+                var ctx = this.ctx;
+                var centerX = this.canvas.width / 2;
+                var centerY = this.canvas.height / 2;
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                for (var i = 0; i < this.quantumSpirals.length; i++) {
+                    var spiral = this.quantumSpirals[i];
+                    spiral.rotation += 0.01 * this.currentTheme.intensity;
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(spiral.rotation);
+                    ctx.globalAlpha = 0.06 + 0.24 * Math.sin(this.time * 0.8 + spiral.rotation);
+                    ctx.strokeStyle = this.currentTheme.primary;
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    for (var angle = 0; angle <= Math.PI * 2 * spiral.banding; angle += 0.24) {
+                        var radius = spiral.radius + angle * spiral.expansion;
+                        var px = Math.cos(angle) * radius;
+                        var py = Math.sin(angle) * radius;
+                        if (angle === 0) {
+                            ctx.moveTo(px, py);
+                        } else {
+                            ctx.lineTo(px, py);
+                        }
+                    }
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                ctx.restore();
+            };
+
+            RiftVisualizer.prototype.renderEchoBursts = function() {
+                var ctx = this.ctx;
+                var centerX = this.canvas.width / 2;
+                var centerY = this.canvas.height / 2;
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                for (var i = 0; i < this.echoBursts.length; i++) {
+                    var burst = this.echoBursts[i];
+                    burst.origin += burst.drift * 0.01 * this.currentTheme.intensity;
+                    var x = centerX + Math.cos(burst.origin) * burst.radius;
+                    var y = centerY + Math.sin(burst.origin) * burst.radius;
+                    var alpha = 0.18 + Math.sin(this.time * 1.2 + burst.origin) * burst.fade;
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.strokeStyle = this.currentTheme.primary;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 20 + Math.sin(this.time + burst.origin) * 14, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                ctx.restore();
+            };
+
+            RiftVisualizer.prototype.renderSingularityRain = function() {
+                var ctx = this.ctx;
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                var columnCount = 26;
+                for (var i = 0; i < columnCount; i++) {
+                    var x = (i / columnCount) * this.canvas.width + Math.sin(this.time * 0.6 + i) * 22;
+                    var height = this.canvas.height * (0.3 + 0.4 * Math.sin(this.time * 1.4 + i));
+                    var alpha = 0.05 + 0.2 * Math.sin(this.time * 1.1 + i);
+                    ctx.globalAlpha = alpha;
+                    var gradient = ctx.createLinearGradient(x, 0, x, height);
+                    gradient.addColorStop(0, this.currentTheme.secondary);
+                    gradient.addColorStop(1, this.currentTheme.accent);
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(x - 4, this.canvas.height - height, 8, height);
+                }
+                ctx.restore();
+            };
+
+            RiftVisualizer.prototype.renderParticles = function() {
+                var ctx = this.ctx;
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                for (var i = 0; i < this.particles.length; i++) {
+                    var p = this.particles[i];
+                    var influence = this.mouseSensitivity * 0.4;
+                    p.vx += (this.mouseX - 0.5) * 0.08 * influence;
+                    p.vy += (this.mouseY - 0.5) * 0.08 * influence;
+                    p.x += p.vx * this.currentTheme.intensity;
+                    p.y += p.vy * this.currentTheme.intensity;
+                    p.z += p.vz * this.currentTheme.intensity;
+                    p.life += 0.01;
+                    p.drift += 0.03;
+
+                    if (p.x < 0) p.x = this.canvas.width;
+                    if (p.x > this.canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = this.canvas.height;
+                    if (p.y > this.canvas.height) p.y = 0;
+                    if (p.z < 0) p.z = 1200;
+                    if (p.z > 1200) p.z = 0;
+                    if (p.life > 1) p.life = 0;
+
+                    var scale = (1200 - p.z) / 1200;
+                    var size = p.size * (0.6 + scale * 1.4);
+                    var alpha = Math.sin(p.life * Math.PI) * (0.3 + 0.7 * scale);
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = this.interpolateColors(
+                        this.currentTheme.primary,
+                        this.currentTheme.secondary,
+                        Math.sin(p.drift) * 0.5 + 0.5
+                    );
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            };
+
+            RiftVisualizer.prototype.renderSpectralVeil = function() {
+                var ctx = this.ctx;
+                ctx.save();
+                ctx.globalAlpha = 0.06;
+                ctx.globalCompositeOperation = 'lighter';
+                var gradient = ctx.createRadialGradient(
+                    this.canvas.width * 0.3 + Math.sin(this.time * 0.4) * 80,
+                    this.canvas.height * 0.35 + Math.cos(this.time * 0.5) * 80,
+                    120,
+                    this.canvas.width * 0.7,
+                    this.canvas.height * 0.7,
+                    Math.max(this.canvas.width, this.canvas.height)
+                );
+                gradient.addColorStop(0, this.currentTheme.accent);
+                gradient.addColorStop(1, this.currentTheme.secondary);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                ctx.restore();
+            };
+
+            RiftVisualizer.prototype.hexToRgb = function(hex) {
+                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16) / 255,
+                    g: parseInt(result[2], 16) / 255,
+                    b: parseInt(result[3], 16) / 255
+                } : { r: 0.5, g: 0.5, b: 1 };
+            };
+
+            RiftVisualizer.prototype.interpolateColors = function(color1, color2, factor) {
+                var c1 = this.hexToRgb(color1);
+                var c2 = this.hexToRgb(color2);
+                var r = Math.floor((c1.r + (c2.r - c1.r) * factor) * 255);
+                var g = Math.floor((c1.g + (c2.g - c1.g) * factor) * 255);
+                var b = Math.floor((c1.b + (c2.b - c1.b) * factor) * 255);
+                return 'rgb(' + r + ', ' + g + ', ' + b + ')';
+            };
+
+            RiftVisualizer.prototype.setScene = function(sceneName) {
+                for (var i = 0; i < this.sceneTimeline.length; i++) {
+                    if (this.sceneTimeline[i].name === sceneName) {
+                        this.sceneIndex = i;
+                        this.sceneChangedAt = performance.now();
+                        this.applyScene(this.sceneTimeline[i]);
+                        break;
+                    }
+                }
+            };
+
+            RiftVisualizer.prototype.start = function() {
+                if (this.isRunning) return;
+                this.isRunning = true;
+                this.render();
+            };
+
+            RiftVisualizer.prototype.stop = function() {
+                this.isRunning = false;
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+            };
+
+            RiftVisualizer.prototype.setTheme = function(themeName) {
+                var themes = {
+                    embercore: { primary: '#ff9f1c', secondary: '#ff3366', accent: '#ffd23f', intensity: 1.55 },
+                    glacial: { primary: '#5ef2ff', secondary: '#4b82ff', accent: '#e8faff', intensity: 1.2 },
+                    eclipse: { primary: '#f46036', secondary: '#8338ec', accent: '#ffbe0b', intensity: 1.4 },
+                    horizon: { primary: '#9ef6c0', secondary: '#6af2ff', accent: '#fff5c7', intensity: 1.3 }
+                };
+                if (themes[themeName]) {
+                    var theme = themes[themeName];
+                    this.currentTheme.primary = theme.primary;
+                    this.currentTheme.secondary = theme.secondary;
+                    this.currentTheme.accent = theme.accent;
+                    this.currentTheme.intensity = theme.intensity;
+                }
+            };
+
+            RiftVisualizer.prototype.setSensitivity = function(value) {
+                this.mouseSensitivity = value;
+            };
+
+            RiftVisualizer.prototype.stopTimeline = function() {
+                this.sceneTimeline = [];
+            };
+
+            var visualizer = new RiftVisualizer();
+            window.HolographicVisualizerTwin = visualizer;
+        })();
+
+        function setTwinScene(sceneName) {
+            if (window.HolographicVisualizerTwin) {
+                window.HolographicVisualizerTwin.setScene(sceneName);
+            }
+        }
+
+        function setTwinTheme(themeName) {
+            if (window.HolographicVisualizerTwin) {
+                window.HolographicVisualizerTwin.setTheme(themeName);
+            }
+        }
+
+        function setTwinSensitivity(value) {
+            if (window.HolographicVisualizerTwin) {
+                window.HolographicVisualizerTwin.setSensitivity(value);
+            }
+        }
+    </script>
+</body>
+</html>
