@@ -1,3 +1,5 @@
+import { highlightFromEffectId } from './effect-twin.js';
+
 function getModalElements() {
     return {
         modal: document.getElementById('modal'),
@@ -42,7 +44,7 @@ export function openModal(effect) {
                 ${effect.file}
             </div>
 
-            <button onclick="window.open('${effect.file}', '_blank')" style="background: var(--card-bg); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 0.5rem 1rem; cursor: pointer; width: 100%; margin-bottom: 10px;">
+            <button data-action="open-effect-page" style="background: var(--card-bg); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 0.5rem 1rem; cursor: pointer; width: 100%; margin-bottom: 10px;">
                 Open in New Tab
             </button>
         ` : ''}
@@ -53,6 +55,16 @@ export function openModal(effect) {
     `;
 
     modal.style.display = 'block';
+
+    if (effect.hasRealCode) {
+        const openButton = modalInfo.querySelector('[data-action="open-effect-page"]');
+        if (openButton) {
+            openButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                openFullscreen(effect);
+            });
+        }
+    }
 }
 
 export function closeModal() {
@@ -62,10 +74,24 @@ export function closeModal() {
     }
 }
 
-export function openFullscreen(file) {
-    if (file) {
-        window.open(file, '_blank');
+export function openFullscreen(effectOrFile) {
+    if (!effectOrFile) {
+        return;
     }
+
+    if (typeof effectOrFile === 'object' && effectOrFile !== null) {
+        if (effectOrFile.id != null) {
+            highlightFromEffectId(effectOrFile.id);
+        }
+
+        if (effectOrFile.file) {
+            window.open(effectOrFile.file, '_blank');
+        }
+
+        return;
+    }
+
+    window.open(effectOrFile, '_blank');
 }
 
 function handleBackdropClick(event) {

@@ -4,6 +4,54 @@ const STYLE_ID = 'effect-twin-style';
 const STORAGE_PREFIX = 'gallery:twin:';
 const DEFAULT_RETURN_URL = '../gallery.html';
 
+function normalizeFilePath(file) {
+    if (!file) {
+        return '';
+    }
+
+    const stripped = decodeURIComponent(String(file)).split(/[?#]/)[0].replace(/\\/g, '/');
+
+    if (/^https?:/i.test(stripped)) {
+        try {
+            const url = new URL(stripped);
+            return url.pathname.replace(/^\//, '');
+        } catch (error) {
+            return stripped.replace(/^https?:\/\/[\w.-]+(?::\d+)?\//i, '');
+        }
+    }
+
+    return stripped.replace(/^\.\//, '').replace(/^\//, '');
+}
+
+function getCurrentPath() {
+    if (typeof window === 'undefined' || !window.location) {
+        return '';
+    }
+
+    return normalizeFilePath(window.location.pathname);
+}
+
+function getStoredLastEffectId() {
+    try {
+        return localStorage.getItem(`${STORAGE_PREFIX}last`);
+    } catch (error) {
+        return null;
+    }
+}
+
+function effectMatchesPath(effect, candidate) {
+    if (!candidate) {
+        return false;
+    }
+
+    const effectPath = normalizeFilePath(effect.file);
+    if (!effectPath) {
+        return false;
+    }
+
+    return effectPath === candidate || effectPath.endsWith(candidate);
+}
+
 function ensureStyles() {
     if (document.getElementById(STYLE_ID)) {
         return;
@@ -279,6 +327,13 @@ function createActions({ effect, returnUrl, openInNewTab }) {
         openButton.target = '_blank';
         openButton.rel = 'noopener noreferrer';
         openButton.innerHTML = '<span aria-hidden="true">🡵</span><span>Standalone</span>';
+        openButton.addEventListener('click', () => {
+            try {
+                localStorage.setItem(`${STORAGE_PREFIX}last`, String(effect.id));
+            } catch (error) {
+                console.debug('Effect twin storage unavailable', error);
+            }
+        });
         actions.appendChild(openButton);
     }
 
@@ -363,18 +418,58 @@ function createOverlay(effect, options) {
     return container;
 }
 
-function findEffect({ effectId, file }) {
+function findEffect(options = {}, preferredEffectId) {
+    const { effectId, file } = options;
+
+    const candidates = [];
+    if (file) {
+        candidates.push(normalizeFilePath(file));
+    }
+
+    const currentPath = getCurrentPath();
+    if (currentPath) {
+        candidates.push(currentPath);
+    }
+
+    const uniqueCandidates = [...new Set(candidates.filter(Boolean))];
+
+    const lookupById = (id) => {
+        const numericId = Number(id);
+        if (Number.isNaN(numericId)) {
+            return null;
+        }
+
+        return effects.find((item) => Number(item.id) === numericId) ?? null;
+    };
+
+    if (preferredEffectId != null) {
+        const storedMatch = lookupById(preferredEffectId);
+        if (storedMatch) {
+            if (uniqueCandidates.length === 0 || uniqueCandidates.some((candidate) => effectMatchesPath(storedMatch, candidate))) {
+                return storedMatch;
+            }
+        }
+    }
+
     if (effectId != null) {
-        const numericId = Number(effectId);
-        const match = effects.find((item) => Number(item.id) === numericId);
+        const explicitMatch = lookupById(effectId);
+        if (explicitMatch) {
+            return explicitMatch;
+        }
+    }
+
+    for (const candidate of uniqueCandidates) {
+        const match = effects.find((item) => effectMatchesPath(item, candidate));
         if (match) {
             return match;
         }
     }
 
-    if (file) {
-        const normalized = file.replace(/^\.\//, '');
-        return effects.find((item) => item.file === normalized || item.file.endsWith(normalized));
+    if (preferredEffectId != null) {
+        const fallback = lookupById(preferredEffectId);
+        if (fallback) {
+            return fallback;
+        }
     }
 
     return null;
@@ -389,7 +484,8 @@ function onReady(callback) {
 }
 
 export function registerEffectPage(options = {}) {
-    const effect = findEffect(options);
+    const storedEffectId = getStoredLastEffectId();
+    const effect = findEffect(options, storedEffectId);
 
     if (!effect) {
         console.warn('[gallery] Unable to find effect metadata for page', options);

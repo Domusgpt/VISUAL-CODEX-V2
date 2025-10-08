@@ -71,9 +71,7 @@ function createControls(effect) {
     fullscreenButton.textContent = '⛶';
     fullscreenButton.addEventListener('click', (event) => {
         event.stopPropagation();
-        if (effect.file) {
-            openFullscreen(effect.file);
-        }
+        openFullscreen(effect);
     });
 
     const codeButton = document.createElement('button');
