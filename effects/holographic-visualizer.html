@@ -8,8 +8,9 @@
         body {
             margin: 0;
             padding: 0;
-            background: #000;
+            background: radial-gradient(circle at 50% 20%, #02131f 0%, #010309 40%, #000 100%);
             overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
         }
         #visualizer-canvas {
             position: absolute;
@@ -18,252 +19,373 @@
             width: 100%;
             height: 100%;
         }
-        .controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.8);
-            padding: 15px;
-            border: 1px solid #00ffff;
-            color: #00ffff;
-            font-family: 'Courier New', monospace;
-            z-index: 100;
-        }
-        .control-group {
-            margin-bottom: 10px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 12px;
-        }
-        input[type="range"] {
-            width: 150px;
-        }
-        .theme-btn {
-            background: rgba(0,255,255,0.2);
-            border: 1px solid #00ffff;
-            color: #00ffff;
-            padding: 5px 10px;
-            margin: 2px;
-            cursor: pointer;
-            font-size: 10px;
-        }
-        .theme-btn:hover {
-            background: rgba(0,255,255,0.4);
-        }
     </style>
 </head>
 <body>
     <canvas id="visualizer-canvas"></canvas>
-    
-    <div class="controls">
-        <div class="control-group">
-            <label>Intensity: <span id="intensityValue">1.0</span></label>
-            <input type="range" id="intensity" min="0.1" max="3.0" step="0.1" value="1.0">
-        </div>
-        <div class="control-group">
-            <label>Mouse Sensitivity: <span id="sensitivityValue">1.0</span></label>
-            <input type="range" id="sensitivity" min="0.1" max="3.0" step="0.1" value="1.0">
-        </div>
-        <div class="control-group">
-            <button class="theme-btn" onclick="setTheme('cyber')">CYBER</button>
-            <button class="theme-btn" onclick="setTheme('vaporwave')">VAPOR</button>
-            <button class="theme-btn" onclick="setTheme('matrix')">MATRIX</button>
-        </div>
-    </div>
 
     <script>
-        // VIB3CODE Holographic Visualizer - Your actual code
         (function() {
             'use strict';
-            
+
             function HolographicVisualizer() {
                 this.canvas = null;
                 this.ctx = null;
                 this.isRunning = false;
                 this.animationId = null;
                 this.time = 0;
+
                 this.mouseX = 0.5;
                 this.mouseY = 0.5;
                 this.mouseSensitivity = 1.0;
-                
+
                 this.particles = [];
                 this.waves = [];
                 this.geometries = [];
                 this.holographicLayers = [];
-                
+                this.energyLoops = [];
+                this.prismBursts = [];
+                this.fluxBridges = [];
+                this.spectralFlares = [];
+                this.voidRibbons = [];
+                this.orbitalRelays = [];
+                this.vectorGlyphs = [];
+
+                this.scene = 'pulse-field';
+                this.sceneTimeline = [];
+                this.sceneIndex = 0;
+                this.sceneChangedAt = 0;
+                this.sceneWarmup = 0;
+
                 this.currentTheme = {
-                    primary: '#00d9ff',
-                    secondary: '#ff10f0', 
-                    accent: '#ffcc00',
-                    intensity: 1.0
+                    primary: '#00f3ff',
+                    secondary: '#ff41f5',
+                    accent: '#ffe066',
+                    intensity: 1.25
                 };
-                
+
                 this.init();
             }
-            
+
             HolographicVisualizer.prototype.init = function() {
-                console.log('🌟 Initializing Holographic Visualizer...');
-                
                 this.canvas = document.getElementById('visualizer-canvas');
                 if (!this.canvas) {
                     console.warn('Visualizer canvas not found');
                     return;
                 }
-                
-                this.setupCanvas();
-                this.createHolographicElements();
-                this.bindEvents();
-                this.start();
-                
-                console.log('✅ Holographic Visualizer initialized');
-            };
-            
-            HolographicVisualizer.prototype.setupCanvas = function() {
-                var self = this;
-                
+
                 this.ctx = this.canvas.getContext('2d');
                 this.resizeCanvas();
-                
-                window.addEventListener('resize', function() {
-                    self.resizeCanvas();
-                });
+                this.bindEvents();
+                this.createHolographicElements();
+                this.seedEnergyLoops();
+                this.seedPrismBursts();
+                this.seedFluxBridges();
+                this.seedSpectralFlares();
+                this.seedVoidRibbons();
+                this.seedOrbitalRelays();
+                this.seedVectorGlyphs();
+                this.setupSceneDirector();
+
+                this.start();
             };
-            
+
             HolographicVisualizer.prototype.resizeCanvas = function() {
                 this.canvas.width = window.innerWidth;
                 this.canvas.height = window.innerHeight;
             };
-            
+
             HolographicVisualizer.prototype.bindEvents = function() {
                 var self = this;
-                
-                // Mouse tracking
+                window.addEventListener('resize', function() {
+                    self.resizeCanvas();
+                });
                 document.addEventListener('mousemove', function(e) {
                     self.mouseX = e.clientX / window.innerWidth;
                     self.mouseY = e.clientY / window.innerHeight;
                 });
-                
-                // Controls
-                document.getElementById('intensity').addEventListener('input', function(e) {
-                    self.currentTheme.intensity = parseFloat(e.target.value);
-                    document.getElementById('intensityValue').textContent = e.target.value;
-                });
-                
-                document.getElementById('sensitivity').addEventListener('input', function(e) {
-                    self.mouseSensitivity = parseFloat(e.target.value);
-                    document.getElementById('sensitivityValue').textContent = e.target.value;
-                });
             };
-            
+
             HolographicVisualizer.prototype.createHolographicElements = function() {
-                // Create particles
-                for (var i = 0; i < 150; i++) {
+                var particleCount = 180;
+                for (var i = 0; i < particleCount; i++) {
                     this.particles.push({
                         x: Math.random() * this.canvas.width,
                         y: Math.random() * this.canvas.height,
-                        z: Math.random() * 1000,
-                        vx: (Math.random() - 0.5) * 2,
-                        vy: (Math.random() - 0.5) * 2,
-                        vz: (Math.random() - 0.5) * 5,
-                        size: Math.random() * 3 + 1,
+                        z: Math.random() * 900,
+                        vx: (Math.random() - 0.5) * 1.2,
+                        vy: (Math.random() - 0.5) * 1.2,
+                        vz: (Math.random() - 0.5) * 4,
+                        size: Math.random() * 2.5 + 0.5,
                         life: Math.random(),
-                        type: Math.floor(Math.random() * 3),
                         holographicShift: Math.random() * Math.PI * 2
                     });
                 }
-                
-                // Create waves
-                for (var j = 0; j < 5; j++) {
+
+                for (var j = 0; j < 6; j++) {
                     this.waves.push({
-                        amplitude: 50 + Math.random() * 100,
-                        frequency: 0.01 + Math.random() * 0.02,
+                        amplitude: 40 + Math.random() * 90,
+                        frequency: 0.008 + Math.random() * 0.012,
                         phase: Math.random() * Math.PI * 2,
-                        speed: 0.02 + Math.random() * 0.03,
-                        opacity: 0.1 + Math.random() * 0.3,
+                        speed: 0.018 + Math.random() * 0.04,
+                        opacity: 0.08 + Math.random() * 0.25,
                         layer: j
                     });
                 }
-                
-                // Create geometries
+
                 this.geometries = [
-                    { type: 'hypercube', rotation: 0, scale: 1 },
-                    { type: 'torus', rotation: 0, scale: 0.8 },
-                    { type: 'fractal', rotation: 0, scale: 0.6 }
+                    { type: 'hypercube', rotation: 0, scale: 1.0 },
+                    { type: 'torus', rotation: 0, scale: 0.72 },
+                    { type: 'fractaltree', rotation: 0, scale: 0.58 }
                 ];
-                
-                // Create holographic layers
-                for (var k = 0; k < 3; k++) {
+
+                for (var k = 0; k < 4; k++) {
                     this.holographicLayers.push({
-                        offsetX: Math.random() * 20 - 10,
-                        offsetY: Math.random() * 20 - 10,
-                        opacity: 0.1 + Math.random() * 0.2,
-                        color: k === 0 ? 'cyan' : k === 1 ? 'magenta' : 'yellow',
+                        offsetX: Math.random() * 24 - 12,
+                        offsetY: Math.random() * 24 - 12,
+                        opacity: 0.14 + Math.random() * 0.18,
+                        color: k % 2 === 0 ? 'cyan' : 'magenta',
                         phase: Math.random() * Math.PI * 2
                     });
                 }
             };
-            
+
+            HolographicVisualizer.prototype.seedEnergyLoops = function() {
+                this.energyLoops = [];
+                for (var i = 0; i < 7; i++) {
+                    this.energyLoops.push({
+                        radius: 70 + i * 32,
+                        thickness: 1.2 + i * 0.45,
+                        phase: Math.random() * Math.PI * 2,
+                        speed: 0.35 + i * 0.09,
+                        glitch: Math.random() * 0.22,
+                        colorShift: i / 7
+                    });
+                }
+            };
+
+            HolographicVisualizer.prototype.seedPrismBursts = function() {
+                this.prismBursts = [];
+                for (var i = 0; i < 55; i++) {
+                    this.prismBursts.push({
+                        x: this.canvas.width / 2,
+                        y: this.canvas.height / 2,
+                        angle: Math.random() * Math.PI * 2,
+                        speed: 2.4 + Math.random() * 4.4,
+                        life: Math.random(),
+                        rotation: Math.random() * Math.PI * 2,
+                        spin: -0.04 + Math.random() * 0.08,
+                        length: 50 + Math.random() * 120
+                    });
+                }
+            };
+
+            HolographicVisualizer.prototype.seedFluxBridges = function() {
+                this.fluxBridges = [];
+                for (var i = 0; i < 16; i++) {
+                    this.fluxBridges.push({
+                        anchorA: Math.random(),
+                        anchorB: Math.random(),
+                        offset: Math.random() * Math.PI * 2,
+                        pulse: Math.random(),
+                        sway: Math.random() * 0.6 + 0.2
+                    });
+                }
+            };
+
+            HolographicVisualizer.prototype.seedSpectralFlares = function() {
+                this.spectralFlares = [];
+                for (var i = 0; i < 24; i++) {
+                    this.spectralFlares.push({
+                        radius: 120 + Math.random() * 320,
+                        angle: Math.random() * Math.PI * 2,
+                        speed: 0.4 + Math.random() * 0.8,
+                        spread: 0.2 + Math.random() * 0.4,
+                        alpha: 0.5 + Math.random() * 0.3
+                    });
+                }
+            };
+
+            HolographicVisualizer.prototype.seedVoidRibbons = function() {
+                this.voidRibbons = [];
+                for (var i = 0; i < 9; i++) {
+                    this.voidRibbons.push({
+                        radius: 160 + i * 26,
+                        offset: Math.random() * Math.PI * 2,
+                        twist: 0.4 + Math.random() * 0.6,
+                        thickness: 12 + Math.random() * 18,
+                        shimmer: Math.random() * 0.6 + 0.3
+                    });
+                }
+            };
+
+            HolographicVisualizer.prototype.seedOrbitalRelays = function() {
+                this.orbitalRelays = [];
+                for (var i = 0; i < 12; i++) {
+                    this.orbitalRelays.push({
+                        radius: 90 + i * 18,
+                        angle: Math.random() * Math.PI * 2,
+                        speed: 0.015 + i * 0.002,
+                        size: 6 + Math.random() * 14,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+            };
+
+            HolographicVisualizer.prototype.seedVectorGlyphs = function() {
+                this.vectorGlyphs = [];
+                for (var i = 0; i < 40; i++) {
+                    this.vectorGlyphs.push({
+                        x: Math.random(),
+                        y: Math.random(),
+                        size: 40 + Math.random() * 120,
+                        spin: -0.03 + Math.random() * 0.06,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+            };
+
+            HolographicVisualizer.prototype.setupSceneDirector = function() {
+                var self = this;
+                this.sceneTimeline = [
+                    {
+                        name: 'pulse-field',
+                        duration: 20000,
+                        intensity: 1.3,
+                        theme: { primary: '#00f3ff', secondary: '#ff41f5', accent: '#ffe066' },
+                        onEnter: function() {
+                            self.seedEnergyLoops();
+                            self.seedFluxBridges();
+                        }
+                    },
+                    {
+                        name: 'prism-storm',
+                        duration: 21000,
+                        intensity: 1.6,
+                        theme: { primary: '#9c7bff', secondary: '#ff6ad5', accent: '#ffd6ff' },
+                        onEnter: function() {
+                            self.seedPrismBursts();
+                            self.seedSpectralFlares();
+                        }
+                    },
+                    {
+                        name: 'gravity-orbit',
+                        duration: 22000,
+                        intensity: 1.1,
+                        theme: { primary: '#74f2ce', secondary: '#4ea5ff', accent: '#f4ff81' },
+                        onEnter: function() {
+                            self.seedVoidRibbons();
+                            self.seedOrbitalRelays();
+                        }
+                    }
+                ];
+
+                this.sceneIndex = 0;
+                this.sceneChangedAt = performance.now();
+                this.sceneWarmup = 0;
+                this.applyScene(this.sceneTimeline[0]);
+            };
+
+            HolographicVisualizer.prototype.applyScene = function(scene) {
+                this.scene = scene.name;
+                this.currentTheme.primary = scene.theme.primary;
+                this.currentTheme.secondary = scene.theme.secondary;
+                this.currentTheme.accent = scene.theme.accent;
+                this.currentTheme.intensity = scene.intensity;
+                this.sceneWarmup = 0;
+                if (typeof scene.onEnter === 'function') {
+                    scene.onEnter();
+                }
+            };
+
+            HolographicVisualizer.prototype.updateSceneDirector = function() {
+                if (!this.sceneTimeline.length) return;
+                var now = performance.now();
+                var current = this.sceneTimeline[this.sceneIndex];
+                if (now - this.sceneChangedAt >= current.duration) {
+                    this.sceneIndex = (this.sceneIndex + 1) % this.sceneTimeline.length;
+                    this.sceneChangedAt = now;
+                    current = this.sceneTimeline[this.sceneIndex];
+                    this.applyScene(current);
+                }
+                this.sceneWarmup += 0.016;
+            };
+
             HolographicVisualizer.prototype.render = function() {
                 if (!this.isRunning) return;
-                
+
                 this.time += 0.016 * this.currentTheme.intensity;
-                
+                this.updateSceneDirector();
                 this.clearWithGradient();
                 this.renderHolographicLayers();
+                this.renderVectorGlyphs();
                 this.renderWaves();
                 this.renderGeometries();
+
+                if (this.scene === 'pulse-field') {
+                    this.renderEnergyLoops();
+                    this.renderFluxBridges();
+                } else if (this.scene === 'prism-storm') {
+                    this.renderPrismBursts();
+                    this.renderSpectralFlares();
+                } else if (this.scene === 'gravity-orbit') {
+                    this.renderVoidRibbons();
+                    this.renderOrbitalRelays();
+                }
+
                 this.renderParticles();
-                this.renderGlassmorphicOverlay();
-                
+                this.renderFluxVeil();
+
                 var self = this;
                 this.animationId = requestAnimationFrame(function() {
                     self.render();
                 });
             };
-            
+
             HolographicVisualizer.prototype.clearWithGradient = function() {
                 var ctx = this.ctx;
                 var gradient = ctx.createRadialGradient(
-                    this.canvas.width / 2, this.canvas.height / 2, 0,
-                    this.canvas.width / 2, this.canvas.height / 2, 
+                    this.canvas.width / 2,
+                    this.canvas.height / 2,
+                    0,
+                    this.canvas.width / 2,
+                    this.canvas.height / 2,
                     Math.max(this.canvas.width, this.canvas.height)
                 );
-                
+
                 var primaryColor = this.hexToRgb(this.currentTheme.primary);
                 var secondaryColor = this.hexToRgb(this.currentTheme.secondary);
-                
-                gradient.addColorStop(0, 'rgba(' + Math.floor(primaryColor.r * 255) + ', ' + 
-                                         Math.floor(primaryColor.g * 255) + ', ' + 
-                                         Math.floor(primaryColor.b * 255) + ', 0.02)');
-                gradient.addColorStop(1, 'rgba(' + Math.floor(secondaryColor.r * 255) + ', ' + 
-                                         Math.floor(secondaryColor.g * 255) + ', ' + 
-                                         Math.floor(secondaryColor.b * 255) + ', 0.01)');
-                
+
+                gradient.addColorStop(0, 'rgba(' + Math.floor(primaryColor.r * 255) + ', ' +
+                                         Math.floor(primaryColor.g * 255) + ', ' +
+                                         Math.floor(primaryColor.b * 255) + ', 0.12)');
+                gradient.addColorStop(1, 'rgba(' + Math.floor(secondaryColor.r * 255) + ', ' +
+                                         Math.floor(secondaryColor.g * 255) + ', ' +
+                                         Math.floor(secondaryColor.b * 255) + ', 0.03)');
+
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
             };
-            
+
             HolographicVisualizer.prototype.renderHolographicLayers = function() {
                 var ctx = this.ctx;
                 for (var i = 0; i < this.holographicLayers.length; i++) {
                     var layer = this.holographicLayers[i];
                     ctx.save();
-                    ctx.globalAlpha = layer.opacity * Math.sin(this.time * 0.5 + layer.phase) * 0.5 + 0.5;
+                    ctx.globalAlpha = layer.opacity * (Math.sin(this.time * 0.4 + layer.phase) * 0.5 + 0.5);
                     ctx.globalCompositeOperation = 'screen';
-                    
-                    var mouseInfluence = this.mouseSensitivity * 0.5;
-                    var shiftX = Math.sin(this.time * 0.3 + layer.phase) * layer.offsetX + 
-                               (this.mouseX - 0.5) * 20 * mouseInfluence;
-                    var shiftY = Math.cos(this.time * 0.2 + layer.phase) * layer.offsetY + 
-                               (this.mouseY - 0.5) * 20 * mouseInfluence;
+
+                    var mouseInfluence = this.mouseSensitivity * 0.6;
+                    var shiftX = Math.sin(this.time * 0.28 + layer.phase) * layer.offsetX +
+                        (this.mouseX - 0.5) * 30 * mouseInfluence;
+                    var shiftY = Math.cos(this.time * 0.24 + layer.phase) * layer.offsetY +
+                        (this.mouseY - 0.5) * 30 * mouseInfluence;
                     ctx.translate(shiftX, shiftY);
-                    
+
                     ctx.strokeStyle = this.getHolographicColor(layer.color);
                     ctx.lineWidth = 1;
-                    
-                    var gridSize = 50;
+
+                    var gridSize = 56 - i * 6;
                     for (var x = -gridSize; x < this.canvas.width + gridSize; x += gridSize) {
                         ctx.beginPath();
                         ctx.moveTo(x, 0);
@@ -279,7 +401,34 @@
                     ctx.restore();
                 }
             };
-            
+
+            HolographicVisualizer.prototype.renderVectorGlyphs = function() {
+                var ctx = this.ctx;
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                for (var i = 0; i < this.vectorGlyphs.length; i++) {
+                    var glyph = this.vectorGlyphs[i];
+                    var x = glyph.x * this.canvas.width;
+                    var y = glyph.y * this.canvas.height;
+                    var pulse = Math.sin(this.time * 0.6 + glyph.phase) * 0.5 + 0.5;
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(glyph.spin * this.time * 40);
+                    ctx.globalAlpha = 0.05 + pulse * 0.15;
+                    ctx.strokeStyle = this.currentTheme.secondary;
+                    ctx.lineWidth = 0.8;
+                    ctx.beginPath();
+                    ctx.rect(-glyph.size / 2, -glyph.size / 2, glyph.size, glyph.size);
+                    ctx.moveTo(-glyph.size / 2, 0);
+                    ctx.lineTo(glyph.size / 2, 0);
+                    ctx.moveTo(0, -glyph.size / 2);
+                    ctx.lineTo(0, glyph.size / 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                ctx.restore();
+            };
+
             HolographicVisualizer.prototype.renderWaves = function() {
                 var ctx = this.ctx;
                 for (var i = 0; i < this.waves.length; i++) {
@@ -287,17 +436,17 @@
                     ctx.save();
                     ctx.globalAlpha = wave.opacity * this.currentTheme.intensity;
                     ctx.strokeStyle = this.currentTheme.primary;
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 1.6;
                     ctx.globalCompositeOperation = 'lighten';
                     ctx.beginPath();
-                    
-                    var mouseWaveInfluence = (this.mouseY - 0.5) * 100 * this.mouseSensitivity;
-                    
-                    for (var x = 0; x <= this.canvas.width; x += 5) {
-                        var y = this.canvas.height / 2 + 
-                               Math.sin(x * wave.frequency + this.time * wave.speed + wave.phase) * 
-                               wave.amplitude * Math.sin(this.time * 0.1 + wave.layer) +
-                               mouseWaveInfluence;
+
+                    var mouseWaveInfluence = (this.mouseY - 0.5) * 120 * this.mouseSensitivity;
+
+                    for (var x = 0; x <= this.canvas.width; x += 4) {
+                        var y = this.canvas.height / 2 +
+                            Math.sin(x * wave.frequency + this.time * wave.speed + wave.phase) *
+                            wave.amplitude * Math.sin(this.time * 0.13 + wave.layer) +
+                            mouseWaveInfluence;
                         if (x === 0) {
                             ctx.moveTo(x, y);
                         } else {
@@ -308,52 +457,268 @@
                     ctx.restore();
                 }
             };
-            
+
             HolographicVisualizer.prototype.renderGeometries = function() {
                 var ctx = this.ctx;
                 var centerX = this.canvas.width / 2;
                 var centerY = this.canvas.height / 2;
-                
-                // Mouse influence on center position
-                var mouseCenterX = centerX + (this.mouseX - 0.5) * 100 * this.mouseSensitivity;
-                var mouseCenterY = centerY + (this.mouseY - 0.5) * 100 * this.mouseSensitivity;
-                
+                var mouseCenterX = centerX + (this.mouseX - 0.5) * 120 * this.mouseSensitivity;
+                var mouseCenterY = centerY + (this.mouseY - 0.5) * 120 * this.mouseSensitivity;
+
                 for (var i = 0; i < this.geometries.length; i++) {
                     var geo = this.geometries[i];
-                    geo.rotation += (0.01 + this.mouseX * 0.02) * this.currentTheme.intensity;
+                    geo.rotation += (0.01 + this.mouseX * 0.022) * this.currentTheme.intensity;
                     ctx.save();
                     ctx.translate(mouseCenterX, mouseCenterY);
                     ctx.rotate(geo.rotation);
                     ctx.scale(geo.scale, geo.scale);
-                    ctx.globalAlpha = 0.3 * this.currentTheme.intensity;
+                    ctx.globalAlpha = 0.32 * this.currentTheme.intensity;
                     ctx.strokeStyle = this.currentTheme.accent;
                     ctx.lineWidth = 1;
                     switch (geo.type) {
-                        case 'hypercube': this.drawHypercube(ctx); break;
-                        case 'torus': this.drawTorus(ctx); break;
-                        case 'fractal': this.drawFractal(ctx); break;
+                        case 'hypercube':
+                            this.drawHypercube(ctx);
+                            break;
+                        case 'torus':
+                            this.drawTorus(ctx);
+                            break;
+                        case 'fractaltree':
+                            this.drawFractal(ctx);
+                            break;
                     }
                     ctx.restore();
                 }
             };
-            
+
+            HolographicVisualizer.prototype.renderEnergyLoops = function() {
+                var ctx = this.ctx;
+                var centerX = this.canvas.width / 2 + (this.mouseX - 0.5) * 70 * this.mouseSensitivity;
+                var centerY = this.canvas.height / 2 + (this.mouseY - 0.5) * 70 * this.mouseSensitivity;
+
+                for (var i = 0; i < this.energyLoops.length; i++) {
+                    var loop = this.energyLoops[i];
+                    loop.phase += 0.012 * this.currentTheme.intensity * loop.speed;
+                    var pulse = Math.sin(this.time * 0.9 + loop.phase) * 0.5 + 0.5;
+
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(loop.phase * 0.18);
+                    ctx.globalAlpha = 0.18 + pulse * 0.45;
+                    ctx.lineWidth = loop.thickness + pulse * 2.6;
+                    ctx.strokeStyle = this.interpolateColors(
+                        this.currentTheme.primary,
+                        this.currentTheme.secondary,
+                        loop.colorShift
+                    );
+                    ctx.beginPath();
+                    ctx.arc(0, 0, loop.radius + Math.sin(this.time + loop.phase) * 15, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    ctx.globalAlpha *= 0.35;
+                    ctx.setLineDash([12, 28 * (1 + loop.glitch)]);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, loop.radius * 0.58, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            };
+
+            HolographicVisualizer.prototype.renderPrismBursts = function() {
+                var ctx = this.ctx;
+                for (var i = 0; i < this.prismBursts.length; i++) {
+                    var shard = this.prismBursts[i];
+                    shard.life += 0.008 * this.currentTheme.intensity;
+                    if (shard.life > 1) {
+                        shard.life = 0;
+                        shard.x = this.canvas.width / 2;
+                        shard.y = this.canvas.height / 2;
+                        shard.angle = Math.random() * Math.PI * 2;
+                        shard.speed = 2.4 + Math.random() * 4.4;
+                        shard.length = 50 + Math.random() * 120;
+                    }
+
+                    shard.rotation += shard.spin * this.currentTheme.intensity;
+                    var velocity = shard.speed * (0.65 + Math.sin(this.time + shard.angle) * 0.35);
+                    shard.x += Math.cos(shard.angle) * velocity;
+                    shard.y += Math.sin(shard.angle) * velocity;
+
+                    if (shard.x < -220 || shard.x > this.canvas.width + 220 ||
+                        shard.y < -220 || shard.y > this.canvas.height + 220) {
+                        shard.life = 1.1;
+                        continue;
+                    }
+
+                    var alpha = 0.25 + (1 - shard.life) * 0.55;
+                    ctx.save();
+                    ctx.translate(shard.x, shard.y);
+                    ctx.rotate(shard.rotation);
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = this.interpolateColors(
+                        this.currentTheme.secondary,
+                        this.currentTheme.accent,
+                        (Math.sin(this.time * 0.52 + shard.rotation) * 0.5 + 0.5)
+                    );
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(shard.length, -shard.length * 0.32);
+                    ctx.lineTo(shard.length * 0.22, shard.length * 0.58);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+            };
+
+            HolographicVisualizer.prototype.renderFluxBridges = function() {
+                var ctx = this.ctx;
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                for (var i = 0; i < this.fluxBridges.length; i++) {
+                    var bridge = this.fluxBridges[i];
+                    bridge.pulse += 0.012 * this.currentTheme.intensity;
+                    var alpha = 0.08 + Math.sin(bridge.pulse * Math.PI * 2) * 0.12;
+                    var startX = bridge.anchorA * this.canvas.width;
+                    var endX = bridge.anchorB * this.canvas.width;
+                    var centerY = this.canvas.height / 2;
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.lineWidth = 1.2;
+                    ctx.strokeStyle = this.interpolateColors(
+                        this.currentTheme.primary,
+                        this.currentTheme.secondary,
+                        (Math.sin(this.time * bridge.sway + bridge.offset) * 0.5 + 0.5)
+                    );
+                    ctx.beginPath();
+                    ctx.moveTo(startX, centerY - 120);
+                    ctx.bezierCurveTo(
+                        (startX + endX) / 2,
+                        centerY - 220 - Math.sin(this.time * 0.9 + bridge.offset) * 80,
+                        (startX + endX) / 2,
+                        centerY + 220 + Math.cos(this.time * 0.6 + bridge.offset) * 80,
+                        endX,
+                        centerY + 120
+                    );
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                ctx.restore();
+            };
+
+            HolographicVisualizer.prototype.renderSpectralFlares = function() {
+                var ctx = this.ctx;
+                var centerX = this.canvas.width / 2;
+                var centerY = this.canvas.height / 2;
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                for (var i = 0; i < this.spectralFlares.length; i++) {
+                    var flare = this.spectralFlares[i];
+                    flare.angle += flare.speed * 0.01 * this.currentTheme.intensity;
+                    var pulse = Math.sin(this.time * 1.1 + flare.angle) * 0.5 + 0.5;
+                    var x = centerX + Math.cos(flare.angle) * flare.radius;
+                    var y = centerY + Math.sin(flare.angle) * flare.radius;
+                    var tail = flare.spread * (80 + 120 * pulse);
+
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(flare.angle);
+                    ctx.globalAlpha = flare.alpha * pulse;
+                    ctx.fillStyle = this.interpolateColors(
+                        this.currentTheme.primary,
+                        this.currentTheme.accent,
+                        pulse
+                    );
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.quadraticCurveTo(tail * 0.6, -tail * 0.3, tail, 0);
+                    ctx.quadraticCurveTo(tail * 0.6, tail * 0.3, 0, 0);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                ctx.restore();
+            };
+
+            HolographicVisualizer.prototype.renderVoidRibbons = function() {
+                var ctx = this.ctx;
+                var centerX = this.canvas.width / 2;
+                var centerY = this.canvas.height / 2;
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                for (var i = 0; i < this.voidRibbons.length; i++) {
+                    var ribbon = this.voidRibbons[i];
+                    var pulse = Math.sin(this.time * 0.7 + ribbon.offset) * ribbon.shimmer;
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(ribbon.offset + this.time * 0.05);
+                    ctx.globalAlpha = 0.08 + pulse * 0.35;
+                    ctx.strokeStyle = this.interpolateColors(
+                        this.currentTheme.secondary,
+                        this.currentTheme.accent,
+                        0.5 + 0.5 * Math.sin(this.time * 0.4 + ribbon.offset)
+                    );
+                    ctx.lineWidth = ribbon.thickness;
+                    ctx.beginPath();
+                    for (var angle = -Math.PI; angle <= Math.PI; angle += 0.25) {
+                        var radius = ribbon.radius + Math.sin(angle * ribbon.twist + this.time) * 45;
+                        var px = Math.cos(angle) * radius;
+                        var py = Math.sin(angle) * radius;
+                        if (angle === -Math.PI) {
+                            ctx.moveTo(px, py);
+                        } else {
+                            ctx.lineTo(px, py);
+                        }
+                    }
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                ctx.restore();
+            };
+
+            HolographicVisualizer.prototype.renderOrbitalRelays = function() {
+                var ctx = this.ctx;
+                var centerX = this.canvas.width / 2;
+                var centerY = this.canvas.height / 2;
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                for (var i = 0; i < this.orbitalRelays.length; i++) {
+                    var relay = this.orbitalRelays[i];
+                    relay.angle += relay.speed * this.currentTheme.intensity;
+                    var x = centerX + Math.cos(relay.angle) * relay.radius;
+                    var y = centerY + Math.sin(relay.angle) * relay.radius;
+                    var alpha = 0.12 + 0.22 * Math.sin(this.time + relay.phase);
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.strokeStyle = this.currentTheme.primary;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, relay.radius, relay.angle, relay.angle + 0.6, false);
+                    ctx.stroke();
+
+                    ctx.fillStyle = this.currentTheme.accent;
+                    ctx.beginPath();
+                    ctx.arc(x, y, relay.size * (0.5 + 0.5 * Math.sin(this.time * 1.2 + relay.phase)), 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                ctx.restore();
+            };
+
             HolographicVisualizer.prototype.drawHypercube = function(ctx) {
-                var size = 100;
-                var depth = 50;
-                ctx.strokeRect(-size/2, -size/2, size, size);
-                ctx.strokeRect(-size/2 + depth, -size/2 + depth, size, size);
+                var size = 120;
+                var depth = 60;
+                ctx.strokeRect(-size / 2, -size / 2, size, size);
+                ctx.strokeRect(-size / 2 + depth, -size / 2 + depth, size, size);
                 ctx.beginPath();
-                ctx.moveTo(-size/2, -size/2); ctx.lineTo(-size/2 + depth, -size/2 + depth);
-                ctx.moveTo(size/2, -size/2); ctx.lineTo(size/2 + depth, -size/2 + depth);
-                ctx.moveTo(size/2, size/2); ctx.lineTo(size/2 + depth, size/2 + depth);
-                ctx.moveTo(-size/2, size/2); ctx.lineTo(-size/2 + depth, size/2 + depth);
+                ctx.moveTo(-size / 2, -size / 2); ctx.lineTo(-size / 2 + depth, -size / 2 + depth);
+                ctx.moveTo(size / 2, -size / 2); ctx.lineTo(size / 2 + depth, -size / 2 + depth);
+                ctx.moveTo(size / 2, size / 2); ctx.lineTo(size / 2 + depth, size / 2 + depth);
+                ctx.moveTo(-size / 2, size / 2); ctx.lineTo(-size / 2 + depth, size / 2 + depth);
                 ctx.stroke();
             };
-            
+
             HolographicVisualizer.prototype.drawTorus = function(ctx) {
-                var majorRadius = 80;
-                var minorRadius = 30;
-                var segments = 20;
+                var majorRadius = 110;
+                var minorRadius = 28;
+                var segments = 24;
                 for (var i = 0; i < segments; i++) {
                     var angle = (i / segments) * Math.PI * 2;
                     var x = Math.cos(angle) * majorRadius;
@@ -363,10 +728,10 @@
                     ctx.stroke();
                 }
             };
-            
+
             HolographicVisualizer.prototype.drawFractal = function(ctx) {
-                var iterations = 5;
-                var scale = 120;
+                var iterations = 6;
+                var scale = 150;
                 var self = this;
                 function drawBranch(x, y, angle, length, depth) {
                     if (depth === 0) return;
@@ -377,52 +742,51 @@
                     ctx.lineTo(endX, endY);
                     ctx.stroke();
                     var newLength = length * 0.7;
-                    drawBranch(endX, endY, angle - 0.5, newLength, depth - 1);
-                    drawBranch(endX, endY, angle + 0.5, newLength, depth - 1);
+                    drawBranch(endX, endY, angle - 0.55, newLength, depth - 1);
+                    drawBranch(endX, endY, angle + 0.55, newLength, depth - 1);
                 }
-                drawBranch(0, scale/2, -Math.PI/2, scale/3, iterations);
+                drawBranch(0, scale / 2, -Math.PI / 2, scale / 3, iterations);
             };
-            
+
             HolographicVisualizer.prototype.renderParticles = function() {
                 var ctx = this.ctx;
                 for (var i = 0; i < this.particles.length; i++) {
                     var p = this.particles[i];
-                    
-                    // Mouse influence on particle movement
-                    var mouseInfluence = this.mouseSensitivity * 0.5;
-                    p.vx += (this.mouseX - 0.5) * 0.1 * mouseInfluence;
-                    p.vy += (this.mouseY - 0.5) * 0.1 * mouseInfluence;
-                    
+                    var mouseInfluence = this.mouseSensitivity * 0.45;
+                    p.vx += (this.mouseX - 0.5) * 0.09 * mouseInfluence;
+                    p.vy += (this.mouseY - 0.5) * 0.09 * mouseInfluence;
+
                     p.x += p.vx * this.currentTheme.intensity;
                     p.y += p.vy * this.currentTheme.intensity;
                     p.z += p.vz * this.currentTheme.intensity;
                     p.life += 0.01;
-                    p.holographicShift += 0.05;
-                    
+                    p.holographicShift += 0.045;
+
                     if (p.x < 0) p.x = this.canvas.width;
                     if (p.x > this.canvas.width) p.x = 0;
                     if (p.y < 0) p.y = this.canvas.height;
                     if (p.y > this.canvas.height) p.y = 0;
-                    if (p.z < 0) p.z = 1000;
-                    if (p.z > 1000) p.z = 0;
+                    if (p.z < 0) p.z = 900;
+                    if (p.z > 900) p.z = 0;
                     if (p.life > 1) p.life = 0;
-                    
+
                     var alpha = Math.sin(p.life * Math.PI) * this.currentTheme.intensity;
-                    var scale = (1000 - p.z) / 1000;
+                    var scale = (900 - p.z) / 900;
                     var actualSize = p.size * scale;
-                    
-                    if (actualSize > 0.5) {
+
+                    if (actualSize > 0.4) {
                         ctx.save();
-                        ctx.globalAlpha = alpha * 0.8;
                         var colorShift = Math.sin(p.holographicShift) * 0.5 + 0.5;
                         var color = this.interpolateColors(
                             this.currentTheme.primary,
                             this.currentTheme.secondary,
                             colorShift
                         );
+                        ctx.globalCompositeOperation = 'lighter';
                         for (var layer = 0; layer < 3; layer++) {
-                            var layerOffset = layer * 2;
-                            var layerAlpha = alpha * (0.5 - layer * 0.1);
+                            var layerOffset = layer * 1.8;
+                            var layerAlpha = alpha * (0.6 - layer * 0.18);
+                            if (layerAlpha <= 0) continue;
                             ctx.globalAlpha = layerAlpha;
                             ctx.fillStyle = color;
                             ctx.beginPath();
@@ -433,31 +797,31 @@
                     }
                 }
             };
-            
-            HolographicVisualizer.prototype.renderGlassmorphicOverlay = function() {
+
+            HolographicVisualizer.prototype.renderFluxVeil = function() {
                 var ctx = this.ctx;
                 ctx.save();
-                ctx.globalAlpha = 0.05;
+                ctx.globalAlpha = 0.06;
                 ctx.globalCompositeOperation = 'lighten';
                 var gradient = ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
                 gradient.addColorStop(0, this.currentTheme.primary);
                 gradient.addColorStop(0.5, this.currentTheme.accent);
                 gradient.addColorStop(1, this.currentTheme.secondary);
                 ctx.fillStyle = gradient;
-                for (var i = 0; i < 5; i++) {
-                    var x = (i / 5) * this.canvas.width + Math.sin(this.time * 0.1 + i) * 50;
-                    var y = Math.cos(this.time * 0.05 + i) * 100 + this.canvas.height / 2;
-                    var width = 200;
-                    var height = this.canvas.height;
+                for (var i = 0; i < 6; i++) {
+                    var x = (i / 5) * this.canvas.width + Math.sin(this.time * 0.12 + i) * 90;
+                    var y = Math.cos(this.time * 0.08 + i) * 140 + this.canvas.height / 2;
+                    var width = 180;
+                    var height = this.canvas.height * 1.4;
                     ctx.save();
                     ctx.translate(x, y);
-                    ctx.rotate(Math.sin(this.time * 0.02 + i) * 0.1);
-                    ctx.fillRect(-width/2, -height/2, width, height);
+                    ctx.rotate(Math.sin(this.time * 0.04 + i) * 0.16);
+                    ctx.fillRect(-width / 2, -height / 2, width, height);
                     ctx.restore();
                 }
                 ctx.restore();
             };
-            
+
             HolographicVisualizer.prototype.hexToRgb = function(hex) {
                 var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
                 return result ? {
@@ -466,7 +830,7 @@
                     b: parseInt(result[3], 16) / 255
                 } : { r: 0, g: 0.8, b: 1 };
             };
-            
+
             HolographicVisualizer.prototype.getHolographicColor = function(colorName) {
                 switch (colorName) {
                     case 'cyan': return '#00ffff';
@@ -475,7 +839,7 @@
                     default: return this.currentTheme.primary;
                 }
             };
-            
+
             HolographicVisualizer.prototype.interpolateColors = function(color1, color2, factor) {
                 var c1 = this.hexToRgb(color1);
                 var c2 = this.hexToRgb(color2);
@@ -484,53 +848,57 @@
                 var b = Math.floor((c1.b + (c2.b - c1.b) * factor) * 255);
                 return 'rgb(' + r + ', ' + g + ', ' + b + ')';
             };
-            
+
+            HolographicVisualizer.prototype.setScene = function(sceneName) {
+                for (var i = 0; i < this.sceneTimeline.length; i++) {
+                    if (this.sceneTimeline[i].name === sceneName) {
+                        this.sceneIndex = i;
+                        this.sceneChangedAt = performance.now();
+                        this.applyScene(this.sceneTimeline[i]);
+                        break;
+                    }
+                }
+            };
+
             HolographicVisualizer.prototype.start = function() {
                 if (this.isRunning) return;
                 this.isRunning = true;
                 this.render();
-                console.log('🌟 Holographic Visualizer started');
             };
-            
+
             HolographicVisualizer.prototype.stop = function() {
                 this.isRunning = false;
                 if (this.animationId) {
                     cancelAnimationFrame(this.animationId);
                     this.animationId = null;
                 }
-                console.log('⏹️ Holographic Visualizer stopped');
             };
-            
-            // Initialize the visualizer
+
             var visualizer = new HolographicVisualizer();
             window.HolographicVisualizer = visualizer;
-            
         })();
-        
-        // Theme switching function
+
         function setTheme(themeName) {
+            if (!window.HolographicVisualizer) return;
             var themes = {
-                cyber: {
-                    primary: '#00d9ff',
-                    secondary: '#ff10f0', 
-                    accent: '#ffcc00'
-                },
-                vaporwave: {
-                    primary: '#ff00ff',
-                    secondary: '#00ffff',
-                    accent: '#ffff00'
-                },
-                matrix: {
-                    primary: '#00ff00',
-                    secondary: '#008800',
-                    accent: '#44ff44'
-                }
+                cyber: { primary: '#00f3ff', secondary: '#ff41f5', accent: '#ffe066', intensity: 1.35 },
+                ionwave: { primary: '#8ef6ff', secondary: '#6a73ff', accent: '#ffd0ff', intensity: 1.5 },
+                aurora: { primary: '#74f2ce', secondary: '#4ea5ff', accent: '#f4ff81', intensity: 1.1 },
+                duskcore: { primary: '#ff9f1c', secondary: '#ff5376', accent: '#ffe4c0', intensity: 1.25 }
             };
-            
             if (themes[themeName]) {
-                window.HolographicVisualizer.currentTheme.primary = themes[themeName].primary;
-                window.HolographicVisualizer.currentTheme.secondary = themes[themeName].secondary;
-                window.HolographicVisualizer.currentTheme.accent = themes[themeName].accent;
+                var theme = themes[themeName];
+                var hv = window.HolographicVisualizer;
+                hv.currentTheme.primary = theme.primary;
+                hv.currentTheme.secondary = theme.secondary;
+                hv.currentTheme.accent = theme.accent;
+                hv.currentTheme.intensity = theme.intensity;
+            }
+        }
+
+        function setScene(sceneName) {
+            if (window.HolographicVisualizer) {
+                window.HolographicVisualizer.setScene(sceneName);
             }
         }
     </script>
