@@ -5,614 +5,470 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi-Canvas Visualizer System</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
-        
+        :root {
+            color-scheme: dark;
+        }
+
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
-        
+
         body {
-            background: #000;
-            color: white;
-            font-family: 'Orbitron', 'Courier New', monospace;
+            background: radial-gradient(circle at 30% 20%, #130029 0%, #030007 42%, #000000 100%);
+            color: #fff;
+            font-family: 'JetBrains Mono', 'Orbitron', sans-serif;
+            height: 100vh;
             overflow: hidden;
-            height: 100vh;
-            background: radial-gradient(ellipse at center, #1a0033 0%, #000000 70%);
         }
-        
-        .main-container {
-            position: relative;
-            width: 100%;
-            height: 100vh;
+
+        .system-root {
             display: flex;
             flex-direction: column;
+            gap: 6px;
+            height: 100vh;
+            padding: 16px 24px;
         }
-        
-        .canvas-strip {
-            flex: 1;
-            width: 100%;
+
+        .strip {
             position: relative;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
-            cursor: pointer;
-            transition: all 0.3s ease;
+            flex: 1;
+            border-radius: 18px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(8, 12, 35, 0.94), rgba(2, 0, 10, 0.86));
+            box-shadow:
+                inset 0 0 60px rgba(12, 14, 45, 0.9),
+                0 0 80px rgba(16, 0, 56, 0.45);
         }
-        
-        .canvas-strip:last-child {
-            border-bottom: none;
-        }
-        
-        .canvas-strip:hover {
-            box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.2);
-        }
-        
-        .canvas-strip.active {
-            box-shadow: inset 0 0 100px rgba(255, 0, 255, 0.4);
-            border-color: rgba(255, 0, 255, 0.8);
-        }
-        
-        .visualizer-canvas {
+
+        canvas {
+            display: block;
             width: 100%;
             height: 100%;
-            display: block;
         }
-        
-        .group-selector {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(20px);
-            border: 2px solid #00ffff;
-            border-radius: 15px;
-            padding: 20px;
-            color: #00ffff;
-            font-family: 'JetBrains Mono', monospace;
-            z-index: 1000;
-            min-width: 200px;
-        }
-        
-        .group-title {
-            font-size: 1rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-align: center;
-            color: #ff00ff;
-            text-transform: uppercase;
-        }
-        
-        .group-button {
-            display: block;
-            width: 100%;
-            background: linear-gradient(45deg, rgba(255, 0, 128, 0.2), rgba(0, 255, 255, 0.2));
-            border: 1px solid #00ffff;
-            color: #00ffff;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
-        }
-        
-        .group-button:hover {
-            background: linear-gradient(45deg, rgba(255, 0, 128, 0.4), rgba(0, 255, 255, 0.4));
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
-            transform: translateY(-2px);
-        }
-        
-        .group-button.active {
-            background: linear-gradient(45deg, rgba(255, 0, 255, 0.6), rgba(0, 255, 255, 0.6));
-            border-color: #ff00ff;
-            color: #ffffff;
-        }
-        
-        .info-panel {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(20px);
-            border: 2px solid #ff00ff;
-            border-radius: 15px;
-            padding: 20px;
-            color: #ff00ff;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            z-index: 1000;
-            max-width: 280px;
-        }
-        
-        .info-title {
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-align: center;
-            color: #00ffff;
-            text-transform: uppercase;
-        }
-        
-        .info-item {
-            margin-bottom: 8px;
-            font-size: 0.7rem;
-            line-height: 1.4;
-        }
-        
-        .info-key {
-            color: #00ffff;
-            font-weight: bold;
+
+        .strip::after {
+            content: '';
+            pointer-events: none;
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(180, 220, 255, 0.07), transparent 58%);
+            mix-blend-mode: screen;
         }
     </style>
 </head>
 <body>
-    <div class="info-panel">
-        <div class="info-title">Multi-Canvas System</div>
-        <div class="info-item"><span class="info-key">Layout:</span> 5 Horizontal Canvas Strips</div>
-        <div class="info-item"><span class="info-key">Interaction:</span> Click Strip to Set Master Style</div>
-        <div class="info-item"><span class="info-key">Sync:</span> All Strips Match Active Style</div>
-        <div class="info-item"><span class="info-key">Random:</span> Grid Density, Color, Rotation</div>
-        <div class="info-item"><span class="info-key">Groups:</span> 4D Geometries, Holographic, Matrix, Cosmic</div>
-        <div class="info-item"><span class="info-key">WebGL:</span> 5 Independent Contexts</div>
-    </div>
-
-    <div class="group-selector">
-        <div class="group-title">Visualizer Groups</div>
-        <button class="group-button active" data-group="4d-geometries">4D Geometries</button>
-        <button class="group-button" data-group="holographic">Holographic Effects</button>
-        <button class="group-button" data-group="matrix">Matrix Systems</button>
-        <button class="group-button" data-group="cosmic">Cosmic Patterns</button>
-        <button class="group-button" data-group="experimental">Experimental</button>
-    </div>
-
-    <div class="main-container">
-        <div class="canvas-strip active" data-strip="0">
-            <canvas class="visualizer-canvas" id="canvas0"></canvas>
-        </div>
-        <div class="canvas-strip" data-strip="1">
-            <canvas class="visualizer-canvas" id="canvas1"></canvas>
-        </div>
-        <div class="canvas-strip" data-strip="2">
-            <canvas class="visualizer-canvas" id="canvas2"></canvas>
-        </div>
-        <div class="canvas-strip" data-strip="3">
-            <canvas class="visualizer-canvas" id="canvas3"></canvas>
-        </div>
-        <div class="canvas-strip" data-strip="4">
-            <canvas class="visualizer-canvas" id="canvas4"></canvas>
-        </div>
+    <div class="system-root">
+        <div class="strip"><canvas id="strip-0"></canvas></div>
+        <div class="strip"><canvas id="strip-1"></canvas></div>
+        <div class="strip"><canvas id="strip-2"></canvas></div>
+        <div class="strip"><canvas id="strip-3"></canvas></div>
+        <div class="strip"><canvas id="strip-4"></canvas></div>
     </div>
 
     <script>
-        class MultiCanvasVisualizerSystem {
+        class MultiCanvasConductor {
             constructor() {
-                this.canvases = [];
-                this.contexts = [];
-                this.visualizers = [];
-                this.activeStrip = 0;
-                this.currentGroup = '4d-geometries';
-                
-                // Visualizer groups
-                this.visualizerGroups = {
-                    '4d-geometries': [
-                        { name: 'Hypercube', type: 'hypercube' },
-                        { name: 'Tesseract Lattice', type: 'tesseract' },
-                        { name: '4D Torus', type: 'torus4d' },
-                        { name: 'Polytopal Grid', type: 'polytopal' },
-                        { name: '5-Cube Projection', type: '5cube' }
-                    ],
-                    'holographic': [
-                        { name: 'Hologram Waves', type: 'holowaves' },
-                        { name: 'RGB Shimmer', type: 'rgbshimmer' },
-                        { name: 'Prismatic Flow', type: 'prismatic' },
-                        { name: 'Aurora Field', type: 'aurora' },
-                        { name: 'Spectral Burst', type: 'spectral' }
-                    ],
-                    'matrix': [
-                        { name: 'Digital Rain', type: 'rain' },
-                        { name: 'Code Matrix', type: 'codematrix' },
-                        { name: 'Data Stream', type: 'datastream' },
-                        { name: 'Cyber Grid', type: 'cybergrid' },
-                        { name: 'Binary Flow', type: 'binary' }
-                    ],
-                    'cosmic': [
-                        { name: 'Nebula Field', type: 'nebula' },
-                        { name: 'Star Formation', type: 'starform' },
-                        { name: 'Galaxy Spiral', type: 'galaxy' },
-                        { name: 'Cosmic Web', type: 'cosmicweb' },
-                        { name: 'Dark Matter', type: 'darkmatter' }
-                    ],
-                    'experimental': [
-                        { name: 'Quantum Foam', type: 'quantum' },
-                        { name: 'Dimensional Rift', type: 'rift' },
-                        { name: 'Reality Mesh', type: 'realitymesh' },
-                        { name: 'Chaos Theory', type: 'chaos' },
-                        { name: 'Fractal Dimension', type: 'fractal' }
-                    ]
-                };
-                
-                this.init();
-            }
-            
-            init() {
-                this.setupCanvases();
-                this.setupEventListeners();
-                this.loadVisualizerGroup(this.currentGroup);
-                console.log('🎯 Multi-Canvas Visualizer System initialized');
-            }
-            
-            setupCanvases() {
-                for (let i = 0; i < 5; i++) {
-                    const canvas = document.getElementById(`canvas${i}`);
+                this.strips = Array.from({ length: 5 }, (_, index) => {
+                    const canvas = document.getElementById(`strip-${index}`);
                     const ctx = canvas.getContext('2d');
-                    
-                    // Set canvas size
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight / 5;
-                    
-                    this.canvases.push(canvas);
-                    this.contexts.push(ctx);
-                    this.visualizers.push(null);
-                }
-            }
-            
-            setupEventListeners() {
-                // Canvas strip click handlers
-                document.querySelectorAll('.canvas-strip').forEach((strip, index) => {
-                    strip.addEventListener('click', () => {
-                        this.setActiveStrip(index);
-                    });
+                    return {
+                        canvas,
+                        ctx,
+                        ribbons: [],
+                        nodes: [],
+                        pulses: [],
+                        noiseField: this.createNoiseField(index)
+                    };
                 });
-                
-                // Group button handlers
-                document.querySelectorAll('.group-button').forEach(button => {
-                    button.addEventListener('click', () => {
-                        const group = button.dataset.group;
-                        this.switchGroup(group);
-                    });
-                });
-                
-                // Window resize
-                window.addEventListener('resize', () => {
-                    this.resizeCanvases();
-                });
-            }
-            
-            setActiveStrip(index) {
-                this.activeStrip = index;
-                
-                // Update UI
-                document.querySelectorAll('.canvas-strip').forEach((strip, i) => {
-                    strip.classList.toggle('active', i === index);
-                });
-                
-                // Sync all strips to match active strip's style
-                this.syncAllToActive();
-                
-                console.log(`🎯 Active strip set to ${index}`);
-            }
-            
-            syncAllToActive() {
-                if (!this.visualizers[this.activeStrip]) return;
-                
-                const masterStyle = this.visualizers[this.activeStrip].getStyle();
-                
-                // Apply master style to all other strips with randomization
-                for (let i = 0; i < 5; i++) {
-                    if (i !== this.activeStrip && this.visualizers[i]) {
-                        const randomizedStyle = this.randomizeStyle(masterStyle);
-                        this.visualizers[i].applyStyle(randomizedStyle);
+
+                this.phases = [
+                    {
+                        name: 'Lattice Bloom',
+                        palette: ['#0aefff', '#19ff6b', '#f7f9ff'],
+                        ribbonWidth: 42,
+                        waveLift: 0.16,
+                        density: 38,
+                        pulseStrength: 0.7,
+                        noiseInfluence: 0.45
+                    },
+                    {
+                        name: 'Flux Mirage',
+                        palette: ['#ff5ef4', '#ffd300', '#57efff'],
+                        ribbonWidth: 54,
+                        waveLift: 0.23,
+                        density: 48,
+                        pulseStrength: 1.2,
+                        noiseInfluence: 0.32
+                    },
+                    {
+                        name: 'Cryo Veil',
+                        palette: ['#5e8bff', '#a7e1ff', '#00ffe6'],
+                        ribbonWidth: 36,
+                        waveLift: 0.12,
+                        density: 44,
+                        pulseStrength: 0.9,
+                        noiseInfluence: 0.55
+                    },
+                    {
+                        name: 'Solar Thread',
+                        palette: ['#ff926b', '#ffe46b', '#fff8d9'],
+                        ribbonWidth: 40,
+                        waveLift: 0.18,
+                        density: 52,
+                        pulseStrength: 1.35,
+                        noiseInfluence: 0.41
                     }
+                ];
+
+                this.phaseIndex = 0;
+                this.phaseDuration = 16000;
+                this.phaseTimer = 0;
+                this.lastTimestamp = performance.now();
+
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+
+                this.seedPhase(true);
+                requestAnimationFrame((timestamp) => this.tick(timestamp));
+            }
+
+            resize() {
+                const height = (window.innerHeight - 5 * 6 - 32) / 5;
+                this.strips.forEach(({ canvas }) => {
+                    canvas.width = window.innerWidth - 48;
+                    canvas.height = Math.max(height, 120);
+                });
+            }
+
+            createNoiseField(seed) {
+                const noise = [];
+                const length = 256;
+                let value = seed * 97;
+                for (let i = 0; i < length; i++) {
+                    value = (value * 16807) % 2147483647;
+                    noise.push(value / 2147483647);
+                }
+                return noise;
+            }
+
+            sampleNoise(noise, x) {
+                const index = Math.floor(x) % noise.length;
+                const next = (index + 1) % noise.length;
+                const fract = x - Math.floor(x);
+                return noise[index] * (1 - fract) + noise[next] * fract;
+            }
+
+            seedPhase(initial = false) {
+                const phase = this.phases[this.phaseIndex];
+                this.strips.forEach((strip, index) => {
+                    this.seedStrip(strip, phase, index, initial);
+                });
+            }
+
+            seedStrip(strip, phase, index, initial) {
+                const { canvas } = strip;
+                const baseHueShift = (index / this.strips.length) * Math.PI * 2;
+                const ribbonCount = Math.floor(4 + Math.random() * 3);
+                const nodeCount = Math.floor(phase.density * 0.6);
+                const pulseCount = Math.floor(phase.density * 0.22);
+
+                strip.ribbons = Array.from({ length: ribbonCount }, (_, ribbonIndex) => this.createRibbon(canvas, phase, baseHueShift, ribbonIndex));
+                strip.nodes = Array.from({ length: nodeCount }, () => this.createNode(canvas, phase, baseHueShift));
+                strip.pulses = Array.from({ length: pulseCount }, () => this.createPulse(canvas, phase));
+
+                if (initial) {
+                    strip.nodes.forEach(node => node.energy = Math.random());
                 }
             }
-            
-            randomizeStyle(baseStyle) {
+
+            createRibbon(canvas, phase, hueShift, ribbonIndex) {
+                const direction = Math.random() > 0.5 ? 1 : -1;
+                const baseline = canvas.height * (0.2 + Math.random() * 0.6);
+                const amplitude = canvas.height * (0.2 + Math.random() * 0.35);
+                const speed = (0.8 + Math.random() * 0.7) * direction;
+                const offset = Math.random() * Math.PI * 2;
+                const paletteIndex = ribbonIndex % phase.palette.length;
+
                 return {
-                    ...baseStyle,
-                    gridDensity: 5 + Math.random() * 20,
-                    colorShift: Math.random() * 360,
-                    rotationSpeed: 0.1 + Math.random() * 2.0,
-                    intensity: 0.3 + Math.random() * 0.7,
-                    morphFactor: Math.random() * 1.5,
-                    glitchLevel: Math.random() * 0.8
+                    baseline,
+                    amplitude,
+                    speed,
+                    offset,
+                    width: phase.ribbonWidth * (0.6 + Math.random() * 0.8),
+                    color: phase.palette[paletteIndex],
+                    hueShift
                 };
             }
-            
-            switchGroup(groupName) {
-                this.currentGroup = groupName;
-                
-                // Update UI
-                document.querySelectorAll('.group-button').forEach(button => {
-                    button.classList.toggle('active', button.dataset.group === groupName);
-                });
-                
-                this.loadVisualizerGroup(groupName);
-                console.log(`🔄 Switched to group: ${groupName}`);
-            }
-            
-            loadVisualizerGroup(groupName) {
-                const group = this.visualizerGroups[groupName];
-                if (!group) return;
-                
-                // Load each visualizer type into the 5 strips
-                for (let i = 0; i < 5; i++) {
-                    const visualizerConfig = group[i % group.length];
-                    this.loadVisualizer(i, visualizerConfig);
-                }
-                
-                // Auto-sync after loading
-                setTimeout(() => {
-                    this.syncAllToActive();
-                }, 100);
-            }
-            
-            loadVisualizer(stripIndex, config) {
-                // Stop existing visualizer
-                if (this.visualizers[stripIndex]) {
-                    this.visualizers[stripIndex].stop();
-                }
-                
-                // Create new visualizer based on type
-                const canvas = this.canvases[stripIndex];
-                const ctx = this.contexts[stripIndex];
-                
-                this.visualizers[stripIndex] = new Visualizer(canvas, ctx, config);
-                this.visualizers[stripIndex].start();
-            }
-            
-            resizeCanvases() {
-                for (let i = 0; i < 5; i++) {
-                    this.canvases[i].width = window.innerWidth;
-                    this.canvases[i].height = window.innerHeight / 5;
-                }
-            }
-        }
-        
-        // Generic Visualizer Class
-        class Visualizer {
-            constructor(canvas, ctx, config) {
-                this.canvas = canvas;
-                this.ctx = ctx;
-                this.config = config;
-                this.animationId = null;
-                this.time = 0;
-                
-                // Default style parameters
-                this.style = {
-                    gridDensity: 12,
-                    colorShift: 0,
-                    rotationSpeed: 0.5,
-                    intensity: 0.6,
-                    morphFactor: 0.8,
-                    glitchLevel: 0.3
+
+            createNode(canvas, phase, hueShift) {
+                return {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    radius: 2 + Math.random() * 4,
+                    energy: 0,
+                    hueShift,
+                    color: phase.palette[Math.floor(Math.random() * phase.palette.length)]
                 };
-                
-                this.particles = [];
-                this.initParticles();
             }
-            
-            initParticles() {
-                const count = Math.floor(this.style.gridDensity * 10);
-                this.particles = [];
-                
-                for (let i = 0; i < count; i++) {
-                    this.particles.push({
-                        x: Math.random() * this.canvas.width,
-                        y: Math.random() * this.canvas.height,
-                        vx: (Math.random() - 0.5) * 2,
-                        vy: (Math.random() - 0.5) * 2,
-                        size: 1 + Math.random() * 3,
-                        hue: Math.random() * 360,
-                        life: Math.random()
-                    });
+
+            createPulse(canvas, phase) {
+                return {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: 12 + Math.random() * 28,
+                    growth: 0.65 + Math.random() * 0.6,
+                    life: 0,
+                    maxLife: 1.6 + Math.random() * 1.2,
+                    color: phase.palette[Math.floor(Math.random() * phase.palette.length)],
+                    direction: Math.random() > 0.5 ? 1 : -1
+                };
+            }
+
+            tick(timestamp) {
+                const delta = timestamp - this.lastTimestamp;
+                this.lastTimestamp = timestamp;
+                this.phaseTimer += delta;
+
+                if (this.phaseTimer >= this.phaseDuration) {
+                    this.phaseTimer = 0;
+                    this.phaseIndex = (this.phaseIndex + 1) % this.phases.length;
+                    this.seedPhase();
                 }
+
+                const progress = this.phaseTimer / this.phaseDuration;
+                this.strips.forEach((strip, index) => this.updateStrip(strip, this.phases[this.phaseIndex], delta / 1000, progress, index));
+
+                requestAnimationFrame((nextTimestamp) => this.tick(nextTimestamp));
             }
-            
-            start() {
-                this.animate();
+
+            updateStrip(strip, phase, deltaSeconds, phaseProgress, stripIndex) {
+                const { canvas, ctx } = strip;
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.fillStyle = `rgba(4, 6, 18, ${0.16 + phase.noiseInfluence * 0.3})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.globalCompositeOperation = 'lighter';
+                this.drawRibbons(strip, ctx, phase, deltaSeconds, phaseProgress, stripIndex);
+                this.drawNodes(strip, ctx, phase, deltaSeconds, phaseProgress, stripIndex);
+                this.drawPulses(strip, ctx, phase, deltaSeconds);
+                this.injectDust(ctx, canvas, phase, stripIndex, phaseProgress);
             }
-            
-            stop() {
-                if (this.animationId) {
-                    cancelAnimationFrame(this.animationId);
-                    this.animationId = null;
-                }
-            }
-            
-            animate() {
-                this.time += 0.016 * this.style.rotationSpeed;
-                this.render();
-                this.animationId = requestAnimationFrame(() => this.animate());
-            }
-            
-            render() {
-                const { width, height } = this.canvas;
-                const ctx = this.ctx;
-                
-                // Clear with fade
-                ctx.fillStyle = `rgba(0, 0, 0, ${0.1 + this.style.intensity * 0.1})`;
-                ctx.fillRect(0, 0, width, height);
-                
-                // Render based on visualizer type
-                switch (this.config.type) {
-                    case 'hypercube':
-                        this.renderHypercube(ctx, width, height);
-                        break;
-                    case 'tesseract':
-                        this.renderTesseract(ctx, width, height);
-                        break;
-                    case 'holowaves':
-                        this.renderHolographicWaves(ctx, width, height);
-                        break;
-                    case 'rain':
-                        this.renderDigitalRain(ctx, width, height);
-                        break;
-                    case 'nebula':
-                        this.renderNebula(ctx, width, height);
-                        break;
-                    default:
-                        this.renderDefault(ctx, width, height);
-                }
-                
-                // Update particles
-                this.updateParticles();
-            }
-            
-            renderHypercube(ctx, width, height) {
-                const centerX = width / 2;
-                const centerY = height / 2;
-                const size = Math.min(width, height) * 0.3;
-                
-                ctx.strokeStyle = `hsl(${(this.style.colorShift + this.time * 50) % 360}, 80%, 60%)`;
-                ctx.lineWidth = 2;
-                
-                // Draw rotating 4D projection
-                for (let i = 0; i < 8; i++) {
-                    const angle = (i / 8) * Math.PI * 2 + this.time;
-                    const x = centerX + Math.cos(angle) * size * this.style.morphFactor;
-                    const y = centerY + Math.sin(angle) * size * 0.5;
-                    
+
+            drawRibbons(strip, ctx, phase, deltaSeconds, phaseProgress, stripIndex) {
+                const { canvas, ribbons, noiseField } = strip;
+                const width = canvas.width;
+                const height = canvas.height;
+                const waveLift = phase.waveLift + phaseProgress * 0.12;
+
+                ribbons.forEach(ribbon => {
+                    ribbon.offset += ribbon.speed * deltaSeconds;
+
                     ctx.beginPath();
-                    ctx.arc(x, y, 3 + this.style.intensity * 5, 0, Math.PI * 2);
-                    ctx.stroke();
-                    
-                    // Connect to center
-                    ctx.beginPath();
-                    ctx.moveTo(centerX, centerY);
-                    ctx.lineTo(x, y);
-                    ctx.stroke();
-                }
-            }
-            
-            renderTesseract(ctx, width, height) {
-                const gridSize = this.style.gridDensity;
-                const cellWidth = width / gridSize;
-                const cellHeight = height / gridSize;
-                
-                for (let x = 0; x < gridSize; x++) {
-                    for (let y = 0; y < gridSize; y++) {
-                        const intensity = Math.sin(x * 0.1 + this.time) * Math.cos(y * 0.1 + this.time);
-                        const hue = (this.style.colorShift + intensity * 60) % 360;
-                        
-                        ctx.fillStyle = `hsla(${hue}, 70%, ${50 + intensity * 30}%, ${this.style.intensity})`;
-                        ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth - 1, cellHeight - 1);
-                    }
-                }
-            }
-            
-            renderHolographicWaves(ctx, width, height) {
-                const waveCount = this.style.gridDensity;
-                
-                for (let i = 0; i < waveCount; i++) {
-                    const y = (i / waveCount) * height;
-                    const hue = (this.style.colorShift + i * 30) % 360;
-                    
-                    ctx.strokeStyle = `hsla(${hue}, 90%, 60%, ${this.style.intensity})`;
-                    ctx.lineWidth = 2 + this.style.intensity * 3;
-                    
-                    ctx.beginPath();
-                    for (let x = 0; x < width; x += 2) {
-                        const wave = Math.sin(x * 0.01 + this.time + i) * 20 * this.style.morphFactor;
-                        if (x === 0) {
-                            ctx.moveTo(x, y + wave);
+                    const segments = 140;
+                    for (let i = 0; i <= segments; i++) {
+                        const t = i / segments;
+                        const x = t * width;
+                        const noise = this.sampleNoise(noiseField, (t * 32) + ribbon.offset * 0.5 + stripIndex * 12);
+                        const y = ribbon.baseline + Math.sin(t * Math.PI * 2 + ribbon.offset) * ribbon.amplitude * waveLift + (noise - 0.5) * ribbon.amplitude * phase.noiseInfluence;
+                        const intensity = 0.32 + Math.pow(Math.sin((t + phaseProgress) * Math.PI), 3) * 0.68;
+
+                        const color = this.shiftColor(ribbon.color, ribbon.hueShift + phaseProgress * Math.PI * 2);
+                        ctx.strokeStyle = this.mixColor(color, intensity);
+                        ctx.lineWidth = ribbon.width * (0.2 + intensity * 0.8);
+
+                        if (i === 0) {
+                            ctx.moveTo(x, y);
                         } else {
-                            ctx.lineTo(x, y + wave);
+                            ctx.lineTo(x, y);
                         }
                     }
+
                     ctx.stroke();
-                }
+                });
             }
-            
-            renderDigitalRain(ctx, width, height) {
-                ctx.fillStyle = `rgba(0, 255, 0, ${this.style.intensity})`;
-                ctx.font = `${8 + this.style.gridDensity}px monospace`;
-                
-                const chars = '01アイウエオカキクケコサシスセソ';
-                const columns = Math.floor(width / (8 + this.style.gridDensity));
-                
-                for (let i = 0; i < columns; i++) {
-                    const char = chars[Math.floor(Math.random() * chars.length)];
-                    const x = i * (8 + this.style.gridDensity);
-                    const y = (this.time * 100 * this.style.rotationSpeed + i * 20) % height;
-                    
-                    ctx.fillText(char, x, y);
-                }
-            }
-            
-            renderNebula(ctx, width, height) {
-                const centerX = width / 2;
-                const centerY = height / 2;
-                
-                for (let i = 0; i < this.style.gridDensity * 5; i++) {
-                    const angle = (i / (this.style.gridDensity * 5)) * Math.PI * 2 + this.time;
-                    const radius = 50 + i * 2;
-                    const x = centerX + Math.cos(angle) * radius * this.style.morphFactor;
-                    const y = centerY + Math.sin(angle) * radius * 0.5;
-                    
-                    const hue = (this.style.colorShift + angle * 57.3) % 360;
-                    const gradient = ctx.createRadialGradient(x, y, 0, x, y, 20);
-                    gradient.addColorStop(0, `hsla(${hue}, 80%, 60%, ${this.style.intensity})`);
-                    gradient.addColorStop(1, 'transparent');
-                    
+
+            drawNodes(strip, ctx, phase, deltaSeconds, phaseProgress, stripIndex) {
+                const { canvas, nodes, noiseField } = strip;
+                nodes.forEach(node => {
+                    node.x += node.vx * (1 + phaseProgress * 1.4);
+                    node.y += node.vy * (1 + phaseProgress * 1.4);
+
+                    const drift = this.sampleNoise(noiseField, (node.x + node.y) * 0.04 + phaseProgress * 32);
+                    node.x += (drift - 0.5) * 0.9;
+                    node.y += (0.5 - drift) * 0.9;
+
+                    if (node.x < -20) node.x = canvas.width + 20;
+                    if (node.x > canvas.width + 20) node.x = -20;
+                    if (node.y < -20) node.y = canvas.height + 20;
+                    if (node.y > canvas.height + 20) node.y = -20;
+
+                    node.energy += deltaSeconds * (0.4 + phase.pulseStrength * 0.4);
+                    if (node.energy > 1) node.energy -= 1;
+
+                    const color = this.shiftColor(node.color, node.hueShift + phaseProgress * 6.28 + node.energy * 0.8);
+                    const glow = 0.35 + Math.sin(node.energy * Math.PI * 2) * 0.5;
+
+                    ctx.beginPath();
+                    const radius = node.radius * (1.3 + glow * 1.8);
+                    const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, radius * 2.6);
+                    gradient.addColorStop(0, this.mixColor(color, 0.8));
+                    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
                     ctx.fillStyle = gradient;
-                    ctx.beginPath();
-                    ctx.arc(x, y, 20, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-            
-            renderDefault(ctx, width, height) {
-                // Generic particle system
-                this.particles.forEach(particle => {
-                    const hue = (particle.hue + this.style.colorShift) % 360;
-                    ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${this.style.intensity})`;
-                    ctx.beginPath();
-                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    ctx.arc(node.x, node.y, radius * 2.6, 0, Math.PI * 2);
                     ctx.fill();
                 });
-            }
-            
-            updateParticles() {
-                this.particles.forEach(particle => {
-                    particle.x += particle.vx * this.style.rotationSpeed;
-                    particle.y += particle.vy * this.style.rotationSpeed;
-                    
-                    // Wrap around edges
-                    if (particle.x < 0) particle.x = this.canvas.width;
-                    if (particle.x > this.canvas.width) particle.x = 0;
-                    if (particle.y < 0) particle.y = this.canvas.height;
-                    if (particle.y > this.canvas.height) particle.y = 0;
-                    
-                    // Add some chaos
-                    if (Math.random() < this.style.glitchLevel * 0.01) {
-                        particle.vx += (Math.random() - 0.5) * 0.5;
-                        particle.vy += (Math.random() - 0.5) * 0.5;
+
+                for (let i = 0; i < nodes.length; i++) {
+                    const a = nodes[i];
+                    for (let j = i + 1; j < Math.min(i + 12, nodes.length); j++) {
+                        const b = nodes[(j + stripIndex) % nodes.length];
+                        const dx = b.x - a.x;
+                        const dy = b.y - a.y;
+                        const dist = Math.hypot(dx, dy);
+                        if (dist < 180) {
+                            const alpha = (1 - dist / 180) * 0.5;
+                            ctx.strokeStyle = this.mixColor(this.shiftColor(a.color, phaseProgress * 2), alpha);
+                            ctx.lineWidth = 1.1 + alpha * 2;
+                            ctx.beginPath();
+                            ctx.moveTo(a.x, a.y);
+                            ctx.lineTo(b.x, b.y);
+                            ctx.stroke();
+                        }
                     }
+                }
+            }
+
+            drawPulses(strip, ctx, phase, deltaSeconds) {
+                strip.pulses.forEach(pulse => {
+                    pulse.life += deltaSeconds;
+                    pulse.radius += pulse.growth * 26 * deltaSeconds * pulse.direction;
+
+                    if (pulse.life >= pulse.maxLife) {
+                        pulse.x = Math.random() * strip.canvas.width;
+                        pulse.y = Math.random() * strip.canvas.height;
+                        pulse.radius = 12 + Math.random() * 32;
+                        pulse.life = 0;
+                        pulse.maxLife = 1.3 + Math.random() * 1.6;
+                        pulse.direction = Math.random() > 0.5 ? 1 : -1;
+                        pulse.color = phase.palette[Math.floor(Math.random() * phase.palette.length)];
+                    }
+
+                    const alpha = 1 - pulse.life / pulse.maxLife;
+                    ctx.beginPath();
+                    ctx.strokeStyle = this.mixColor(pulse.color, 0.25 + alpha * phase.pulseStrength * 0.8);
+                    ctx.lineWidth = 1.6 + phase.pulseStrength * 1.8;
+                    ctx.arc(pulse.x, pulse.y, Math.abs(pulse.radius), 0, Math.PI * 2);
+                    ctx.stroke();
                 });
             }
-            
-            getStyle() {
-                return { ...this.style };
-            }
-            
-            applyStyle(newStyle) {
-                this.style = { ...this.style, ...newStyle };
-                
-                // Re-initialize particles if grid density changed significantly
-                if (Math.abs(newStyle.gridDensity - this.style.gridDensity) > 5) {
-                    this.initParticles();
+
+            injectDust(ctx, canvas, phase, stripIndex, phaseProgress) {
+                const dustCount = 28;
+                for (let i = 0; i < dustCount; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const alpha = (0.18 + Math.random() * 0.2) * (1 + Math.sin((phaseProgress + stripIndex * 0.07) * Math.PI * 2) * 0.5);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                    ctx.fillRect(x, y, 1, 1);
                 }
+            }
+
+            shiftColor(hex, shift) {
+                const rgb = this.hexToRgb(hex);
+                const hsv = this.rgbToHsv(rgb.r, rgb.g, rgb.b);
+                hsv.h = (hsv.h + shift / (Math.PI * 2)) % 1;
+                const { r, g, b } = this.hsvToRgb(hsv.h, hsv.s, hsv.v);
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+
+            mixColor(color, alpha) {
+                const matches = color.match(/rgb\((\d+), (\d+), (\d+)\)/);
+                if (!matches) return `rgba(255, 255, 255, ${Math.min(alpha, 1)})`;
+                const [, r, g, b] = matches.map(Number);
+                return `rgba(${r}, ${g}, ${b}, ${Math.min(alpha, 1)})`;
+            }
+
+            hexToRgb(hex) {
+                const normalized = hex.replace('#', '');
+                const bigint = parseInt(normalized, 16);
+                return {
+                    r: (bigint >> 16) & 255,
+                    g: (bigint >> 8) & 255,
+                    b: bigint & 255
+                };
+            }
+
+            rgbToHsv(r, g, b) {
+                r /= 255;
+                g /= 255;
+                b /= 255;
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                const d = max - min;
+                const v = max;
+                const s = max === 0 ? 0 : d / max;
+                let h;
+                if (max === min) {
+                    h = 0;
+                } else {
+                    switch (max) {
+                        case r:
+                            h = (g - b) / d + (g < b ? 6 : 0);
+                            break;
+                        case g:
+                            h = (b - r) / d + 2;
+                            break;
+                        case b:
+                            h = (r - g) / d + 4;
+                            break;
+                    }
+                    h /= 6;
+                }
+                return { h, s, v };
+            }
+
+            hsvToRgb(h, s, v) {
+                let r, g, b;
+                const i = Math.floor(h * 6);
+                const f = h * 6 - i;
+                const p = v * (1 - s);
+                const q = v * (1 - f * s);
+                const t = v * (1 - (1 - f) * s);
+
+                switch (i % 6) {
+                    case 0:
+                        r = v; g = t; b = p;
+                        break;
+                    case 1:
+                        r = q; g = v; b = p;
+                        break;
+                    case 2:
+                        r = p; g = v; b = t;
+                        break;
+                    case 3:
+                        r = p; g = q; b = v;
+                        break;
+                    case 4:
+                        r = t; g = p; b = v;
+                        break;
+                    case 5:
+                        r = v; g = p; b = q;
+                        break;
+                }
+
+                return {
+                    r: Math.round(r * 255),
+                    g: Math.round(g * 255),
+                    b: Math.round(b * 255)
+                };
             }
         }
-        
-        // Initialize the system
-        document.addEventListener('DOMContentLoaded', () => {
-            const system = new MultiCanvasVisualizerSystem();
-            window.visualizerSystem = system;
-        });
+
+        window.addEventListener('DOMContentLoaded', () => new MultiCanvasConductor());
     </script>
 </body>
 </html>

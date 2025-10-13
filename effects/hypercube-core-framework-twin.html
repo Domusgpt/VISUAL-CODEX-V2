@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hypercube Core Framework – Rift Twin</title>
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: radial-gradient(circle at 48% 42%, #0a0113 0%, #05000a 40%, #010006 100%);
+            font-family: "JetBrains Mono", "Fira Code", monospace;
+        }
+        canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+        .rift-veil {
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 30% 20%, rgba(255, 106, 0, 0.12), transparent 45%),
+                radial-gradient(circle at 74% 26%, rgba(180, 0, 255, 0.1), transparent 48%),
+                radial-gradient(circle at 68% 74%, rgba(255, 0, 128, 0.12), transparent 40%),
+                radial-gradient(circle at 18% 80%, rgba(255, 214, 0, 0.08), transparent 46%);
+            pointer-events: none;
+            mix-blend-mode: screen;
+            filter: saturate(140%);
+        }
+    </style>
+</head>
+<body>
+    <div class="rift-veil"></div>
+    <canvas id="riftCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('riftCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const TAU = Math.PI * 2;
+        const baseVertices = [];
+        for (let x = -1; x <= 1; x += 2) {
+            for (let y = -1; y <= 1; y += 2) {
+                for (let z = -1; z <= 1; z += 2) {
+                    for (let w = -1; w <= 1; w += 2) {
+                        baseVertices.push([x, y, z, w]);
+                    }
+                }
+            }
+        }
+
+        const edges = [];
+        for (let i = 0; i < baseVertices.length; i++) {
+            for (let j = i + 1; j < baseVertices.length; j++) {
+                const a = baseVertices[i];
+                const b = baseVertices[j];
+                let diff = 0;
+                for (let k = 0; k < 4; k++) {
+                    if (a[k] !== b[k]) diff++;
+                }
+                if (diff === 1) {
+                    edges.push([i, j]);
+                }
+            }
+        }
+
+        const rotations = ['xy', 'xz', 'xw', 'yz', 'yw', 'zw'];
+
+        const scenes = [
+            {
+                name: 'ember-rift',
+                scale: 210,
+                rotation: { xy: 0.19, xz: 0.27, xw: 0.16, yz: 0.12, yw: 0.23, zw: 0.18 },
+                displacement: 0.38,
+                warp: 0.44,
+                palette: ['#ff5f40', '#ff2d55', '#ffb341'],
+                halo: ['#ff8640', '#ffa600'],
+                fracture: 0.32,
+                surge: 1.1
+            },
+            {
+                name: 'lattice-collapse',
+                scale: 180,
+                rotation: { xy: 0.14, xz: 0.21, xw: 0.29, yz: 0.34, yw: 0.17, zw: 0.25 },
+                displacement: 0.58,
+                warp: 0.62,
+                palette: ['#f0e6ff', '#9d6bff', '#ff4df0'],
+                halo: ['#bfb3ff', '#ff93ff'],
+                fracture: 0.48,
+                surge: 0.9
+            },
+            {
+                name: 'umbra-rain',
+                scale: 230,
+                rotation: { xy: 0.33, xz: 0.18, xw: 0.11, yz: 0.28, yw: 0.22, zw: 0.15 },
+                displacement: 0.27,
+                warp: 0.51,
+                palette: ['#ffd35f', '#ff6a3d', '#ff00a6'],
+                halo: ['#fff07e', '#ff5fca'],
+                fracture: 0.56,
+                surge: 1.6
+            }
+        ];
+
+        function rotate4D(point, angle, plane) {
+            const [aAxis, bAxis] = plane.split('').map(axis => ({ x:0, y:1, z:2, w:3 })[axis]);
+            const sin = Math.sin(angle);
+            const cos = Math.cos(angle);
+            const a = point[aAxis];
+            const b = point[bAxis];
+            point[aAxis] = a * cos - b * sin;
+            point[bAxis] = a * sin + b * cos;
+        }
+
+        const projected = new Array(baseVertices.length).fill(null).map(() => ({ x: 0, y: 0, z: 0, depth: 0 }));
+
+        function project(point, scene, t, index) {
+            const shear = scene.displacement;
+            const fracture = scene.fracture;
+            const wobble = Math.sin(t * 0.0011 + index * 0.8) * fracture;
+            const mutated = point.slice();
+            mutated[0] += mutated[3] * shear * 0.6;
+            mutated[1] += mutated[2] * shear * 0.4;
+            mutated[2] += Math.sin(mutated[3] + wobble) * shear * 0.3;
+            const depth = scene.warp;
+            const denom4d = 3.1 - mutated[3] * depth;
+            const scale4d = 1 / Math.max(0.25, denom4d);
+            const x3 = mutated[0] * scale4d;
+            const y3 = mutated[1] * scale4d;
+            const z3 = mutated[2] * scale4d;
+            const denom3d = 1.8 - z3 * 0.62;
+            const scale3d = scene.scale / Math.max(0.3, denom3d);
+            return {
+                x: x3 * scale3d,
+                y: y3 * scale3d,
+                z: z3,
+                depth: denom4d
+            };
+        }
+
+        class RiftShardField {
+            constructor(count) {
+                this.count = count;
+                this.shards = new Array(count).fill(null).map(() => this.spawn());
+            }
+
+            spawn() {
+                return {
+                    edge: edges[Math.floor(Math.random() * edges.length)],
+                    offset: Math.random(),
+                    drift: 0.4 + Math.random() * 0.6,
+                    twist: Math.random() * TAU,
+                    span: 12 + Math.random() * 46,
+                    thickness: 0.4 + Math.random() * 0.8,
+                    life: 0.6 + Math.random() * 0.8,
+                    age: 0,
+                    colorIndex: Math.floor(Math.random() * 3)
+                };
+            }
+
+            update(dt, scene) {
+                for (let i = 0; i < this.shards.length; i++) {
+                    const shard = this.shards[i];
+                    shard.age += dt * scene.surge;
+                    shard.offset += dt * shard.drift * 0.35;
+                    shard.twist += dt * 1.4;
+                    if (shard.age > shard.life) {
+                        this.shards[i] = this.spawn();
+                    }
+                }
+            }
+
+            draw(ctx, scene) {
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                for (const shard of this.shards) {
+                    const [aIndex, bIndex] = shard.edge;
+                    const a = projected[aIndex];
+                    const b = projected[bIndex];
+                    const x = a.x + (b.x - a.x) * shard.offset;
+                    const y = a.y + (b.y - a.y) * shard.offset;
+                    const normalX = -(b.y - a.y);
+                    const normalY = (b.x - a.x);
+                    const len = Math.hypot(normalX, normalY) || 1;
+                    const nx = normalX / len;
+                    const ny = normalY / len;
+                    const span = shard.span * (1 - Math.abs(0.5 - shard.offset) * 1.4);
+                    const alpha = 0.12 + 0.18 * Math.sin(shard.age / shard.life * Math.PI);
+                    const paletteColor = scene.palette[shard.colorIndex % scene.palette.length];
+                    ctx.fillStyle = paletteColor + '33';
+                    ctx.strokeStyle = paletteColor + 'cc';
+                    ctx.lineWidth = shard.thickness * 2.2;
+                    ctx.globalAlpha = alpha;
+                    ctx.beginPath();
+                    ctx.moveTo(x - nx * span, y - ny * span);
+                    ctx.lineTo(x + nx * span * 0.35, y + ny * span * 0.35);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+        }
+
+        class RiftTendrils {
+            constructor(count) {
+                this.count = count;
+                this.tendrils = new Array(count).fill(null).map(() => this.spawn());
+            }
+
+            spawn() {
+                return {
+                    index: Math.floor(Math.random() * projected.length),
+                    sway: Math.random() * TAU,
+                    radius: 60 + Math.random() * 180,
+                    thickness: 0.8 + Math.random() * 1.4,
+                    speed: 0.4 + Math.random() * 0.7,
+                    life: 1.4 + Math.random() * 0.9,
+                    age: 0,
+                    colorIndex: Math.floor(Math.random() * 4)
+                };
+            }
+
+            update(dt, scene) {
+                for (let i = 0; i < this.tendrils.length; i++) {
+                    const tendril = this.tendrils[i];
+                    tendril.age += dt * scene.surge;
+                    tendril.sway += dt * tendril.speed * 1.6;
+                    if (tendril.age > tendril.life) {
+                        this.tendrils[i] = this.spawn();
+                    }
+                }
+            }
+
+            draw(ctx, scene, centerX, centerY) {
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                for (const tendril of this.tendrils) {
+                    const node = projected[tendril.index];
+                    const t = tendril.age / tendril.life;
+                    const anchorX = centerX + Math.cos(tendril.sway) * tendril.radius * (0.6 + t);
+                    const anchorY = centerY + Math.sin(tendril.sway) * tendril.radius * (0.6 + t);
+                    const gradient = ctx.createLinearGradient(centerX, centerY, node.x, node.y);
+                    const halo = scene.halo[tendril.colorIndex % scene.halo.length];
+                    gradient.addColorStop(0, halo + '00');
+                    gradient.addColorStop(0.4, halo + 'aa');
+                    gradient.addColorStop(1, scene.palette[tendril.colorIndex % scene.palette.length] + 'ff');
+                    ctx.strokeStyle = gradient;
+                    ctx.globalAlpha = 0.18 + 0.34 * (1 - t);
+                    ctx.lineWidth = tendril.thickness * (1 - t * 0.7);
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.quadraticCurveTo(anchorX, anchorY, node.x, node.y);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+        }
+
+        class SceneDirector {
+            constructor() {
+                this.index = 0;
+                this.scene = scenes[0];
+                this.lastSwitch = performance.now();
+                this.duration = 15000;
+            }
+
+            update(time) {
+                if (time - this.lastSwitch > this.duration) {
+                    this.index = (this.index + 1) % scenes.length;
+                    this.scene = scenes[this.index];
+                    this.lastSwitch = time;
+                }
+                return this.scene;
+            }
+        }
+
+        const director = new SceneDirector();
+        const shardField = new RiftShardField(72);
+        const tendrils = new RiftTendrils(40);
+
+        function resize() {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.floor(window.innerWidth * dpr);
+            canvas.height = Math.floor(window.innerHeight * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        let lastTime = performance.now();
+
+        function render(now) {
+            const dt = Math.min(1 / 12, (now - lastTime) / 1000);
+            lastTime = now;
+
+            const scene = director.update(now);
+            shardField.update(dt, scene);
+            tendrils.update(dt, scene);
+
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = 'rgba(3, 0, 8, 0.24)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            for (let i = 0; i < baseVertices.length; i++) {
+                const point = baseVertices[i].slice();
+                for (const plane of rotations) {
+                    const speed = scene.rotation[plane] || 0;
+                    rotate4D(point, now * 0.00056 * speed + i * 0.04, plane);
+                }
+                const projectedPoint = project(point, scene, now, i);
+                projected[i].x = centerX + projectedPoint.x;
+                projected[i].y = centerY + projectedPoint.y;
+                projected[i].z = projectedPoint.z;
+                projected[i].depth = projectedPoint.depth;
+            }
+
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            for (const [aIndex, bIndex] of edges) {
+                const a = projected[aIndex];
+                const b = projected[bIndex];
+                const gradient = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+                gradient.addColorStop(0, scene.palette[0] + '55');
+                gradient.addColorStop(0.5, scene.palette[1] + 'aa');
+                gradient.addColorStop(1, scene.palette[2] + '55');
+                ctx.strokeStyle = gradient;
+                const depthFade = 0.18 + 0.7 / (1 + Math.abs(a.z) + Math.abs(b.z));
+                ctx.globalAlpha = depthFade;
+                ctx.lineWidth = 1.6;
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(b.x, b.y);
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            shardField.draw(ctx, scene);
+            tendrils.draw(ctx, scene, centerX, centerY);
+
+            ctx.save();
+            ctx.globalCompositeOperation = 'screen';
+            for (let i = 0; i < projected.length; i++) {
+                const node = projected[i];
+                const radius = 4.6 + Math.sin(now * 0.001 + i * 0.6) * 2.4;
+                const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, radius * 4.6);
+                gradient.addColorStop(0, scene.palette[(i + 1) % scene.palette.length] + 'ff');
+                gradient.addColorStop(0.5, scene.halo[(i + 2) % scene.halo.length] + '88');
+                gradient.addColorStop(1, scene.palette[(i + 2) % scene.palette.length] + '00');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, radius, 0, TAU);
+                ctx.fill();
+            }
+            ctx.restore();
+
+            requestAnimationFrame(render);
+        }
+
+        requestAnimationFrame(render);
+    </script>
+</body>
+</html>
