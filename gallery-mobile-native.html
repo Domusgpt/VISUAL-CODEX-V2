@@ -1052,5 +1052,16 @@
         
         console.log('📱 Visual Codex Mobile-Native Gallery - System Ready');
     </script>
+    <script src="js/phase45-dev-tools.js"></script>
+    <script>
+        window.Phase45DevConsole?.registerExperience({
+            id: 'gallery-mobile-native',
+            name: 'Visual Codex Mobile-Native Gallery',
+            phase: 5,
+            entry: 27,
+            modules: ['MobileVisualCodex', 'GestureDirector', 'AdaptiveStateRouter'],
+            features: ['Touch-native navigation grid', 'Ambient polytopal background loop', 'PWA readiness instrumentation']
+        });
+    </script>
 </body>
 </html>

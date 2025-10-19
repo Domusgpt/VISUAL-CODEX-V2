@@ -111,5 +111,16 @@
         <p>I can create a version that uses embedded Canvas/CSS animations instead of iframes for preview.</p>
         <p>This would work without a server but show simpler preview animations.</p>
     </div>
+    <script src="js/phase45-dev-tools.js"></script>
+    <script>
+        window.Phase45DevConsole?.registerExperience({
+            id: 'gallery-server',
+            name: 'Visual Codex Gallery Server Sentinel',
+            phase: 4,
+            entry: 25,
+            modules: ['ManifestValidator', 'AssetInventory', 'DiagnosticsPanel'],
+            features: ['Server readiness checklist', 'Telemetry compliance callouts', 'Offline fallback guidance']
+        });
+    </script>
 </body>
 </html>
