@@ -6,52 +6,129 @@ This manifest provides a quick reference for all cataloged visual components, th
 
 ---
 
+## Expansion Phases
+
+To double the registry while maintaining clarity, the catalog is expanded in five deliberate phases:
+
+1. **Phase 1 – HyperAV Foundations (Entries 1–5):** Original core rendering engines and style packs that define the Visual Codex baseline.
+2. **Phase 2 – Advanced Dynamics (Entries 6–10):** High-fidelity motion systems and choreography layers that deepen the interactive vocabulary.
+3. **Phase 3 – Orchestration & Frameworks (Entries 11–18):** Control infrastructure, context management, and mathematical toolkits that power the ecosystem.
+4. **Phase 4 – Immersive Gallery Experiences (Entries 19–26):** New dimensional gallery shells showcasing distinct navigation paradigms and portal metaphors.
+5. **Phase 5 – Mobile, QA & Operations (Entries 27–34):** Touch-native builds, automated validation suites, and operational tooling that keep the codex production-ready.
+
+---
+
 ## Cataloged Components
 
 ### 1. VIB3CODE - Reactive HyperAV Core
 - **Source**: vib3code-reactive-core.html
-- **Dependencies**: None (vanilla JS)
+- **Dependencies**: Vanilla JavaScript, `<canvas>` 2D context, optional Web Audio API hook
+- **Core Modules**:
+  - `HyperAvEngine`: Boots render loop, orchestrates geometry updates, and maintains FPS targets.
+  - `AudioReactiveController`: Binds microphone/track input, normalizes amplitudes, and exposes beat events.
+  - `ThemePalette`: Derives chroma shifts, bloom intensity, and holographic overlays from codex-wide tokens.
 - **Key Parameters**:
-  - `HYPERCUBE_VERTICES`: 16 vertices for 4D structure
-  - `ROTATION_SPEED`: 0.001 base rotation
-  - `REACTIVE_THRESHOLD`: 0.5 for audio reactivity
-- **Primary Use**: Real-time 4D visualization with audio reactivity
+  - `HYPERCUBE_VERTICES` (16): Defines the 4D structure before projection collapse.
+  - `ROTATION_SPEED` (0.001–0.008): Six-axis spin rate blended with beat timing.
+  - `REACTIVE_THRESHOLD` (0.35–0.65): Energy gating for triggering full spectral shifts.
+  - `AUDIO_DAMPING` (0.2): Prevents abrupt geometry snapping during quiet passages.
+- **Feature Highlights**:
+  - Hybrid Canvas/WebGL pipeline with graceful fallback for low-power devices.
+  - Built-in performance telemetry overlay with target FPS and delta-time readings.
+  - Palette inheritance ensures visual continuity with downstream codex shells.
+- **Integration Considerations**:
+  - Exposes `window.VIB3CODE.init(container, options)` bootstrap entry.
+  - Accepts JSON patch files for parameter overrides without editing source.
+  - Ships accessibility banner describing audio-reactive behavior for compliance reviews.
+- **Primary Use**: Hero module powering real-time 4D visualizations that respond fluidly to ambient or curated audio feeds.
 
 ### 2. Enhanced Vaporwave System
 - **Source**: enhanced-vaporwave-system/
-- **Dependencies**: CSS3 animations, SVG filters
+- **Dependencies**: CSS Custom Properties, CSS3 keyframes, SVG filters, optional Web Fonts
+- **Core Modules**:
+  - `neon-grid.css`: Defines grid backdrops, scanline overlays, and CRT curvature simulations.
+  - `vaporwave-panels.js`: Generates hero copy cards, glitch dividers, and timed entrance animations.
+  - `palette-tuner.json`: Houses sixteen curated palettes mapped to tokyo, miami, and midnight variants.
 - **Key Parameters**:
-  - `--vaporwave-primary`: #ff00ff
-  - `--vaporwave-secondary`: #00ffff
-  - `animation-duration`: 2s-10s range
-- **Primary Use**: Retro-futuristic UI aesthetics
+  - `--vaporwave-primary` / `--vaporwave-secondary`: Neon duo-tone anchor hues.
+  - `--ambient-noise-opacity` (0.05–0.12): VHS grain density controlling visual noise.
+  - `animation-duration` (2s–10s): Tempo slider for lane parallax and floating icon loops.
+  - `scanline-tilt` (0deg–6deg): CRT distortion intensity for retro authenticity.
+- **Feature Highlights**:
+  - Offers both "Arcade" (high energy) and "Cassette" (lo-fi) layout presets via body data attributes.
+  - Includes keyboard-navigable carousel that mirrors pointer interactions for accessibility compliance.
+  - Integrates cameo slots for WebGL canvases, ensuring smooth blend between CSS shell and 3D showcases.
+- **Integration Considerations**:
+  - Delivered as drop-in `/css` and `/js` bundles with documented import order.
+  - Supports theming through CSS variables and optional JSON tokens read by `vaporwave-panels.js`.
+  - Ships with `aria-live="polite"` announcements when scenes swap to guide screen reader users.
+- **Primary Use**: Signature retro-futuristic UI kit establishing the codex’s tone for marketing pages, launchers, and event microsites.
 
 ### 3. Dynamic Layout System
 - **Source**: dynamic-layout-system/
-- **Dependencies**: CSS Grid, Intersection Observer API
+- **Dependencies**: CSS Grid, Intersection Observer API, Resize Observer, Vanilla JS utilities
+- **Core Modules**:
+  - `layout-engine.js`: Calculates breakpoints, density targets, and orchestrates section reveals.
+  - `motion-timeline.css`: Houses shared easing curves and keyframes for enter/exit choreography.
+  - `data/portal-map.json`: Declarative mapping of cards, categories, and pinned callouts.
 - **Key Parameters**:
-  - `grid-template-columns`: auto-responsive
-  - `transition-duration`: 0.6s
-  - `scroll-threshold`: 0.5
-- **Primary Use**: Adaptive content layouts with smooth transitions
+  - `grid-template-columns`: Auto-responsive with density goals for XS/S/M/L breakpoints.
+  - `transition-duration` (0.45s–0.75s): Controls card fade/scale interplay.
+  - `scroll-threshold` (0.35–0.65): Intersection ratio required before a portal locks into the narrative.
+  - `layoutMode`: `"gallery"`, `"timeline"`, or `"magazine"` for alternative card compositions.
+- **Feature Highlights**:
+  - Multi-column to single-column morphing with preserved focus order for keyboard navigation.
+  - Intelligent lazy loading pipeline that batches fetches by section to avoid network spikes.
+  - Deep-linking with hash state replay, ensuring users can bookmark specific cards.
+- **Integration Considerations**:
+  - Accepts JSON configuration; update `portal-map.json` to curate new experiences without touching markup.
+  - Emits custom events (`layout:sectionEnter`, `layout:sectionLeave`) consumed by orchestration engines later in the codex.
+  - Provides SCSS mixins for aligning bespoke components with default spacing scale.
+- **Primary Use**: Adaptive content lattice delivering smooth transitions and narrative cohesion across desktop, tablet, and mobile contexts.
 
 ### 4. Neoskeuomorphic Holographic UI Kit
 - **Source**: neoskeuomorphic-holographic-ui/
-- **Dependencies**: CSS custom properties, backdrop-filter
+- **Dependencies**: CSS Custom Properties, `backdrop-filter`, Houdini Paint API (optional), Vanilla JS helpers
+- **Core Modules**:
+  - `holo-elements.css`: Defines card frames, rotary knobs, glass buttons, and depth shadows.
+  - `gloss-controller.js`: Applies light direction, reflection speed, and reactive shimmer to interactive elements.
+  - `holo-token-map.json`: Tokenizes radius, blur, and glow values for consistent scaling across breakpoints.
 - **Key Parameters**:
-  - `--holographic-angle`: 45deg
-  - `--depth-shadow`: multi-layer box-shadow
-  - `--glass-blur`: 10px
-- **Primary Use**: Modern skeuomorphic UI elements
+  - `--holographic-angle` (30deg–60deg): Determines the prismatic gradient sweep.
+  - `--depth-shadow`: Multi-layer box-shadow stack customizing perceived depth.
+  - `--glass-blur` (6px–18px): Controls translucency and readability within glass panes.
+  - `--accent-spectrum`: Array of neon stops to dial color richness.
+- **Feature Highlights**:
+  - Accessible focus rings tuned to stand out against glass surfaces without breaking aesthetic.
+  - Optional Houdini paint module generates micro-texture for ultra high-end renders.
+  - Includes Figma token export to synchronize design tooling with production values.
+- **Integration Considerations**:
+  - Provide semantic HTML structures; kit enhances rather than replaces markup semantics.
+  - Use the supplied `prefers-reduced-transparency` query to fall back to solid backgrounds for sensitive users.
+  - Pair with `gloss-controller.js` in orchestration mode to sync lighting with scene context.
+- **Primary Use**: Premium skeuomorphic interface kit delivering tactile, holographic controls for dashboards and launch surfaces.
 
-### 5. Moire 4D Polytopal Visualizer
+### 5. Moiré 4D Polytopal Visualizer
 - **Source**: moire-hypercube-pattern/
-- **Dependencies**: Canvas API, WebGL optional
+- **Dependencies**: Canvas API (primary), WebGL optional for extended shader set, Web Workers for heavy math offload
+- **Core Modules**:
+  - `PolytopalGenerator`: Produces vertex/edge lists for hypercubes, prisms, and custom polytopes.
+  - `MoireInterferenceEngine`: Calculates layered grid collisions and chromatic offsets per frame.
+  - `RenderDirector`: Chooses Canvas vs. WebGL pipeline based on device performance heuristics.
 - **Key Parameters**:
-  - `DIMENSION`: 4
-  - `PROJECTION_DISTANCE`: 2
-  - `MOIRE_SCALE`: 2
-- **Primary Use**: Mathematical visualization with interference patterns
+  - `DIMENSION` (4–6): Governs source polytope before projection to 3D space.
+  - `PROJECTION_DISTANCE` (1.5–3.0): Alters perspective depth, balancing clarity and intensity.
+  - `MOIRE_SCALE` (1.5–2.5): Adjusts interference density for different display resolutions.
+  - `OSCILLATION_RATE` (0.25–1.75): Synchronizes pattern breathing with ambient audio or manual controls.
+- **Feature Highlights**:
+  - Supports deterministic seed loading, enabling art directors to reproduce exact pattern states.
+  - Web Worker mode maintains >55 FPS even during deep interference sequences.
+  - Ships with print/export helper to capture stills at poster-grade resolutions.
+- **Integration Considerations**:
+  - Provide container element with explicit width/height for best projection fidelity.
+  - Register optional `onStateChange` callback to coordinate color palette swaps with surrounding UI.
+  - Combine with `AudioReactiveController` from Entry 1 for unified beat syncing across experiences.
+- **Primary Use**: Precision mathematical visualizer delivering mesmerizing interference patterns suitable for hero sections, ambient displays, and performance art installations.
 
 ---
 
@@ -224,7 +301,7 @@ This manifest provides a quick reference for all cataloged visual components, th
   - Chromatic aberration: Wavelength-based color refraction simulation
 - **Primary Use**: Advanced visual effects combining mathematical precision with artistic color interference patterns
 
-### 16. HypercubeCore WebGL Framework
+### 17. HypercubeCore WebGL Framework
 - **Source**: Desktop/629claude/core/HypercubeCore.js + ShaderManager.js + GeometryManager.js + ProjectionManager.js
 - **Documentation**: hypercube_core_webgl_system.md
 - **Dependencies**: WebGL 1.0+, high-precision shaders, advanced 4D mathematics
@@ -254,7 +331,7 @@ This manifest provides a quick reference for all cataloged visual components, th
   - Complex 6-axis 4D rotation matrices
 - **Primary Use**: High-performance, mathematically-accurate 4D visualization framework with dynamic shader management
 
-### 17. Advanced Mathematical Geometry Systems
+### 18. Advanced Mathematical Geometry Systems
 - **Source**: Desktop/629claude/CrystalGeometry.js + HypersphereGeometry.js + InsaneGeometry.js
 - **Dependencies**: WebGL, advanced mathematical computations, parametric equations
 - **CrystalGeometry Features**:
@@ -275,6 +352,166 @@ This manifest provides a quick reference for all cataloged visual components, th
   - Hyperspace flow fields with multi-layer turbulence
   - Reality-bending post-processing with time-warp effects
 - **Primary Use**: Cutting-edge mathematical visualization with mind-bending 4D+ effects and scientific accuracy
+
+### 19. Visual Codex Parallax Scroll System
+- **Source**: gallery-parallax-system.html
+- **Dependencies**: WebGL background shaders, CSS Grid, Intersection Observer, vanilla JavaScript
+- **Key Features**:
+  - Fixed floating-card lattice synced to 700vh scroll distance with seven thematic sections
+  - `HolographicBackgroundVisualizer` manager swaps WebGL canvases per section for seamless parallax ambience
+  - Chaos intensity meter, scroll indicator, and navigation dots provide live feedback on viewer progress
+  - Auto-generated portal cards with preview panels, tag chips, and data attributes for heavy WebGL demos
+- **Primary Use**: Cinematic desktop storytelling shell that choreographs deep background transitions with card showcases
+
+### 20. Visual Codex Tactile Scroll System
+- **Source**: gallery-tactile-scroll.html
+- **Dependencies**: Canvas background renderer, CSS Grid, pointer/touch listeners, vanilla JavaScript
+- **Key Features**:
+  - Chaos evolution meter and momentum indicator translate scroll velocity into staged content unlocks
+  - Seven dynamically generated card sets, each tuned to a chaos tier with curated WebGL/CSS demos
+  - Responsive grid morphs from 3×2 desktop layout to single-column mobile stack while preserving interaction cues
+  - Scroll and wheel listeners feed a `TactileScrollManager` that drives portal sequencing with smooth easing
+- **Primary Use**: Physically-inspired scroll narrative emphasizing momentum build-up and tactile affordances
+
+### 21. Visual Codex Crystal Wafer System
+- **Source**: gallery-crystal-wafer.html
+- **Dependencies**: CSS 3D transforms, Canvas particle overlays, vanilla JavaScript
+- **Key Features**:
+  - Hexagonal "crystal wafer" cards with reactive energy borders, depth shadows, and hover magnification
+  - Momentum and chaos meters track viewer input to trigger themed data sets spanning seven resonance states
+  - Auto-generated wafer content with inline metadata for both CSS showcase pieces and heavy WebGL frameworks
+  - Crystal container orchestrates 3D hover choreography that dims inactive wafers while spotlighting the active portal
+- **Primary Use**: High-polish presentation grid evoking semiconductor wafers for premium effect selection
+
+### 22. Visual Codex Treasure Hunt Experience
+- **Source**: gallery-treasure-experience.html
+- **Dependencies**: Canvas particle renderer, vanilla JavaScript easing utilities, pointer/touch events
+- **Key Features**:
+  - `TreasureHuntExperienceManager` spawns levitating treasure cards with holographic halos and auto-loading previews
+  - Scroll and touch gestures accumulate discovery momentum, triggering treasure break/reform sequences per section
+  - WebGL particle field simulates shimmering dust via `drawTreasureParticles` for persistent ambience
+  - Dynamic subtitle updates, treasure logs, and discovery console outputs document the exploration arc
+- **Primary Use**: Gamified gallery shell encouraging exploration through kinetic treasure metaphors
+
+### 23. Visual Codex Snap Scroll System
+- **Source**: gallery-snap-scroll.html
+- **Dependencies**: CSS scroll snapping, Canvas background animation, vanilla JavaScript
+- **Key Features**:
+  - Full-viewport snap container generates sections on demand, locking each showcase into centered focus
+  - Background canvas visualizer renders animated gradients while navigation dots mirror the current snap index
+  - Loading indicator and metadata overlay surface file names, tags, and descriptions per effect
+  - Keyboard and wheel listeners support deterministic section changes with consistent animation timing
+- **Primary Use**: Structured browsing experience that presents each effect as a discrete full-screen chapter
+
+### 24. Visual Codex Standalone Gallery Mode
+- **Source**: gallery-standalone.html
+- **Dependencies**: Canvas 2D preview renderer, CSS Grid, vanilla JavaScript
+- **Key Features**:
+  - Standalone launch banner instructs users on running a lightweight HTTP server for full effect loading
+  - `PreviewRenderer` class paints animated spark, particle, and scanline previews directly onto each card canvas
+  - Filter bar toggles category views (WebGL, CSS, Canvas, 4D, Particles) without reloading the grid
+  - Hover controls expose quick actions while maintaining glassmorphic neon theming optimized for desktop and tablet
+- **Primary Use**: Offline-friendly gallery index with live canvas previews replacing iframes
+
+### 25. Visual Codex Gallery Server Sentinel
+- **Source**: gallery-server.html
+- **Dependencies**: Static HTML/CSS, instructional content
+- **Key Features**:
+  - Diagnoses iframe cross-origin blocks and prescribes Python, Node, or VS Code Live Server remedies
+  - Verifies required directories/files (effects/, demos/) and surfaces their inventory counts for validation
+  - Highlights alternative iframe-free approach for constrained environments
+  - Styled command callouts streamline copy/paste server setup for less-technical reviewers
+- **Primary Use**: Operational landing page guiding users to run the gallery under a local web server
+
+### 26. Visual Codex Proper Fixed Layout System
+- **Source**: gallery-proper-system.html
+- **Dependencies**: CSS 3D transforms, Canvas background shaders, vanilla JavaScript
+- **Key Features**:
+  - Polished card lattice with 3D tilt, multi-layer shadows, and RGB afterimage trails tuned for desktop presentation
+  - Navigation matrix synchronizes section subtitles, polytopal visualizer parameters, and card data stores
+  - Enhanced load sequence logs initialization phases ("Visual Codex Proper 4D System") for debugging
+  - Balanced emphasis on performant layout, preserving scroll context while rotating through curated effects
+- **Primary Use**: Production-grade fixed layout shell for showcasing polytopal and holographic systems
+
+### 27. Visual Codex Mobile-Native Gallery
+- **Source**: gallery-mobile-native.html
+- **Dependencies**: Touch APIs, optional ZingTouch gestures, Intersection Observer, vanilla JavaScript
+- **Key Features**:
+  - `MobileVisualCodex` class performs device detection, performance profiling, and adaptive feature gating
+  - Gesture region binds swipe navigation with fallback touch tracking for devices without ZingTouch
+  - Touch feedback overlay, card activation states, and performance monitor deliver immediate UX responses
+  - Progressive loading strategy balances max active cards, animation toggles, and preview quality per hardware tier
+- **Primary Use**: Touch-first Visual Codex explorer tuned for real devices with adaptive degradation strategies
+
+### 28. Visual Codex Mobile 6×7 State System
+- **Source**: gallery-mobile-native-6x7.html
+- **Dependencies**: Touch events, Canvas polytopal background, vanilla JavaScript
+- **Key Features**:
+  - 42 curated demos organized into 7 temporal states with six cards each, optimized for one-handed browsing
+  - RGB glitch overlay, FPS monitor, and state navigation button broadcast system status in real time
+  - Scroll and tap gestures feed a `Mobile6x7Gallery` controller managing throttled transitions and lazy loading
+  - Mobile query parameters (`?mobile=1`) ensure linked demos load responsive variants
+- **Primary Use**: Dense yet navigable mobile gallery delivering codex breadth through compact state cycling
+
+### 29. Visual Codex Mobile Enhanced 4D System
+- **Source**: gallery-mobile-enhanced.html
+- **Dependencies**: Touch APIs, swipe zone overlays, Canvas polytopal shaders, vanilla JavaScript
+- **Key Features**:
+  - Swipe zones at screen edges provide ergonomic navigation with emoji affordances guiding motion
+  - Crystal container renders oversized wafers per state with adaptive content overlays and neon treatments
+  - Eight polytopal themes alter geometry, rotation vectors, and color harmonies for the background visualizer
+  - Content sets mirror desktop catalog while mapping to mobile-friendly URLs and names for quick launching
+- **Primary Use**: Premium mobile showcase blending 4D background choreography with simplified card focus
+
+### 30. Visual Codex Mobile Gallery Test Report
+- **Source**: MOBILE_GALLERY_TEST_REPORT.md
+- **Dependencies**: Documentation only
+- **Key Features**:
+  - Summarizes Puppeteer automation runs achieving an 86% success rate across seven scripted tests
+  - Details touch target sizing, gesture reliability, and loading stability across device classes
+  - Provides actionable remediation notes for the lone failing test scenario and performance considerations
+  - Captures readiness statement positioning the mobile gallery as production-grade with quantified metrics
+- **Primary Use**: QA artifact validating the robustness of the mobile-native gallery implementation
+
+### 31. Visual Codex Mobile Comprehensive Puppeteer Suite
+- **Source**: test-mobile-gallery-comprehensive.js
+- **Dependencies**: Node.js, Puppeteer, headful Chrome
+- **Key Features**:
+  - Launches iPhone-class viewport, captures console output, and logs browser errors for diagnosis
+  - Exercises gallery navigation, touch targets, performance metrics, and library detection across two phases
+  - Iterates through linked demos to confirm remote availability while recording status codes
+  - Produces structured result object for downstream reporting of UI checks, errors, and performance figures
+- **Primary Use**: End-to-end automated validation ensuring the mobile gallery meets usability and reliability thresholds
+
+### 32. Visual Codex Mobile Quick Smoke Suite
+- **Source**: test-mobile-gallery-quick.js
+- **Dependencies**: Node.js, Puppeteer, headful Chrome
+- **Key Features**:
+  - Executes rapid smoke test using iPhone SE viewport, capturing screenshots at load and completion stages
+  - Verifies critical selectors (header, nav, cards, performance monitor) plus ZingTouch availability
+  - Simulates taps on cards and navigation buttons, then records performance timing metrics
+  - Spot-checks representative mobile demos to ensure deployment integrity while summarizing pass/fail ratios
+- **Primary Use**: Lightweight CI-friendly script to confirm gallery health between comprehensive test runs
+
+### 33. Visual Codex Desktop Gallery Regression Harness
+- **Source**: test-gallery-puppeteer.js
+- **Dependencies**: Node.js, Puppeteer, desktop Chrome
+- **Key Features**:
+  - Opens DevTools-enabled session to monitor WebGL context pool logs, request failures, and console output
+  - Validates card rendering counts, lazy iframe data attributes, and server/context status banners
+  - Captures before/after screenshots while scrolling to trigger lazy loading and context pooling behavior
+  - Reports on HTTP response anomalies for gallery-linked HTML assets
+- **Primary Use**: Desktop-focused regression guardrail for the primary gallery deployment
+
+### 34. Visual Codex Local Server Bootstrap
+- **Source**: start-gallery.py
+- **Dependencies**: Python 3, http.server, socketserver, threading
+- **Key Features**:
+  - Custom `SimpleHTTPRequestHandler` subclass injects permissive CORS headers for iframe interoperability
+  - Auto-discovers the Visual Codex directory, logs launch banner, and opens the gallery in a browser tab
+  - Provides actionable diagnostics for missing directories or occupied ports with remediation tips
+  - Highlights key URLs (gallery.html, gallery-standalone.html) ensuring reviewers hit the correct endpoints
+- **Primary Use**: Turnkey local server for validating galleries and demos in a secure environment
 
 ---
 
