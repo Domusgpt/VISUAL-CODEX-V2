@@ -50,11 +50,52 @@
         .slider-label { margin-bottom: 5px; }
         input[type="range"] { width: 100%; }
         .btn { 
-            background: rgba(0,255,255,0.2); border: 1px solid #00ffff; color: #00ffff; 
+            background: rgba(0,255,255,0.2); border: 1px solid #00ffff; color: #00ffff;
             padding: 8px 16px; margin: 5px; cursor: pointer; border-radius: 5px;
         }
         .btn:hover { background: rgba(0,255,255,0.4); box-shadow: 0 0 10px #00ffff; }
         .info { position: fixed; bottom: 20px; left: 20px; color: #ff00ff; font-size: 14px; }
+        .export-tools {
+            margin-top: 14px;
+            border-top: 1px solid rgba(0,255,255,0.25);
+            padding-top: 12px;
+        }
+        .export-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .export-grid .btn {
+            flex: 1 1 140px;
+            min-height: 38px;
+            margin: 0;
+        }
+        .export-meta {
+            font-size: 11px;
+            color: rgba(0,255,255,0.75);
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            border: 1px solid rgba(0,255,255,0.45);
+            border-radius: 8px;
+            padding: 12px 18px;
+            color: #00ffff;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 9999;
+        }
+        .toast.show {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -86,12 +127,24 @@
         </div>
         <button class="btn" onclick="randomizeParams()">Randomize</button>
         <button class="btn" onclick="resetParams()">Reset</button>
+
+        <div class="export-tools">
+            <strong>Export &amp; Capture</strong>
+            <div class="export-grid">
+                <button class="btn" id="exportLatticeBtn">Export JSON State</button>
+                <button class="btn" id="captureLatticePngBtn">Capture PNG</button>
+                <button class="btn" id="copyLatticeBtn">Copy Settings</button>
+            </div>
+            <div class="export-meta" id="latticeExportMeta">No exports yet</div>
+        </div>
         </div>
     </div>
 
     <div class="info">
         Click and drag to rotate • Mouse wheel to zoom • R to randomize
     </div>
+
+    <div class="toast" id="latticeToast"></div>
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -112,6 +165,41 @@
         let mouse = { x: 0, y: 0, down: false };
         let rotation = { x: 0, y: 0 };
         let zoom = 1.0;
+        let lastAction = 'init';
+        const exportHistory = [];
+        const latticeToast = document.getElementById('latticeToast');
+        const sessionId = `lattice-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+        function showToast(message) {
+            if (!latticeToast) return;
+            latticeToast.textContent = message;
+            latticeToast.classList.add('show');
+            clearTimeout(showToast.timeout);
+            showToast.timeout = setTimeout(() => latticeToast.classList.remove('show'), 2200);
+        }
+
+        function updateExportMeta(text) {
+            const meta = document.getElementById('latticeExportMeta');
+            if (!meta) return;
+            const now = new Date();
+            meta.textContent = `${text} • ${now.toLocaleTimeString()}`;
+        }
+
+        function logSnapshot(source, extra = {}) {
+            const snapshot = {
+                timestamp: new Date().toISOString(),
+                source,
+                params: { ...params },
+                rotation: { ...rotation },
+                zoom,
+                mouse: { ...mouse },
+                ...extra
+            };
+            exportHistory.push(snapshot);
+            if (exportHistory.length > 40) {
+                exportHistory.shift();
+            }
+        }
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -323,12 +411,15 @@
             mouse.down = true;
             mouse.x = e.clientX;
             mouse.y = e.clientY;
+            lastAction = 'drag-start';
+            logSnapshot('drag-start');
         });
 
         canvas.addEventListener('mousemove', (e) => {
             if (mouse.down) {
                 rotation.x += (e.clientX - mouse.x) * 0.01;
                 rotation.y += (e.clientY - mouse.y) * 0.01;
+                lastAction = 'dragging';
             }
             mouse.x = e.clientX;
             mouse.y = e.clientY;
@@ -336,22 +427,31 @@
 
         canvas.addEventListener('mouseup', () => {
             mouse.down = false;
+            lastAction = 'drag-end';
+            logSnapshot('drag-end');
         });
 
         canvas.addEventListener('wheel', (e) => {
             zoom *= e.deltaY > 0 ? 1.1 : 0.9;
             zoom = Math.max(0.1, Math.min(5.0, zoom));
             e.preventDefault();
+            lastAction = 'zoom';
+            logSnapshot('zoom');
         });
 
         // Control panel interactions
         function setupSlider(id, param, valueId) {
             const slider = document.getElementById(id);
             const valueDisplay = document.getElementById(valueId);
-            
+
             slider.addEventListener('input', (e) => {
                 params[param] = parseFloat(e.target.value);
                 valueDisplay.textContent = params[param].toFixed(1);
+                lastAction = `slider:${param}`;
+            });
+
+            slider.addEventListener('change', () => {
+                logSnapshot(`slider:${param}`);
             });
         }
 
@@ -362,13 +462,20 @@
         setupSlider('moire', 'moire', 'moireValue');
 
         function randomizeParams() {
-            params.density = Math.random() * 1.9 + 0.1;
-            params.morph = Math.random();
-            params.glitch = Math.random() * 0.8;
-            params.speed = Math.random() * 2.9 + 0.1;
-            params.moire = Math.random();
-            
+            const randomValues = {
+                density: Math.random() * 1.9 + 0.1,
+                morph: Math.random(),
+                glitch: Math.random() * 0.8,
+                speed: Math.random() * 2.9 + 0.1,
+                moire: Math.random()
+            };
+
+            Object.assign(params, randomValues);
+
             updateSliders();
+            lastAction = 'randomize';
+            showToast('Hypercube lattice randomized');
+            logSnapshot('randomize', { randomValues });
         }
 
         function resetParams() {
@@ -377,8 +484,11 @@
             params.glitch = 0.2;
             params.speed = 1.0;
             params.moire = 0.3;
-            
+
             updateSliders();
+            lastAction = 'reset';
+            showToast('Lattice parameters reset');
+            logSnapshot('reset');
         }
 
         function updateSliders() {
@@ -425,27 +535,30 @@
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
             requestAnimationFrame(animate);
         }
-        
-        animate(0);
 
-        // Export function for Lattice Visualizer
+        animate(0);
+        logSnapshot('init');
+        updateExportMeta('Session initialized');
+
+        // Export & capture utilities
         function exportLatticeData() {
             const exportData = {
                 timestamp: new Date().toISOString(),
+                sessionId,
+                lastAction,
                 latticeParams: { ...params },
                 mousePosition: { x: mouse.x, y: mouse.y },
                 rotationState: { x: rotation.x, y: rotation.y },
                 zoomLevel: zoom,
                 canvasSize: { width: canvas.width, height: canvas.height },
-                visualizerType: 'Hypercube Lattice System',
-                version: '1.0'
+                interactionHistory: [...exportHistory.slice(-15)],
+                version: '1.1'
             };
-            
-            // Create downloadable JSON
+
             const dataStr = JSON.stringify(exportData, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(dataBlob);
-            
+
             const link = document.createElement('a');
             link.href = url;
             link.download = `lattice-visualizer-export-${Date.now()}.json`;
@@ -453,19 +566,46 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            
+
             console.log('🔬 Lattice Visualizer data exported successfully');
+            showToast('Lattice JSON export ready');
+            updateExportMeta('JSON export ready');
         }
-        
-        // Add export button to controls
-        const controlsContent = document.querySelector('.controls-content');
-        if (controlsContent) {
-            const exportBtn = document.createElement('button');
-            exportBtn.textContent = 'Export Lattice';
-            exportBtn.className = 'btn';
-            exportBtn.onclick = exportLatticeData;
-            controlsContent.appendChild(exportBtn);
+
+        function captureLatticePng() {
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `lattice-visualizer-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('PNG snapshot captured');
+            updateExportMeta('PNG snapshot saved');
         }
+
+        async function copyLatticeSettings() {
+            const payload = {
+                params: { ...params },
+                rotation: { ...rotation },
+                zoom,
+                lastAction
+            };
+
+            try {
+                await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+                showToast('Lattice settings copied');
+                updateExportMeta('Settings copied');
+            } catch (error) {
+                console.warn('Clipboard copy failed', error);
+                showToast('Clipboard unavailable');
+            }
+        }
+
+        document.getElementById('exportLatticeBtn')?.addEventListener('click', exportLatticeData);
+        document.getElementById('captureLatticePngBtn')?.addEventListener('click', captureLatticePng);
+        document.getElementById('copyLatticeBtn')?.addEventListener('click', copyLatticeSettings);
     </script>
     
     <!-- Add collapsible menu system -->

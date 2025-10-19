@@ -141,6 +141,9 @@
                 
                 this.mouseX = 0.5;
                 this.mouseY = 0.5;
+                this.touchIntensity = 0.0;
+                this.touchPoint = { x: 0.5, y: 0.5 };
+                this.touchChaos = 0.0;
                 this.time = 0;
                 this.startTime = Date.now();
                 
@@ -213,6 +216,9 @@
                     uniform float u_colorShift;
                     uniform vec2 u_resolution;
                     uniform vec2 u_mouse;
+                    uniform float u_touchIntensity;
+                    uniform vec2 u_touchPoint;
+                    uniform float u_touchChaos;
                     
                     // Audio uniforms
                     uniform float u_audioEnabled;
@@ -345,29 +351,45 @@
                         
                         // Combine lattice and moiré
                         float combined = lattice + moire * 0.5;
-                        
+
+                        vec2 touchUV = v_uv;
+                        vec2 touchDelta = touchUV - u_touchPoint;
+                        float touchFalloff = exp(-length(touchDelta) * 6.0);
+                        float touchWave = sin(u_time * 6.0 - length(touchDelta) * 24.0) * 0.5 + 0.5;
+                        float touchContribution = u_touchIntensity * touchFalloff * touchWave;
+                        float chaosContribution = u_touchChaos * 0.35;
+
+                        combined += touchContribution * (1.0 + chaosContribution);
+                        moire += touchContribution * 0.3;
+
                         // Base colors (vaporwave palette)
                         vec3 color1 = vec3(0.0, 0.8, 1.0);  // Cyan
                         vec3 color2 = vec3(1.0, 0.0, 1.0);  // Magenta
                         vec3 color3 = vec3(1.0, 1.0, 0.0);  // Yellow
-                        
+
                         // Color mixing based on lattice pattern
                         vec3 finalColor = mix(mix(color1, color2, combined), color3, moire);
-                        
+
                         // Apply hue shifting
-                        finalColor = hueShift(finalColor, u_colorShift);
-                        
+                        finalColor = hueShift(finalColor, u_colorShift + chaosContribution * 0.8);
+
                         // Apply RGB color splitting
                         finalColor = applyColorSplitting(v_uv, finalColor);
-                        
+
                         // Add some glow and intensity
                         finalColor *= (0.5 + combined * 1.5);
-                        
+                        finalColor += touchContribution * vec3(0.25, 0.15, 0.45);
+                        finalColor += chaosContribution * 0.4;
+
                         // Audio-reactive brightness
                         if (u_audioEnabled > 0.5) {
                             finalColor *= (0.8 + u_bassLevel * 0.4 + u_midLevel * 0.3);
                         }
-                        
+
+                        // Touch-driven bloom
+                        finalColor += vec3(0.05, 0.08, 0.12) * pow(touchContribution, 1.2);
+                        finalColor = clamp(finalColor, 0.0, 1.8);
+
                         gl_FragColor = vec4(finalColor, 1.0);
                     }
                 `;
@@ -399,6 +421,9 @@
                     colorShift: this.gl.getUniformLocation(this.program, 'u_colorShift'),
                     resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
                     mouse: this.gl.getUniformLocation(this.program, 'u_mouse'),
+                    touchIntensity: this.gl.getUniformLocation(this.program, 'u_touchIntensity'),
+                    touchPoint: this.gl.getUniformLocation(this.program, 'u_touchPoint'),
+                    touchChaos: this.gl.getUniformLocation(this.program, 'u_touchChaos'),
                     audioEnabled: this.gl.getUniformLocation(this.program, 'u_audioEnabled'),
                     bassLevel: this.gl.getUniformLocation(this.program, 'u_bassLevel'),
                     midLevel: this.gl.getUniformLocation(this.program, 'u_midLevel'),
@@ -550,11 +575,15 @@
             
             render() {
                 this.time = (Date.now() - this.startTime) / 1000;
-                
+
                 this.updateAudio();
-                
+
+                // Ease touch parameters back to calm state
+                this.touchIntensity = Math.max(0.0, this.touchIntensity * 0.92 - 0.001);
+                this.touchChaos = Math.max(0.0, this.touchChaos * 0.94 - 0.0005);
+
                 this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-                
+
                 // Set uniforms
                 this.gl.uniform1f(this.uniforms.time, this.time);
                 this.gl.uniform1f(this.uniforms.dimension, this.params.dimension);
@@ -566,7 +595,10 @@
                 this.gl.uniform1f(this.uniforms.colorShift, this.params.colorShift);
                 this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
                 this.gl.uniform2f(this.uniforms.mouse, this.mouseX, this.mouseY);
-                
+                this.gl.uniform1f(this.uniforms.touchIntensity, this.touchIntensity);
+                this.gl.uniform2f(this.uniforms.touchPoint, this.touchPoint.x, this.touchPoint.y);
+                this.gl.uniform1f(this.uniforms.touchChaos, this.touchChaos);
+
                 // Audio uniforms
                 this.gl.uniform1f(this.uniforms.audioEnabled, this.audioEnabled ? 1.0 : 0.0);
                 this.gl.uniform1f(this.uniforms.bassLevel, this.audioData.bass);
@@ -590,97 +622,120 @@
 
         // Add touch reactions for mobile
         function setupTouchReactions() {
-            let touchIntensity = 0;
-            let touchX = 0.5;
-            let touchY = 0.5;
-            
-            // Touch start - trigger intense reaction
-            document.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                touchX = touch.clientX / window.innerWidth;
-                touchY = touch.clientY / window.innerHeight;
-                touchIntensity = 1.0;
-                
-                // Visual feedback
-                const touchIndicator = document.createElement('div');
-                touchIndicator.style.cssText = `
+            const rippleStyleId = 'mvep-touch-ripple-style';
+            if (!document.getElementById(rippleStyleId)) {
+                const rippleStyle = document.createElement('style');
+                rippleStyle.id = rippleStyleId;
+                rippleStyle.textContent = `
+                    @keyframes mvepTouchRipple {
+                        0% { transform: scale(0.4); opacity: 0.9; }
+                        100% { transform: scale(3.2); opacity: 0; }
+                    }
+
+                    .mvep-touch-ripple {
+                        position: absolute;
+                        width: 70px;
+                        height: 70px;
+                        border-radius: 50%;
+                        border: 2px solid rgba(0, 255, 255, 0.8);
+                        pointer-events: none;
+                        animation: mvepTouchRipple 0.7s ease-out forwards;
+                        box-shadow: 0 0 18px rgba(255, 0, 255, 0.4);
+                    }
+                `;
+                document.head.appendChild(rippleStyle);
+            }
+
+            const overlayId = 'mvep-touch-overlay';
+            let overlay = document.getElementById(overlayId);
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = overlayId;
+                overlay.style.cssText = `
                     position: fixed;
-                    left: ${touch.clientX - 25}px;
-                    top: ${touch.clientY - 25}px;
-                    width: 50px;
-                    height: 50px;
-                    border: 2px solid #00ffff;
-                    border-radius: 50%;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
                     pointer-events: none;
-                    z-index: 1000;
-                    animation: touchRipple 0.6s ease-out forwards;
+                    z-index: 1200;
                 `;
-                document.body.appendChild(touchIndicator);
-                
-                // Add ripple animation
-                const style = document.createElement('style');
-                style.textContent = `
-                    @keyframes touchRipple {
-                        0% { transform: scale(0); opacity: 1; }
-                        100% { transform: scale(3); opacity: 0; }
-                    }
-                `;
-                document.head.appendChild(style);
-                
-                setTimeout(() => document.body.removeChild(touchIndicator), 600);
-                
-                console.log('🔥 Touch reaction triggered');
-            }, { passive: false });
-            
-            // Touch move - continuous reaction
-            document.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                touchX = touch.clientX / window.innerWidth;
-                touchY = touch.clientY / window.innerHeight;
-                touchIntensity = 0.8;
-                
-                // Update MVEP visualizer with touch data
-                if (mvepVisualizer) {
-                    mvepVisualizer.mouseX = touchX;
-                    mvepVisualizer.mouseY = 1.0 - touchY;
-                    mvepVisualizer.interactionIntensity = touchIntensity;
+                document.body.appendChild(overlay);
+            }
+
+            const statusEl = document.getElementById('status');
+
+            const spawnRipple = (clientX, clientY, scale = 1) => {
+                const ripple = document.createElement('div');
+                ripple.className = 'mvep-touch-ripple';
+                ripple.style.left = `${clientX - 35}px`;
+                ripple.style.top = `${clientY - 35}px`;
+                ripple.style.transform = `scale(${Math.max(0.6, scale)})`;
+                overlay.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 700);
+            };
+
+            const updateTouchState = (clientX, clientY, intensity) => {
+                if (!mvepVisualizer) return;
+                const normX = clientX / window.innerWidth;
+                const normY = 1.0 - (clientY / window.innerHeight);
+
+                mvepVisualizer.mouseX = normX;
+                mvepVisualizer.mouseY = normY;
+                mvepVisualizer.touchPoint = { x: normX, y: normY };
+                mvepVisualizer.touchIntensity = Math.min(1.0, Math.max(mvepVisualizer.touchIntensity, intensity));
+                mvepVisualizer.touchChaos = Math.min(1.0, mvepVisualizer.touchChaos + intensity * 0.25);
+
+                if (statusEl) {
+                    statusEl.textContent = 'MVEP 4D Hypercube – Touch drive active';
                 }
-            }, { passive: false });
-            
-            // Touch end - decay reaction
-            document.addEventListener('touchend', (e) => {
-                touchIntensity *= 0.5;
-                setTimeout(() => {
-                    touchIntensity = 0;
-                }, 300);
-                
-                console.log('🌊 Touch reaction ending');
-            });
-            
-            // Multi-touch support
+            };
+
+            const updateChaosFromTouches = (touches) => {
+                if (!mvepVisualizer || touches.length < 2) return;
+                const touch1 = touches[0];
+                const touch2 = touches[1];
+                const distance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+                const normalized = Math.min(1, distance / 240);
+                mvepVisualizer.touchChaos = Math.min(1.0, mvepVisualizer.touchChaos + normalized * 0.4);
+            };
+
             document.addEventListener('touchstart', (e) => {
-                if (e.touches.length > 1) {
-                    const touch1 = e.touches[0];
-                    const touch2 = e.touches[1];
-                    const distance = Math.sqrt(
-                        Math.pow(touch2.clientX - touch1.clientX, 2) +
-                        Math.pow(touch2.clientY - touch1.clientY, 2)
-                    );
-                    
-                    // Multi-touch creates chaos effect
-                    if (mvepVisualizer) {
-                        mvepVisualizer.chaosIntensity = Math.min(1.0, distance / 200);
+                if (!mvepVisualizer) return;
+                if (e.target && e.target.closest('.controls')) return;
+                const primary = e.touches[0];
+                updateTouchState(primary.clientX, primary.clientY, 1.0);
+                spawnRipple(primary.clientX, primary.clientY, 1);
+                updateChaosFromTouches(e.touches);
+                e.preventDefault();
+            }, { passive: false });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!mvepVisualizer) return;
+                if (e.target && e.target.closest('.controls')) return;
+                const primary = e.touches[0];
+                updateTouchState(primary.clientX, primary.clientY, 0.8);
+                updateChaosFromTouches(e.touches);
+                e.preventDefault();
+            }, { passive: false });
+
+            document.addEventListener('touchend', (e) => {
+                if (!mvepVisualizer) return;
+                if (e.touches.length === 0) {
+                    mvepVisualizer.touchIntensity *= 0.4;
+                    if (statusEl) {
+                        statusEl.textContent = 'MVEP 4D Hypercube - Mouse: Move | Scroll: Grid/Color | Audio: ' + (mvepVisualizer.audioEnabled ? 'LIVE' : 'OFF');
                     }
-                    
-                    console.log('⚡ Multi-touch chaos effect activated');
                 }
             });
         }
         
         // Initialize touch reactions when DOM is ready
-        document.addEventListener('DOMContentLoaded', setupTouchReactions);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupTouchReactions);
+        } else {
+            setupTouchReactions();
+        }
     </script>
     
     <!-- Add collapsible menu system -->

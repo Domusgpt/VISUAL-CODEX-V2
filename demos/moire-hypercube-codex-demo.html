@@ -30,8 +30,60 @@
             color: #ffff00; padding: 6px 10px; margin: 3px;
             cursor: pointer; border-radius: 3px; font-size: 11px;
         }
-        .toggle-btn.active { 
-            background: rgba(255,255,0,0.4); box-shadow: 0 0 8px #ffff00; 
+        .toggle-btn.active {
+            background: rgba(255,255,0,0.4); box-shadow: 0 0 8px #ffff00;
+        }
+        .export-group {
+            margin-top: 18px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,255,255,0.2);
+        }
+        .export-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .export-btn {
+            flex: 1 1 120px;
+            min-height: 36px;
+            background: linear-gradient(135deg, rgba(0,255,255,0.15), rgba(255,0,255,0.15));
+            border: 1px solid rgba(0,255,255,0.4);
+            color: #00ffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        .export-btn:hover {
+            background: linear-gradient(135deg, rgba(0,255,255,0.35), rgba(255,0,255,0.35));
+            box-shadow: 0 0 12px rgba(0,255,255,0.4);
+        }
+        .export-meta {
+            font-size: 10px;
+            opacity: 0.75;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: #00ffff;
+            padding: 12px 20px;
+            border: 1px solid rgba(0,255,255,0.5);
+            border-radius: 8px;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .toast.show {
+            opacity: 1;
         }
         .status { 
             position: fixed; bottom: 20px; right: 20px; 
@@ -107,6 +159,16 @@
             <button class="toggle-btn active" id="moireToggle" onclick="toggleEffect('moire')">MOIRÉ</button>
             <button class="toggle-btn" id="pulseToggle" onclick="toggleEffect('pulse')">PULSE</button>
         </div>
+
+        <div class="export-group">
+            <strong>EXPORT &amp; CAPTURE</strong>
+            <div class="export-actions">
+                <button class="export-btn" id="exportCodexBtn">Export JSON Codex</button>
+                <button class="export-btn" id="capturePngBtn">Capture PNG Snapshot</button>
+                <button class="export-btn" id="copyCodexBtn">Copy Settings</button>
+            </div>
+            <div class="export-meta" id="exportMeta">Last export: never</div>
+        </div>
     </div>
 
     <div class="status">
@@ -115,6 +177,8 @@
         <div>RGB SPLIT ACTIVE</div>
         <div>MOIRÉ INTERFERENCE</div>
     </div>
+
+    <div class="toast" id="toast"></div>
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -140,9 +204,24 @@
             pulse: false
         };
 
+        let currentPreset = 'custom';
+        const exportHistory = [];
+
+        const toastEl = document.getElementById('toast');
+
         let mouse = { x: 0, y: 0 };
         let frameCount = 0;
         let lastTime = 0;
+
+        function showToast(message) {
+            if (!toastEl) return;
+            toastEl.textContent = message;
+            toastEl.classList.add('show');
+            clearTimeout(showToast.timeout);
+            showToast.timeout = setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 2200);
+        }
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -413,13 +492,29 @@
         });
 
         // Slider setup
+        function logSnapshot(source) {
+            const snapshot = {
+                timestamp: new Date().toISOString(),
+                source,
+                preset: currentPreset,
+                params: { ...params },
+                effects: { ...effects }
+            };
+            exportHistory.push(snapshot);
+            if (exportHistory.length > 30) {
+                exportHistory.shift();
+            }
+        }
+
         function setupSlider(id, param, valueId) {
             const slider = document.getElementById(id);
             const valueDisplay = document.getElementById(valueId);
-            
+
             slider.addEventListener('input', (e) => {
                 params[param] = parseFloat(e.target.value);
                 valueDisplay.textContent = params[param].toFixed(1);
+                currentPreset = 'custom';
+                logSnapshot(`slider:${param}`);
             });
         }
 
@@ -447,7 +542,9 @@
                     params = {density: 3.0, morph: 2.0, rgb: 1.0, moireIntensity: 1.0, glitch: 1.0, speed: 4.0, layer2Opacity: 1.0};
                     break;
             }
+            currentPreset = preset;
             updateSliders();
+            logSnapshot(`preset:${preset}`);
         };
 
         function updateSliders() {
@@ -465,10 +562,11 @@
         window.toggleEffect = function(effect) {
             effects[effect] = !effects[effect];
             document.getElementById(effect + 'Toggle').classList.toggle('active', effects[effect]);
-            
+
             if (effect === 'moire') {
                 document.getElementById('moireOverlay').style.opacity = effects[effect] ? '0.1' : '0';
             }
+            logSnapshot(`toggle:${effect}`);
         };
 
         // FPS counter
@@ -502,9 +600,10 @@
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
             requestAnimationFrame(animate);
         }
-        
+
         animate(0);
-        
+        logSnapshot('init');
+
         // Export function for Hypercube Codex
         function exportCodex() {
             const exportData = {
@@ -513,9 +612,11 @@
                 activeEffects: { ...effects },
                 canvasSize: { width: canvas.width, height: canvas.height },
                 hypercubeType: 'Moire Pattern System',
-                version: '1.0'
+                preset: currentPreset,
+                history: [...exportHistory.slice(-10)],
+                version: '1.1'
             };
-            
+
             // Create downloadable JSON
             const dataStr = JSON.stringify(exportData, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -528,27 +629,54 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            
+
             console.log('🎯 Hypercube Codex exported successfully');
+            showToast('Hypercube Codex exported as JSON');
+            updateExportMeta('JSON export ready');
         }
-        
-        // Add export button to any existing controls
-        if (document.querySelector('.control-panel')) {
-            const exportBtn = document.createElement('button');
-            exportBtn.textContent = 'Export Codex';
-            exportBtn.onclick = exportCodex;
-            exportBtn.style.cssText = `
-                background: linear-gradient(45deg, #ff0080, #00ffff);
-                border: none;
-                color: white;
-                padding: 10px 20px;
-                margin: 5px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-family: 'Orbitron', monospace;
-            `;
-            document.querySelector('.control-panel').appendChild(exportBtn);
+        function captureSnapshot() {
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `hypercube-codex-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('PNG snapshot captured');
+            updateExportMeta('PNG snapshot saved');
         }
+
+        async function copyCodexToClipboard() {
+            const payload = {
+                params: { ...params },
+                effects: { ...effects },
+                preset: currentPreset
+            };
+            try {
+                await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+                showToast('Codex settings copied to clipboard');
+                updateExportMeta('Settings copied');
+            } catch (error) {
+                console.warn('Clipboard copy failed', error);
+                showToast('Clipboard copy unavailable');
+            }
+        }
+
+        function updateExportMeta(message) {
+            const meta = document.getElementById('exportMeta');
+            if (!meta) return;
+            const now = new Date();
+            meta.textContent = `${message} • ${now.toLocaleTimeString()}`;
+        }
+
+        const exportCodexBtn = document.getElementById('exportCodexBtn');
+        const capturePngBtn = document.getElementById('capturePngBtn');
+        const copyCodexBtn = document.getElementById('copyCodexBtn');
+
+        exportCodexBtn?.addEventListener('click', exportCodex);
+        capturePngBtn?.addEventListener('click', captureSnapshot);
+        copyCodexBtn?.addEventListener('click', copyCodexToClipboard);
     </script>
     
     <!-- Add collapsible menu system -->
