@@ -3,162 +3,629 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Active Holographic Systems - 30 Variations</title>
+    <title>Active Holographic Systems • 35 Variation Megasuite</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&display=swap');
+
+        :root {
+            --bg-core: radial-gradient(circle at 20% 20%, rgba(0, 255, 255, 0.08), transparent 60%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.08), transparent 65%),
+                        radial-gradient(circle at 50% 80%, rgba(255, 255, 0, 0.06), transparent 70%),
+                        #02030a;
+            --accent-cyan: #00f6ff;
+            --accent-magenta: #ff4dff;
+            --accent-yellow: #ffe066;
+            --panel-bg: rgba(4, 8, 24, 0.82);
+            --panel-border: rgba(0, 255, 255, 0.35);
+            --panel-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+            --card-radius: 18px;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            background: #000;
-            color: white;
             font-family: 'Orbitron', 'Courier New', monospace;
+            background: var(--bg-core);
+            color: var(--accent-cyan);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body.modal-open {
             overflow: hidden;
-            height: 100vh;
-            cursor: crosshair;
-            background: radial-gradient(ellipse at center, #1a0033 0%, #000000 70%);
         }
 
-        .header {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+        header.hero {
             text-align: center;
-            z-index: 2000;
-            color: #00ffff;
-            text-shadow: 0 0 10px #00ffff;
+            padding: 3.5rem 1.5rem 2.5rem;
+            position: relative;
         }
 
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 5px;
+        header.hero::before {
+            content: "";
+            position: absolute;
+            inset: 30px;
+            background: linear-gradient(120deg, rgba(0, 255, 255, 0.12), rgba(255, 0, 255, 0.05));
+            filter: blur(80px);
+            opacity: 0.7;
+            z-index: -1;
         }
 
-        .header p {
-            font-size: 1rem;
+        h1 {
+            font-size: clamp(2.2rem, 4vw, 3.6rem);
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: white;
+            text-shadow:
+                0 0 35px rgba(0, 255, 255, 0.85),
+                0 0 60px rgba(255, 0, 255, 0.4);
         }
 
-        .tab-navigation {
-            position: fixed;
-            top: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1500;
+        .hero p {
+            margin-top: 1rem;
+            color: rgba(230, 255, 255, 0.8);
+            letter-spacing: 0.28em;
+            font-size: 0.85rem;
+        }
+
+        .pagination-shell {
             display: flex;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 10px;
-            border-radius: 15px;
-            border: 1px solid #00ffff;
-            backdrop-filter: blur(10px);
+            justify-content: center;
+            align-items: center;
+            gap: 1.25rem;
+            margin: 1.5rem auto 2.5rem;
+            padding: 0 1rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid var(--panel-border);
+            border-radius: 999px;
+            color: var(--accent-cyan);
+            padding: 0.65rem 1.25rem;
+            cursor: pointer;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover,
+        .nav-button:focus-visible {
+            outline: none;
+            background: rgba(255, 0, 255, 0.18);
+            border-color: rgba(255, 0, 255, 0.55);
+            color: white;
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.35);
+        }
+
+        .page-dots {
+            display: flex;
+            gap: 0.75rem;
             flex-wrap: wrap;
             justify-content: center;
         }
-        
-        .tab-button {
-            background: rgba(0, 255, 255, 0.1);
-            border: 1px solid #00ffff;
-            color: #00ffff;
-            padding: 10px 15px;
-            border-radius: 8px;
+
+        .page-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 255, 255, 0.35);
+            background: transparent;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-family: 'Orbitron', monospace;
-        }
-        
-        .tab-button:hover {
-            background: rgba(0, 255, 255, 0.2);
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
-        }
-        
-        .tab-button.active {
-            background: rgba(0, 255, 255, 0.3);
-            box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
         }
 
-        .holographic-grid {
+        .page-dot.active {
+            background: var(--accent-magenta);
+            border-color: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 0 18px rgba(255, 0, 255, 0.6);
+        }
+
+        main.card-grid {
+            width: min(1200px, 90vw);
+            margin: 0 auto 4rem;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            width: 95vw;
-            height: 70vh;
-            position: fixed;
-            top: 55%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.75rem;
         }
 
-        .holographic-instance {
+        .holo-card {
             position: relative;
-            border-radius: 15px;
+            background: var(--panel-bg);
+            border-radius: var(--card-radius);
+            border: 1px solid rgba(0, 255, 255, 0.22);
             overflow: hidden;
-            border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 1rem 1rem 1.25rem;
+            box-shadow: var(--panel-shadow);
+            transition: transform 0.4s ease, border 0.4s ease, box-shadow 0.4s ease;
+            cursor: pointer;
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        .visualizer-canvas {
+        .holo-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(255, 0, 255, 0.5);
+            box-shadow:
+                0 20px 45px rgba(0, 0, 0, 0.55),
+                0 0 35px rgba(0, 255, 255, 0.35);
+        }
+
+        .holo-card canvas {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            background: radial-gradient(circle, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.9));
+        }
+
+        .holo-meta {
+            margin-top: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .holo-meta h2 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--accent-yellow);
+        }
+
+        .chip-row {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            background: rgba(0, 255, 255, 0.12);
+            border: 1px solid rgba(0, 255, 255, 0.35);
+            border-radius: 999px;
+            padding: 0.25rem 0.65rem;
+            font-size: 0.65rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(230, 255, 255, 0.82);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
+            margin-top: 0.3rem;
+            font-size: 0.72rem;
+            letter-spacing: 0.14em;
+            color: rgba(200, 240, 255, 0.75);
+        }
+
+        .card-footer {
+            margin-top: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            color: rgba(255, 255, 255, 0.55);
+        }
+
+        .card-footer span {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .card-footer .expand-hint {
+            padding: 0.4rem 0.85rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 0, 255, 0.35);
+            color: rgba(255, 0, 255, 0.65);
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(18px);
+            z-index: 4000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+
+        .modal.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-shell {
+            position: relative;
+            width: min(1100px, 94vw);
+            height: min(92vh, 840px);
+            background: rgba(3, 6, 18, 0.92);
+            border: 1px solid rgba(0, 255, 255, 0.25);
+            border-radius: 24px;
+            padding: 1.75rem;
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            grid-template-rows: auto 1fr auto;
+            gap: 1.5rem;
+            box-shadow:
+                0 35px 90px rgba(0, 0, 0, 0.65),
+                0 0 55px rgba(0, 255, 255, 0.35);
+            overflow: hidden;
+        }
+
+        .close-modal {
             position: absolute;
-            top: 0;
-            left: 0;
+            top: 18px;
+            right: 18px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 0, 255, 0.35);
+            background: rgba(0, 0, 0, 0.4);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover,
+        .close-modal:focus-visible {
+            background: rgba(255, 0, 255, 0.28);
+            color: white;
+            outline: none;
+        }
+
+        .modal-header {
+            grid-column: 1 / 2;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        #modalTitle {
+            font-size: 1.6rem;
+            letter-spacing: 0.18em;
+            color: var(--accent-yellow);
+            text-transform: uppercase;
+        }
+
+        #modalSubtitle {
+            letter-spacing: 0.3em;
+            font-size: 0.75rem;
+            color: rgba(210, 240, 255, 0.7);
+        }
+
+        .modal-visualizer {
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+            position: relative;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 255, 0.25);
+            background: radial-gradient(circle, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.9));
+        }
+
+        #modalCanvas {
             width: 100%;
             height: 100%;
+            display: block;
         }
 
-        .instance-overlay {
+        .modal-overlay-meta {
             position: absolute;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.7);
-            padding: 10px;
-            border-radius: 10px;
-            text-align: center;
-            color: #00ffff;
-            font-size: 0.8rem;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.75));
+            display: flex;
+            justify-content: space-between;
+            gap: 1.5rem;
+            color: rgba(210, 240, 255, 0.85);
+            letter-spacing: 0.18em;
+            font-size: 0.72rem;
+        }
+
+        .modal-overlay-meta strong {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .modal-scroll-shell {
+            grid-column: 2 / 3;
+            grid-row: 1 / 3;
+            border-radius: 18px;
+            border: 1px solid rgba(0, 255, 255, 0.18);
+            background: rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .modal-scroll-shell::before,
+        .modal-scroll-shell::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 90px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .modal-scroll-shell::before {
+            top: 0;
+            background: linear-gradient(180deg, rgba(3, 6, 18, 0.9), transparent);
+        }
+
+        .modal-scroll-shell::after {
+            bottom: 0;
+            background: linear-gradient(0deg, rgba(3, 6, 18, 0.9), transparent);
+        }
+
+        .modal-scroll-track {
+            height: 100%;
+            overflow-y: scroll;
+            scroll-behavior: smooth;
+            padding: 2.5rem 1.2rem;
+        }
+
+        .modal-scroll-item {
+            padding: 1.2rem 1rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 255, 0.18);
+            background: rgba(6, 12, 30, 0.65);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            transition: transform 0.25s ease, border 0.25s ease;
+        }
+
+        .modal-scroll-item.active {
+            border-color: rgba(255, 0, 255, 0.6);
+            transform: scale(1.03);
+            box-shadow:
+                0 15px 40px rgba(0, 0, 0, 0.35),
+                0 0 25px rgba(255, 0, 255, 0.28);
+        }
+
+        .modal-scroll-item h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .modal-scroll-item p {
+            margin-top: 0.45rem;
+            font-size: 0.68rem;
+            letter-spacing: 0.14em;
+            color: rgba(200, 230, 255, 0.6);
+        }
+
+        .modal-footer {
+            grid-column: 1 / 3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            letter-spacing: 0.22em;
+            font-size: 0.72rem;
+            color: rgba(200, 240, 255, 0.65);
+        }
+
+        #modalMeta {
+            display: flex;
+            gap: 1.1rem;
+            flex-wrap: wrap;
+        }
+
+        #modalMeta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .modal-hint {
+            color: rgba(255, 0, 255, 0.6);
+        }
+
+        @media (max-width: 980px) {
+            .modal-shell {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto 1fr auto;
+                height: min(94vh, 900px);
+            }
+
+            .modal-scroll-shell {
+                grid-column: 1 / 2;
+                grid-row: 3 / 5;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+                gap: 0.85rem;
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>ACTIVE HOLOGRAPHIC SYSTEMS</h1>
-        <p>30 Variations | 10 Tabs | 3 Canvases</p>
+    <header class="hero">
+        <h1>Active Holographic Systems</h1>
+        <p>35 variations • real-time 4d lattices • tabbed pagination restored</p>
+    </header>
+
+    <section class="pagination-shell" aria-label="Variation pagination">
+        <button class="nav-button" id="prevPage">Prev Page</button>
+        <div class="page-dots" id="pageDots" role="tablist" aria-label="Active holographic pages"></div>
+        <button class="nav-button" id="nextPage">Next Page</button>
+    </section>
+
+    <main class="card-grid" id="cardGrid" aria-live="polite"></main>
+
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-shell">
+            <button class="close-modal" id="modalClose" aria-label="Close modal">×</button>
+            <div class="modal-header">
+                <div id="modalTitle">Variation</div>
+                <div id="modalSubtitle">Family • Tier</div>
+            </div>
+            <div class="modal-visualizer">
+                <canvas id="modalCanvas" width="900" height="540"></canvas>
+                <div class="modal-overlay-meta">
+                    <span><strong>Density</strong> <span id="modalDensity">—</span></span>
+                    <span><strong>Speed</strong> <span id="modalSpeed">—</span></span>
+                    <span><strong>Geometry</strong> <span id="modalGeometry">—</span></span>
+                    <span><strong>Shimmer</strong> <span id="modalShimmer">—</span></span>
+                </div>
+            </div>
+            <div class="modal-scroll-shell">
+                <div class="modal-scroll-track" id="modalScrollTrack"></div>
+            </div>
+            <div class="modal-footer">
+                <div id="modalMeta"></div>
+                <div class="modal-hint">Scroll to morph • Move cursor for parallax • Click to pulse</div>
+            </div>
+        </div>
     </div>
-
-    <div class="tab-navigation" id="tabNavigation"></div>
-
-    <div class="holographic-grid" id="holographicGrid"></div>
-
     <script>
-        // ENHANCED HOLOGRAPHIC VISUALIZER (Copied from tech-layout-active-holographic-demo.html)
+        const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+        const BASE_PRESETS = [
+            {
+                family: 'Tetra Resonance',
+                geometryType: 0,
+                baseDensity: 4.8,
+                baseSpeed: 0.52,
+                baseColor: [0.85, 0.24, 1.0],
+                shimmerBase: 0.18,
+                description: 'Prismatic tetrahedral lattice with crystalline sheen'
+            },
+            {
+                family: 'Cube Aurora',
+                geometryType: 1,
+                baseDensity: 5.6,
+                baseSpeed: 0.48,
+                baseColor: [0.26, 0.78, 1.0],
+                shimmerBase: 0.16,
+                description: 'Orthogonal cube arrays with aurora-style gradients'
+            },
+            {
+                family: 'Sphere Cascade',
+                geometryType: 2,
+                baseDensity: 5.2,
+                baseSpeed: 0.62,
+                baseColor: [0.14, 0.35, 1.0],
+                shimmerBase: 0.19,
+                description: 'Layered orb fields cascading through depth planes'
+            },
+            {
+                family: 'Toroidal Flux',
+                geometryType: 3,
+                baseDensity: 5.8,
+                baseSpeed: 0.66,
+                baseColor: [0.92, 0.12, 0.82],
+                shimmerBase: 0.2,
+                description: 'Spinning toroidal flux ribbons with neon caustics'
+            },
+            {
+                family: 'Wave Harmonics',
+                geometryType: 4,
+                baseDensity: 5.0,
+                baseSpeed: 0.58,
+                baseColor: [0.48, 0.85, 0.95],
+                shimmerBase: 0.21,
+                description: 'Standing wave interference with spectral gradients'
+            },
+            {
+                family: 'Crystal Matrix',
+                geometryType: 5,
+                baseDensity: 6.2,
+                baseSpeed: 0.54,
+                baseColor: [0.72, 0.32, 0.98],
+                shimmerBase: 0.23,
+                description: 'Faceted prisms forming holographic matrices'
+            },
+            {
+                family: 'Waveform Prism',
+                geometryType: 4,
+                baseDensity: 4.4,
+                baseSpeed: 0.49,
+                baseColor: [0.38, 0.62, 1.0],
+                shimmerBase: 0.17,
+                description: 'Resonant waveform corridors with prismatic shards'
+            }
+        ];
+
+        const INTENSITY_TIERS = [
+            { suffix: 'Prime', label: 'I', densityDelta: 0.0, speedDelta: 0.0, colorDelta: [0, 0, 0], shimmerBoost: 0.02 },
+            { suffix: 'Flux', label: 'II', densityDelta: 1.2, speedDelta: 0.08, colorDelta: [0.04, -0.03, 0.02], shimmerBoost: 0.04 },
+            { suffix: 'Nova', label: 'III', densityDelta: 2.1, speedDelta: 0.14, colorDelta: [0.08, 0.04, 0.06], shimmerBoost: 0.07 },
+            { suffix: 'Spectral', label: 'IV', densityDelta: 2.9, speedDelta: 0.22, colorDelta: [0.12, 0.08, 0.09], shimmerBoost: 0.1 },
+            { suffix: 'Singularity', label: 'V', densityDelta: 3.6, speedDelta: 0.32, colorDelta: [0.18, 0.12, 0.14], shimmerBoost: 0.15 }
+        ];
+
+        const GEOMETRY_LABELS = ['Tetra', 'Cube', 'Sphere', 'Toroid', 'Wave', 'Crystal'];
+
+        function buildVariations() {
+            const variations = [];
+            BASE_PRESETS.forEach((base) => {
+                INTENSITY_TIERS.forEach((tier) => {
+                    const color = base.baseColor.map((component, index) =>
+                        clamp(component + (tier.colorDelta[index] || tier.colorDelta[0] || 0), 0, 1)
+                    );
+                    variations.push({
+                        name: `${base.family} ${tier.suffix}`,
+                        family: base.family,
+                        tierLabel: tier.label,
+                        tierName: tier.suffix,
+                        geometryType: base.geometryType,
+                        density: +(base.baseDensity + tier.densityDelta).toFixed(2),
+                        speed: +(base.baseSpeed + tier.speedDelta).toFixed(2),
+                        color,
+                        shimmer: +(base.shimmerBase + tier.shimmerBoost).toFixed(2),
+                        description: `${base.description}. ${tier.suffix} intensity layer with elevated lattice complexity.`,
+                        index: variations.length
+                    });
+                });
+            });
+            return variations;
+        }
         class HolographicVisualizer {
             constructor(canvas, config) {
                 this.canvas = canvas;
-                this.gl = this.canvas.getContext('webgl');
-                
+                this.gl = canvas.getContext('webgl', { antialias: true, preserveDrawingBuffer: false });
                 if (!this.gl) {
-                    console.error("WebGL not supported");
+                    console.error('WebGL not supported in this environment.');
                     return;
                 }
-                
-                this.config = config;
+
+                this.config = { ...config };
                 this.mouseX = 0.5;
                 this.mouseY = 0.5;
                 this.mouseIntensity = 0.0;
                 this.clickIntensity = 0.0;
-                this.clickDecay = 0.95;
+                this.clickDecay = 0.92;
                 this.densityTarget = 0.0;
                 this.densityVariation = 0.0;
+                this.startTime = performance.now();
 
-                this.startTime = Date.now();
                 this.initShaders();
                 this.initBuffers();
                 this.resize();
             }
-            
+
             initShaders() {
                 const vertexShaderSource = `
                     attribute vec2 a_position;
@@ -166,10 +633,10 @@
                         gl_Position = vec4(a_position, 0.0, 1.0);
                     }
                 `;
-                
+
                 const fragmentShaderSource = `
                     precision highp float;
-                    
+
                     uniform vec2 u_resolution;
                     uniform float u_time;
                     uniform vec2 u_mouse;
@@ -179,96 +646,106 @@
                     uniform float u_mouseIntensity;
                     uniform float u_clickIntensity;
                     uniform float u_densityVariation;
-                    uniform float u_geometryType; // New uniform for geometry type
-                    
+                    uniform float u_geometryType;
+                    uniform float u_shimmer;
+
                     mat4 rotateXW(float theta) {
                         float c = cos(theta); float s = sin(theta);
-                        return mat4(c, 0, 0, -s, 0, 1, 0, 0, 0, 0, 1, 0, s, 0, 0, c);
+                        return mat4(c, 0.0, 0.0, -s,
+                                    0.0, 1.0, 0.0, 0.0,
+                                    0.0, 0.0, 1.0, 0.0,
+                                    s, 0.0, 0.0, c);
                     }
-                    
+
                     mat4 rotateYW(float theta) {
                         float c = cos(theta); float s = sin(theta);
-                        return mat4(1, 0, 0, 0, 0, c, 0, -s, 0, 0, 1, 0, 0, s, 0, c);
+                        return mat4(1.0, 0.0, 0.0, 0.0,
+                                    0.0, c, 0.0, -s,
+                                    0.0, 0.0, 1.0, 0.0,
+                                    0.0, s, 0.0, c);
                     }
-                    
+
                     mat4 rotateZW(float theta) {
                         float c = cos(theta); float s = sin(theta);
-                        return mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, c, -s, 0, 0, s, c);
+                        return mat4(1.0, 0.0, 0.0, 0.0,
+                                    0.0, 1.0, 0.0, 0.0,
+                                    0.0, 0.0, c, -s,
+                                    0.0, 0.0, s, c);
                     }
-                    
+
                     vec3 project4Dto3D(vec4 p) {
-                        float w = 2.5 / (2.5 + p.w);
+                        float w = 2.6 / (2.6 + p.w);
                         return vec3(p.x * w, p.y * w, p.z * w);
                     }
-                    
-                    // Generic lattice function based on geometry type
-                    float getLattice(vec3 p, float gridSize, float type) {
-                        vec3 q = fract(p * gridSize) - 0.5;
-                        float dist = 0.0;
 
-                        if (type < 0.5) { // Tetrahedron
-                            dist = max(max(-q.x-q.y-q.z, q.x+q.y-q.z), max(-q.x+q.y+q.z, q.x-q.y+q.z));
-                            return 1.0 - smoothstep(0.3, 0.4, dist);
-                        } else if (type < 1.5) { // Cube
+                    float latticeValue(vec3 p, float gridSize, float type) {
+                        vec3 q = fract(p * gridSize) - 0.5;
+                        float dist;
+
+                        if (type < 0.5) {
+                            dist = max(max(-q.x - q.y - q.z, q.x + q.y - q.z), max(-q.x + q.y + q.z, q.x - q.y + q.z));
+                            return 1.0 - smoothstep(0.25, 0.38, dist);
+                        } else if (type < 1.5) {
                             dist = max(max(abs(q.x), abs(q.y)), abs(q.z));
-                            return 1.0 - smoothstep(0.4, 0.5, dist);
-                        } else if (type < 2.5) { // Sphere
+                            return 1.0 - smoothstep(0.32, 0.44, dist);
+                        } else if (type < 2.5) {
                             dist = length(q);
-                            return 1.0 - smoothstep(0.3, 0.35, dist);
-                        } else if (type < 3.5) { // Torus
+                            return 1.0 - smoothstep(0.28, 0.36, dist);
+                        } else if (type < 3.5) {
                             vec2 t = vec2(length(q.xz) - 0.3, q.y);
                             dist = length(t);
-                            return 1.0 - smoothstep(0.15, 0.2, dist);
-                        } else if (type < 4.5) { // Wave
-                            dist = sin(q.x * 10.0) * sin(q.y * 10.0) * sin(q.z * 10.0) * 0.5 + 0.5;
-                            return dist;
-                        } else if (type < 5.5) { // Crystal
+                            return 1.0 - smoothstep(0.12, 0.18, dist);
+                        } else if (type < 4.5) {
+                            return sin(q.x * 10.0) * sin(q.y * 10.0) * sin(q.z * 10.0) * 0.5 + 0.5;
+                        } else if (type < 5.5) {
                             dist = max(max(abs(q.x), abs(q.y)), abs(q.z));
-                            return 1.0 - smoothstep(0.2, 0.3, dist);
-                        } else { // Default to Tetrahedron
-                            dist = max(max(-q.x-q.y-q.z, q.x+q.y-q.z), max(-q.x+q.y+q.z, q.x-q.y+q.z));
-                            return 1.0 - smoothstep(0.3, 0.4, dist);
+                            return 1.0 - smoothstep(0.18, 0.28, dist);
                         }
+
+                        return 1.0 - smoothstep(0.25, 0.38, dist);
                     }
-                    
+
                     vec3 hsv2rgb(vec3 c) {
                         vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
                         vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
                         return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
                     }
-                    
+
                     void main() {
                         vec2 uv = gl_FragCoord.xy / u_resolution.xy;
-                        float aspectRatio = u_resolution.x / u_resolution.y;
-                        uv.x *= aspectRatio;
+                        float aspect = u_resolution.x / u_resolution.y;
+                        uv.x *= aspect;
                         uv -= 0.5;
-                        
-                        float time = u_time * 0.0004 * u_speed;
-                        
-                        float mouseInfluence = u_mouseIntensity * 0.5;
-                        vec2 mouseOffset = (u_mouse - 0.5) * mouseInfluence;
-                        
-                        vec4 p4d = vec4(uv + mouseOffset * 0.1, sin(time * 0.1) * 0.15, cos(time * 0.08) * 0.15);
-                        
-                        p4d = rotateXW(time * 0.2 + mouseOffset.y * 0.5) * p4d;
-                        p4d = rotateYW(time * 0.15 + mouseOffset.x * 0.5) * p4d;
-                        p4d = rotateZW(time * 0.25 + u_clickIntensity * 0.3) * p4d;
-                        
+
+                        float time = u_time * 0.00045 * u_speed;
+                        vec2 mouseOffset = (u_mouse - 0.5) * (0.24 + u_mouseIntensity * 0.28);
+
+                        vec4 p4d = vec4(uv + mouseOffset * 0.1,
+                                         sin(time * 0.9) * 0.22 + u_mouseIntensity * 0.12,
+                                         cos(time * 0.7) * 0.22 + u_clickIntensity * 0.08);
+
+                        float shimmer = u_shimmer + u_mouseIntensity * 0.22;
+
+                        p4d = rotateXW(time * (0.4 + shimmer * 0.6) + mouseOffset.y * 0.8) * p4d;
+                        p4d = rotateYW(time * (0.35 + shimmer * 0.5) + mouseOffset.x * 0.8) * p4d;
+                        p4d = rotateZW(time * (0.55 + shimmer) + u_clickIntensity * 0.35) * p4d;
+
                         vec3 p = project4Dto3D(p4d);
-                        
-                        float density = u_density + u_densityVariation;
-                        float lattice = getLattice(p, density, u_geometryType);
-                        
-                        float hue = atan(u_color.r, u_color.g) + u_mouseIntensity * 0.2;
-                        float saturation = 0.8 + lattice * 0.2 + u_clickIntensity * 0.1;
-                        float brightness = 0.2 + lattice * 0.8 + u_mouseIntensity * 0.15;
-                        
+
+                        float density = u_density + u_densityVariation * (1.0 + shimmer);
+                        float lattice = latticeValue(p, density, u_geometryType);
+
+                        float hue = atan(u_color.r, u_color.g) + shimmer * 0.35 + u_mouseIntensity * 0.18;
+                        float saturation = clamp(0.75 + lattice * 0.2 + u_clickIntensity * 0.15, 0.0, 1.0);
+                        float brightness = clamp(0.18 + lattice * (0.85 + shimmer * 0.15) + u_mouseIntensity * 0.18, 0.0, 1.0);
+
                         vec3 color = hsv2rgb(vec3(hue, saturation, brightness));
-                        
+                        color += u_color * 0.25;
+
                         gl_FragColor = vec4(color, 1.0);
                     }
                 `;
-                
+
                 this.program = this.createProgram(vertexShaderSource, fragmentShaderSource);
                 this.uniforms = {
                     resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
@@ -280,10 +757,10 @@
                     mouseIntensity: this.gl.getUniformLocation(this.program, 'u_mouseIntensity'),
                     clickIntensity: this.gl.getUniformLocation(this.program, 'u_clickIntensity'),
                     densityVariation: this.gl.getUniformLocation(this.program, 'u_densityVariation'),
-                    geometryType: this.gl.getUniformLocation(this.program, 'u_geometryType')
+                    geometryType: this.gl.getUniformLocation(this.program, 'u_geometryType'),
+                    shimmer: this.gl.getUniformLocation(this.program, 'u_shimmer')
                 };
             }
-
             createProgram(vertexSource, fragmentSource) {
                 const vertexShader = this.createShader(this.gl.VERTEX_SHADER, vertexSource);
                 const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, fragmentSource);
@@ -310,7 +787,12 @@
             }
 
             initBuffers() {
-                const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+                const positions = new Float32Array([
+                    -1, -1,
+                     1, -1,
+                    -1,  1,
+                     1,  1
+                ]);
                 this.buffer = this.gl.createBuffer();
                 this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
                 this.gl.bufferData(this.gl.ARRAY_BUFFER, positions, this.gl.STATIC_DRAW);
@@ -320,23 +802,31 @@
             }
 
             resize() {
-                this.canvas.width = this.canvas.clientWidth;
-                this.canvas.height = this.canvas.clientHeight;
+                const displayWidth = this.canvas.clientWidth;
+                const displayHeight = this.canvas.clientHeight;
+                if (this.canvas.width !== displayWidth || this.canvas.height !== displayHeight) {
+                    this.canvas.width = displayWidth;
+                    this.canvas.height = displayHeight;
+                }
                 this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
             }
 
             updateInteraction(mouseX, mouseY, intensity) {
                 this.mouseX = mouseX;
                 this.mouseY = mouseY;
-                this.mouseIntensity = intensity;
+                this.mouseIntensity = clamp(intensity, 0, 1.2);
             }
 
             triggerClick() {
                 this.clickIntensity = 1.0;
             }
-            
+
             updateDensity(variation) {
                 this.densityTarget = variation;
+            }
+
+            updateConfig(config) {
+                this.config = { ...this.config, ...config };
             }
 
             render() {
@@ -344,11 +834,11 @@
                 this.resize();
                 this.gl.useProgram(this.program);
 
-                this.densityVariation += (this.densityTarget - this.densityVariation) * 0.05;
+                this.densityVariation += (this.densityTarget - this.densityVariation) * 0.07;
                 this.clickIntensity *= this.clickDecay;
-                
-                const time = Date.now() - this.startTime;
-                
+
+                const time = performance.now() - this.startTime;
+
                 this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
                 this.gl.uniform1f(this.uniforms.time, time);
                 this.gl.uniform2f(this.uniforms.mouse, this.mouseX, this.mouseY);
@@ -359,122 +849,323 @@
                 this.gl.uniform1f(this.uniforms.clickIntensity, this.clickIntensity);
                 this.gl.uniform1f(this.uniforms.densityVariation, this.densityVariation);
                 this.gl.uniform1f(this.uniforms.geometryType, this.config.geometryType);
-                
+                this.gl.uniform1f(this.uniforms.shimmer, this.config.shimmer);
+
                 this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
             }
         }
+        class ModalExperience {
+            constructor(variations) {
+                this.variations = variations;
+                this.modalElement = document.getElementById('modal');
+                this.closeButton = document.getElementById('modalClose');
+                this.canvas = document.getElementById('modalCanvas');
+                this.scrollTrack = document.getElementById('modalScrollTrack');
+                this.meta = document.getElementById('modalMeta');
+                this.title = document.getElementById('modalTitle');
+                this.subtitle = document.getElementById('modalSubtitle');
+                this.densityLabel = document.getElementById('modalDensity');
+                this.speedLabel = document.getElementById('modalSpeed');
+                this.geometryLabel = document.getElementById('modalGeometry');
+                this.shimmerLabel = document.getElementById('modalShimmer');
+                this.activeIndex = 0;
+                this.loopHeight = 0;
+                this.itemHeight = 140;
+                this.visualizer = null;
+                this.isOpen = false;
+                this.isAdjusting = false;
 
-        class HolographicSystemManager {
-            constructor() {
-                this.variations = this.createVariations();
-                this.activeVisualizers = [];
-                this.currentPage = 0;
-                this.init();
+                this.buildScrollItems();
+                this.attachEvents();
             }
 
-            createVariations() {
-                const variations = [];
-                const geometryTypes = [
-                    { name: "Tetrahedron", type: 0 }, { name: "Cube", type: 1 }, { name: "Sphere", type: 2 }, 
-                    { name: "Torus", type: 3 }, { name: "Wave", type: 4 }, { name: "Crystal", type: 5 }
-                ];
-
-                for (let i = 0; i < 30; i++) {
-                    const geo = geometryTypes[Math.floor(Math.random() * geometryTypes.length)];
-                    variations.push({
-                        name: `${geo.name} Variant ${i + 1}`,
-                        density: 4.0 + Math.random() * 4.0,
-                        speed: 0.2 + Math.random() * 0.8,
-                        color: [Math.random(), Math.random(), Math.random()],
-                        geometryType: geo.type
+            buildScrollItems() {
+                const fragment = document.createDocumentFragment();
+                const loops = 3;
+                for (let loop = 0; loop < loops; loop++) {
+                    this.variations.forEach((variation, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'modal-scroll-item';
+                        item.dataset.index = index;
+                        item.innerHTML = `
+                            <h3>${(index + 1).toString().padStart(2, '0')} • ${variation.name}</h3>
+                            <p>${variation.description}</p>
+                        `;
+                        fragment.appendChild(item);
                     });
                 }
-                return variations;
+                this.scrollTrack.appendChild(fragment);
+                this.loopHeight = this.scrollTrack.scrollHeight / loops;
             }
 
-            init() {
-                this.setupTabs();
-                this.loadPage(0);
-                this.setupInteractions();
+            attachEvents() {
+                this.closeButton.addEventListener('click', () => this.close());
+                this.modalElement.addEventListener('click', (event) => {
+                    if (event.target === this.modalElement) {
+                        this.close();
+                    }
+                });
+
+                this.scrollTrack.addEventListener('scroll', () => {
+                    if (this.isAdjusting) return;
+                    this.handleScroll();
+                });
+
+                this.modalElement.addEventListener('mousemove', (event) => {
+                    if (!this.isOpen || !this.visualizer) return;
+                    const bounds = this.modalElement.getBoundingClientRect();
+                    const mouseX = (event.clientX - bounds.left) / bounds.width;
+                    const mouseY = 1 - (event.clientY - bounds.top) / bounds.height;
+                    const intensity = Math.min(1, Math.sqrt(event.movementX ** 2 + event.movementY ** 2) / 35);
+                    this.visualizer.updateInteraction(mouseX, mouseY, intensity);
+                });
+
+                this.modalElement.addEventListener('click', () => {
+                    if (this.isOpen && this.visualizer) {
+                        this.visualizer.triggerClick();
+                    }
+                });
+            }
+
+            ensureVisualizer(initialConfig) {
+                if (!this.visualizer) {
+                    this.visualizer = new HolographicVisualizer(this.canvas, initialConfig);
+                } else {
+                    this.visualizer.updateConfig(initialConfig);
+                }
+            }
+
+            open(index) {
+                this.isOpen = true;
+                this.modalElement.classList.add('visible');
+                document.body.classList.add('modal-open');
+                this.ensureVisualizer(this.variations[index]);
+                this.setScrollPosition(index);
+                this.applyVariation(index);
+            }
+
+            close() {
+                this.isOpen = false;
+                this.modalElement.classList.remove('visible');
+                document.body.classList.remove('modal-open');
+            }
+
+            setScrollPosition(index) {
+                const base = this.loopHeight;
+                this.isAdjusting = true;
+                this.scrollTrack.scrollTop = base + index * this.itemHeight;
+                requestAnimationFrame(() => (this.isAdjusting = false));
+            }
+
+            handleScroll() {
+                const maxOffset = this.loopHeight * 2;
+                if (this.scrollTrack.scrollTop < this.loopHeight * 0.5) {
+                    this.isAdjusting = true;
+                    this.scrollTrack.scrollTop += this.loopHeight;
+                    requestAnimationFrame(() => (this.isAdjusting = false));
+                    return;
+                }
+                if (this.scrollTrack.scrollTop > maxOffset - this.loopHeight * 0.5) {
+                    this.isAdjusting = true;
+                    this.scrollTrack.scrollTop -= this.loopHeight;
+                    requestAnimationFrame(() => (this.isAdjusting = false));
+                    return;
+                }
+
+                const normalized = (this.scrollTrack.scrollTop % this.loopHeight) / this.loopHeight;
+                const targetIndex = Math.min(this.variations.length - 1, Math.floor(normalized * this.variations.length));
+                if (targetIndex !== this.activeIndex) {
+                    this.applyVariation(targetIndex);
+                }
+            }
+
+            applyVariation(index) {
+                this.activeIndex = index;
+                const variation = this.variations[index];
+                this.ensureVisualizer(variation);
+                this.visualizer.updateConfig(variation);
+
+                this.title.textContent = variation.name;
+                this.subtitle.textContent = `${variation.family} • Tier ${variation.tierLabel}`;
+                this.densityLabel.textContent = variation.density.toFixed(2);
+                this.speedLabel.textContent = variation.speed.toFixed(2);
+                this.geometryLabel.textContent = GEOMETRY_LABELS[variation.geometryType] || 'Hybrid';
+                this.shimmerLabel.textContent = variation.shimmer.toFixed(2);
+
+                this.meta.innerHTML = `
+                    <span>Variation ${(variation.index + 1).toString().padStart(2, '0')}</span>
+                    <span>${variation.tierName} intensity</span>
+                    <span>${variation.description}</span>
+                `;
+
+                [...this.scrollTrack.children].forEach((item) => {
+                    item.classList.toggle('active', Number(item.dataset.index) === index);
+                });
+            }
+
+            render() {
+                if (this.isOpen && this.visualizer) {
+                    this.visualizer.render();
+                }
+            }
+        }
+        class HolographicSystemManager {
+            constructor() {
+                this.variations = buildVariations();
+                this.itemsPerPage = 5;
+                this.totalPages = Math.ceil(this.variations.length / this.itemsPerPage);
+                this.currentPage = 0;
+                this.activeVisualizers = [];
+
+                this.grid = document.getElementById('cardGrid');
+                this.pageDots = document.getElementById('pageDots');
+                this.prevButton = document.getElementById('prevPage');
+                this.nextButton = document.getElementById('nextPage');
+
+                this.modal = new ModalExperience(this.variations);
+
+                this.buildPagination();
+                this.renderPage(0);
+                this.attachEvents();
                 this.startRenderLoop();
             }
 
-            setupTabs() {
-                const tabContainer = document.getElementById('tabNavigation');
-                for (let i = 0; i < 10; i++) {
-                    const button = document.createElement('button');
-                    button.className = 'tab-button';
-                    button.textContent = `Page ${i + 1}`;
-                    button.onclick = () => this.loadPage(i);
-                    tabContainer.appendChild(button);
+            buildPagination() {
+                this.pageDots.innerHTML = '';
+                for (let page = 0; page < this.totalPages; page++) {
+                    const dot = document.createElement('button');
+                    dot.className = 'page-dot';
+                    dot.type = 'button';
+                    dot.setAttribute('aria-label', `Show variations ${page * this.itemsPerPage + 1} to ${(page + 1) * this.itemsPerPage}`);
+                    dot.addEventListener('click', () => this.renderPage(page));
+                    this.pageDots.appendChild(dot);
                 }
-                tabContainer.children[0].classList.add('active');
+                this.updatePaginationState();
             }
 
-            loadPage(pageIndex) {
-                this.currentPage = pageIndex;
-
-                const tabContainer = document.getElementById('tabNavigation');
-                Array.from(tabContainer.children).forEach((btn, index) => {
-                    btn.classList.toggle('active', index === pageIndex);
+            updatePaginationState() {
+                [...this.pageDots.children].forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentPage);
                 });
-
-                const grid = document.getElementById('holographicGrid');
-                grid.innerHTML = '';
-                this.activeVisualizers = [];
-
-                const startIndex = pageIndex * 3;
-                for (let i = 0; i < 3; i++) {
-                    const variationIndex = startIndex + i;
-                    if (variationIndex >= this.variations.length) break;
-
-                    const instanceDiv = document.createElement('div');
-                    instanceDiv.className = 'holographic-instance';
-                    
-                    const canvas = document.createElement('canvas');
-                    canvas.className = 'visualizer-canvas';
-                    
-                    const overlay = document.createElement('div');
-                    overlay.className = 'instance-overlay';
-                    overlay.textContent = this.variations[variationIndex].name;
-
-                    instanceDiv.appendChild(canvas);
-                    instanceDiv.appendChild(overlay);
-                    grid.appendChild(instanceDiv);
-
-                    const visualizer = new HolographicVisualizer(canvas, this.variations[variationIndex]);
-                    this.activeVisualizers.push(visualizer);
-                }
             }
 
-            setupInteractions() {
-                document.addEventListener('mousemove', (e) => {
-                    const mouseX = e.clientX / window.innerWidth;
-                    const mouseY = 1.0 - (e.clientY / window.innerHeight);
-                    const intensity = Math.min(1.0, Math.sqrt(e.movementX**2 + e.movementY**2) / 40);
-                    this.activeVisualizers.forEach(viz => viz.updateInteraction(mouseX, mouseY, intensity));
+            attachEvents() {
+                this.prevButton.addEventListener('click', () => {
+                    const target = (this.currentPage - 1 + this.totalPages) % this.totalPages;
+                    this.renderPage(target);
                 });
 
-                document.addEventListener('click', () => {
-                    this.activeVisualizers.forEach(viz => viz.triggerClick());
+                this.nextButton.addEventListener('click', () => {
+                    const target = (this.currentPage + 1) % this.totalPages;
+                    this.renderPage(target);
                 });
-                
+
+                window.addEventListener('keydown', (event) => {
+                    if (event.key === 'ArrowLeft') {
+                        this.prevButton.click();
+                    }
+                    if (event.key === 'ArrowRight') {
+                        this.nextButton.click();
+                    }
+                });
+
                 window.addEventListener('scroll', () => {
-                    const densityVar = Math.sin(window.scrollY / 500) * 2.0;
-                    this.activeVisualizers.forEach(viz => viz.updateDensity(densityVar));
+                    const delta = Math.sin(window.scrollY / 420);
+                    this.activeVisualizers.forEach((viz) => viz.updateDensity(delta));
+                }, { passive: true });
+            }
+
+            renderPage(pageIndex) {
+                this.currentPage = pageIndex;
+                this.updatePaginationState();
+
+                this.activeVisualizers = [];
+                this.grid.innerHTML = '';
+
+                const start = pageIndex * this.itemsPerPage;
+                const end = Math.min(start + this.itemsPerPage, this.variations.length);
+
+                for (let index = start; index < end; index++) {
+                    const card = this.createCard(this.variations[index], index);
+                    this.grid.appendChild(card);
+                }
+            }
+
+            createCard(variation, index) {
+                const card = document.createElement('article');
+                card.className = 'holo-card';
+                card.setAttribute('role', 'button');
+                card.setAttribute('tabindex', '0');
+                card.dataset.index = index;
+
+                const canvas = document.createElement('canvas');
+                const meta = document.createElement('div');
+                meta.className = 'holo-meta';
+                meta.innerHTML = `
+                    <h2>${variation.name}</h2>
+                    <div class="chip-row">
+                        <span class="chip">${variation.family}</span>
+                        <span class="chip">Tier ${variation.tierLabel}</span>
+                        <span class="chip">${GEOMETRY_LABELS[variation.geometryType] || 'Hybrid'}</span>
+                    </div>
+                    <div class="stat-grid">
+                        <div>Density • ${variation.density.toFixed(2)}</div>
+                        <div>Speed • ${variation.speed.toFixed(2)}</div>
+                        <div>Shimmer • ${variation.shimmer.toFixed(2)}</div>
+                        <div>Index • ${(variation.index + 1).toString().padStart(2, '0')}</div>
+                    </div>
+                `;
+
+                const footer = document.createElement('div');
+                footer.className = 'card-footer';
+                footer.innerHTML = `
+                    <span>Scroll-morph ready</span>
+                    <span class="expand-hint">Expand</span>
+                `;
+
+                card.appendChild(canvas);
+                card.appendChild(meta);
+                card.appendChild(footer);
+
+                const visualizer = new HolographicVisualizer(canvas, variation);
+                this.activeVisualizers.push(visualizer);
+
+                const activateModal = () => this.modal.open(index);
+                card.addEventListener('click', activateModal);
+                card.addEventListener('keyup', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        activateModal();
+                    }
                 });
+
+                card.addEventListener('mousemove', (event) => {
+                    const bounds = card.getBoundingClientRect();
+                    const mouseX = (event.clientX - bounds.left) / bounds.width;
+                    const mouseY = 1 - (event.clientY - bounds.top) / bounds.height;
+                    const intensity = Math.min(1, Math.sqrt(event.movementX ** 2 + event.movementY ** 2) / 50);
+                    visualizer.updateInteraction(mouseX, mouseY, intensity);
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    visualizer.updateInteraction(0.5, 0.5, 0);
+                });
+
+                return card;
             }
 
             startRenderLoop() {
                 const render = () => {
-                    this.activeVisualizers.forEach(viz => viz.render());
+                    this.activeVisualizers.forEach((viz) => viz.render());
+                    this.modal.render();
                     requestAnimationFrame(render);
                 };
                 render();
             }
         }
 
-        window.addEventListener('load', () => new HolographicSystemManager());
+        window.addEventListener('load', () => {
+            new HolographicSystemManager();
+        });
     </script>
 </body>
 </html>
