@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Neoskeuomorphic Holographic UI – Depth System</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --hue: 208;
+            --primary: hsla(208, 92%, 66%, 0.65);
+            --secondary: hsla(288, 95%, 70%, 0.65);
+            --glow: rgba(0, 255, 255, 0.35);
+            --card-depth: 42px;
+            --grid-opacity: 0.18;
+            --chaos-level: 0.15;
+            --deck-tilt: 6;
+            --hover-lift: 24px;
+            --layout: "home";
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 20%, rgba(0, 255, 255, 0.15), transparent 45%),
+                radial-gradient(circle at 80% 15%, rgba(255, 0, 255, 0.12), transparent 45%),
+                #050610;
+            color: #f4f6ff;
+            font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+            overflow-x: hidden;
+        }
+
+        body.reduce-motion * {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+        }
+
+        body.reduce-motion .holographic-container {
+            transform: none !important;
+        }
+
+        body.reduce-motion .neomorphic-card:hover,
+        body.reduce-motion .neomorphic-card:active {
+            transform: translateZ(0) rotateX(0deg) rotateY(0deg);
+        }
+
+        .scene-wrapper {
+            position: relative;
+            min-height: 100vh;
+            padding: clamp(28px, 6vw, 60px);
+            display: grid;
+            gap: clamp(24px, 4vw, 48px);
+        }
+
+        .holographic-container {
+            position: relative;
+            perspective: 1400px;
+            transform-style: preserve-3d;
+            min-height: 520px;
+        }
+
+        .depth-layer {
+            position: absolute;
+            inset: 0;
+            transform-style: preserve-3d;
+            display: grid;
+            gap: 22px;
+            --layer-depth: 0px;
+            --layer-tilt-x: 0deg;
+            --layer-tilt-y: 0deg;
+            --layer-scale: 1;
+            transition: transform 560ms cubic-bezier(0.2, 0.8, 0.35, 1);
+            transform: translateZ(var(--layer-depth)) rotateX(var(--layer-tilt-x)) rotateY(var(--layer-tilt-y)) scale(var(--layer-scale));
+        }
+
+        .depth-layer.background {
+            --layer-depth: -160px;
+            --layer-scale: 1.12;
+        }
+
+        .depth-layer.midground {
+            --layer-depth: -40px;
+        }
+
+        .depth-layer.foreground {
+            --layer-depth: 60px;
+        }
+
+        .depth-layer.accent {
+            --layer-depth: 120px;
+        }
+
+        .holographic-container[data-layout='tech'] .depth-layer.background {
+            --layer-tilt-y: -6deg;
+            --layer-scale: 1.06;
+        }
+
+        .holographic-container[data-layout='tech'] .depth-layer.foreground {
+            --layer-tilt-y: 6deg;
+        }
+
+        .holographic-container[data-layout='media'] .depth-layer.midground,
+        .holographic-container[data-layout='media'] .depth-layer.foreground {
+            --layer-tilt-x: -2deg;
+        }
+
+        .holographic-container[data-layout='orbit'] .depth-layer.background {
+            --layer-tilt-y: -10deg;
+        }
+
+        .holographic-container[data-layout='orbit'] .depth-layer.accent {
+            --layer-tilt-y: 6deg;
+        }
+
+        .holographic-container[data-layout='flux'] .depth-layer.foreground {
+            --layer-tilt-y: 10deg;
+            --layer-scale: 1.04;
+        }
+
+        .holographic-container[data-layout='flux'] .depth-layer.accent {
+            --layer-tilt-x: 4deg;
+        }
+
+        .neomorphic-card {
+            position: relative;
+            border-radius: 26px;
+            padding: 26px 28px;
+            background: linear-gradient(145deg, rgba(9, 12, 20, 0.9), rgba(22, 16, 32, 0.7));
+            backdrop-filter: blur(28px) saturate(1.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow:
+                0 28px 55px rgba(0, 0, 0, 0.6),
+                inset 0 1px 2px rgba(255, 255, 255, 0.12),
+                0 0 0 1px rgba(0, 255, 255, 0.12),
+                0 0 42px rgba(111, 243, 255, 0.25);
+            transform-style: preserve-3d;
+            transition:
+                transform 420ms cubic-bezier(0.17, 0.84, 0.44, 1),
+                box-shadow 420ms ease;
+        }
+
+        .neomorphic-card::before,
+        .neomorphic-card::after {
+            content: "";
+            position: absolute;
+            inset: 1px;
+            border-radius: 25px;
+            pointer-events: none;
+        }
+
+        .neomorphic-card::before {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.18), transparent 45%);
+            mix-blend-mode: screen;
+            opacity: 0.55;
+        }
+
+        .neomorphic-card::after {
+            box-shadow:
+                inset 0 0 0 1px rgba(0, 255, 255, 0.2),
+                inset 0 0 24px rgba(255, 0, 255, 0.18);
+            opacity: 0.4;
+        }
+
+        .neomorphic-card:hover {
+            transform: translateZ(var(--hover-lift)) rotateX(-4deg) rotateY(3deg);
+            box-shadow:
+                0 38px 70px rgba(0, 0, 0, 0.65),
+                inset 0 1px 3px rgba(255, 255, 255, 0.18),
+                0 0 0 2px rgba(0, 255, 255, 0.35),
+                0 0 60px rgba(255, 0, 255, 0.35);
+        }
+
+        .neomorphic-card:active {
+            transform: translateZ(calc(var(--hover-lift) - 6px)) rotateX(2deg) rotateY(-2deg);
+            box-shadow:
+                0 32px 48px rgba(0, 0, 0, 0.7),
+                0 0 0 2px rgba(255, 224, 114, 0.55),
+                0 0 40px rgba(255, 224, 114, 0.38);
+        }
+
+        .card-heading {
+            text-transform: uppercase;
+            letter-spacing: 0.24em;
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        .card-title {
+            margin: 12px 0 16px;
+            font-size: clamp(1.1rem, 2.1vw, 1.8rem);
+            letter-spacing: 0.08em;
+            color: #f7f9ff;
+            text-shadow: 0 0 18px rgba(111, 243, 255, 0.6), 0 0 28px rgba(255, 0, 255, 0.32);
+        }
+
+        .card-body {
+            line-height: 1.7;
+            color: rgba(220, 230, 255, 0.78);
+            max-width: 420px;
+        }
+
+        .card-metrics {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            font-size: 0.78rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(146, 206, 255, 0.75);
+        }
+
+        .metric-value {
+            color: rgba(255, 255, 255, 0.88);
+            text-align: right;
+        }
+
+        .grid-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            opacity: var(--grid-opacity);
+            background:
+                repeating-linear-gradient(0deg, transparent, transparent 22px, rgba(0, 255, 255, 0.2) 22px, rgba(0, 255, 255, 0.2) 24px),
+                repeating-linear-gradient(90deg, transparent, transparent 22px, rgba(255, 0, 255, 0.2) 22px, rgba(255, 0, 255, 0.2) 24px);
+            animation: gridPulse 6s ease-in-out infinite;
+        }
+
+        .chaos-overlay {
+            position: absolute;
+            inset: -10%;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            opacity: 0;
+            background:
+                repeating-linear-gradient(22.5deg, transparent, transparent 6px, rgba(255, 0, 255, var(--chaos-level)) 6px, rgba(255, 0, 255, var(--chaos-level)) 8px),
+                repeating-linear-gradient(67.5deg, transparent, transparent 6px, rgba(0, 255, 255, var(--chaos-level)) 6px, rgba(0, 255, 255, var(--chaos-level)) 8px);
+        }
+
+        .chaos-overlay.active {
+            opacity: 1;
+            animation: chaosFlutter 140ms infinite;
+        }
+
+        .interaction-ripple {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.5), transparent 65%);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            mix-blend-mode: screen;
+            opacity: 0;
+        }
+
+        .interaction-ripple.active {
+            animation: rippleExpand 640ms ease;
+        }
+
+        .control-dock {
+            display: grid;
+            gap: 18px;
+            padding: 20px 24px;
+            border-radius: 24px;
+            background: rgba(5, 8, 18, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(18px);
+            box-shadow: 0 20px 36px rgba(0, 0, 0, 0.45);
+        }
+
+        .layout-toggle {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .layout-button {
+            border: none;
+            border-radius: 999px;
+            padding: 10px 22px;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            cursor: pointer;
+            color: rgba(5, 6, 12, 0.85);
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.65), rgba(255, 0, 255, 0.65));
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5), 0 16px 20px rgba(0, 0, 0, 0.35);
+            transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+        }
+
+        .layout-button:hover {
+            transform: translateY(-2px);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75), 0 18px 30px rgba(0, 0, 0, 0.4);
+            filter: saturate(1.2);
+        }
+
+        .layout-button.active {
+            background: linear-gradient(135deg, rgba(255, 224, 114, 0.85), rgba(255, 0, 255, 0.65));
+            color: #06070e;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.85), 0 18px 32px rgba(0, 0, 0, 0.48);
+        }
+
+        .tuner {
+            display: grid;
+            gap: 10px;
+        }
+
+        .tuner-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-size: 0.7rem;
+            color: rgba(220, 230, 255, 0.76);
+        }
+
+        .tuner-label output {
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        .tuner input[type="range"] {
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            outline: none;
+            overflow: hidden;
+        }
+
+        .tuner input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.85), rgba(255, 0, 255, 0.85));
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.45);
+            cursor: pointer;
+        }
+
+        .tuner input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.85), rgba(255, 0, 255, 0.85));
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.45);
+            border: none;
+            cursor: pointer;
+        }
+
+        .dock-select {
+            display: grid;
+            gap: 8px;
+        }
+
+        .dock-select label {
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-size: 0.7rem;
+            color: rgba(220, 230, 255, 0.76);
+        }
+
+        .dock-select select {
+            appearance: none;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 12px 16px;
+            background: rgba(12, 16, 28, 0.7);
+            color: #f1f4ff;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+        }
+
+        .dock-select select:focus {
+            outline: 2px solid rgba(0, 255, 255, 0.55);
+            outline-offset: 2px;
+        }
+
+        .dock-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(10, 12, 24, 0.6);
+        }
+
+        .dock-toggle input[type='checkbox'] {
+            width: 42px;
+            height: 22px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.6), rgba(255, 0, 255, 0.6));
+            position: relative;
+            appearance: none;
+            cursor: pointer;
+            transition: filter 160ms ease, background 200ms ease;
+        }
+
+        .dock-toggle input[type='checkbox']::after {
+            content: "";
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #06070e;
+            top: 1px;
+            left: 1px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+            transition: transform 200ms ease;
+        }
+
+        .dock-toggle input[type='checkbox']:checked::after {
+            transform: translateX(20px);
+        }
+
+        .dock-toggle span {
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 0.7rem;
+            color: rgba(230, 236, 255, 0.78);
+        }
+
+        .dock-toggle .toggle-status {
+            margin-left: auto;
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            color: rgba(0, 255, 255, 0.75);
+        }
+
+        .dock-actions {
+            display: grid;
+            gap: 10px;
+        }
+
+        .dock-actions button {
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: linear-gradient(135deg, rgba(255, 224, 114, 0.75), rgba(255, 0, 255, 0.55));
+            color: #05060c;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 200ms ease, box-shadow 200ms ease;
+        }
+
+        .dock-actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .dock-note {
+            margin: 0;
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            color: rgba(220, 232, 255, 0.62);
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .tuner-note {
+            margin: 0;
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            color: rgba(210, 220, 255, 0.72);
+        }
+
+        .state-indicator {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            padding: 18px 24px;
+            border-radius: 20px;
+            background: rgba(6, 10, 24, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(18px);
+            color: rgba(220, 230, 255, 0.78);
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            font-size: 0.72rem;
+        }
+
+        @keyframes gridPulse {
+            0%,
+            100% {
+                opacity: 0.14;
+                transform: translate3d(0, 0, 0);
+            }
+            50% {
+                opacity: 0.24;
+                transform: translate3d(6px, -6px, 0);
+            }
+        }
+
+        @keyframes chaosFlutter {
+            0%,
+            100% {
+                opacity: 0.55;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes rippleExpand {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 0.8;
+            }
+            100% {
+                width: 360px;
+                height: 360px;
+                opacity: 0;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .grid-overlay,
+            .chaos-overlay,
+            .interaction-ripple,
+            .neomorphic-card,
+            .depth-layer {
+                animation: none !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+
+        @media (max-width: 960px) {
+            .depth-layer {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .neomorphic-card:nth-child(3) {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .depth-layer {
+                grid-template-columns: 1fr;
+            }
+
+            .neomorphic-card:nth-child(3) {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scene-wrapper">
+        <section class="control-dock" aria-label="Deck tuning">
+            <div class="layout-toggle" role="group" aria-label="Choose layout">
+                <button class="layout-button active" data-layout="home">cascade</button>
+                <button class="layout-button" data-layout="tech">tech grid</button>
+                <button class="layout-button" data-layout="media">media wall</button>
+                <button class="layout-button" data-layout="orbit">orbit stack</button>
+                <button class="layout-button" data-layout="flux">flux prism</button>
+                <button class="layout-button" data-action="chaos">chaos pulse</button>
+            </div>
+            <div class="tuner">
+                <label class="tuner-label" for="depthControl">
+                    <span>depth multiplier</span>
+                    <output id="depthValue" for="depthControl">1.00×</output>
+                </label>
+                <input type="range" id="depthControl" min="0.8" max="1.6" step="0.05" value="1" />
+                <p class="tuner-note">Scales translateZ offsets applied to each deck layer.</p>
+            </div>
+            <div class="tuner">
+                <label class="tuner-label" for="glowControl">
+                    <span>grid glow</span>
+                    <output id="glowValue" for="glowControl">18%</output>
+                </label>
+                <input type="range" id="glowControl" min="10" max="40" step="1" value="18" />
+                <p class="tuner-note">Adjusts overlay lattice opacity for the holographic grid.</p>
+            </div>
+            <div class="dock-select">
+                <label for="themeControl">hologram theme</label>
+                <select id="themeControl" aria-label="Select hologram theme">
+                    <option value="aurora">Aurora Cyan</option>
+                    <option value="ion-drift">Ion Drift</option>
+                    <option value="solar-ember">Solar Ember</option>
+                </select>
+            </div>
+            <label class="dock-toggle" for="pointerToggle">
+                <span>pointer orbit</span>
+                <span class="toggle-status" id="pointerStatus">active</span>
+                <input type="checkbox" id="pointerToggle" checked aria-label="Toggle pointer orbit" />
+            </label>
+            <div class="dock-actions">
+                <button type="button" id="resetDeck">reset deck</button>
+                <p class="dock-note">Shift-click chaos pulse to lengthen the holographic ripple.</p>
+            </div>
+        </section>
+
+        <section class="state-indicator">
+            <span>layout: <strong id="indicator-layout">home</strong></span>
+            <span>depth: <strong id="indicator-depth">60px</strong></span>
+            <span>grid: <strong id="indicator-grid">18%</strong></span>
+            <span>chaos: <strong id="indicator-chaos">0.15</strong></span>
+        </section>
+
+        <div class="sr-only" id="statusLive" aria-live="polite" aria-atomic="true"></div>
+
+        <div class="holographic-container" id="holo">
+            <div class="grid-overlay" aria-hidden="true"></div>
+            <div class="chaos-overlay" aria-hidden="true"></div>
+            <div class="interaction-ripple" aria-hidden="true"></div>
+
+            <div class="depth-layer background" data-depth="-160">
+                <article class="neomorphic-card" data-role="atlas">
+                    <span class="card-heading">Depth Layer: Background</span>
+                    <h2 class="card-title">Holographic Atlas</h2>
+                    <p class="card-body">
+                        Background layer renders slow parallax lattice projections using `translateZ(-160px)` while providing a
+                        dim neon wash from the GEMINI rendering pipeline. It anchors the motion for the upper layers.
+                    </p>
+                    <div class="card-metrics">
+                        <span>grid density</span><span class="metric-value" data-metric="grid">18%</span>
+                        <span>light scatter</span><span class="metric-value" data-metric="scatter">0.42</span>
+                        <span>z-index</span><span class="metric-value" data-metric="z">-160px</span>
+                        <span>glow</span><span class="metric-value" data-metric="glow">0.35</span>
+                    </div>
+                </article>
+            </div>
+
+            <div class="depth-layer midground" data-depth="-40">
+                <article class="neomorphic-card" data-role="console">
+                    <span class="card-heading">Depth Layer: Midground</span>
+                    <h2 class="card-title">Reactive Console</h2>
+                    <p class="card-body">
+                        Midground hosts neoskeuomorphic control decks. Hover tilts the card (`rotateX(-4deg) rotateY(3deg)`) while
+                        inner glows and rim lighting accentuate the holographic silhouette.
+                    </p>
+                    <div class="card-metrics">
+                        <span>morph factor</span><span class="metric-value" data-metric="morph">0.62</span>
+                        <span>hue</span><span class="metric-value" data-metric="hue">208°</span>
+                        <span>depth</span><span class="metric-value" data-metric="z">-40px</span>
+                        <span>tilt</span><span class="metric-value" data-metric="tilt">hover reactive</span>
+                    </div>
+                </article>
+            </div>
+
+            <div class="depth-layer foreground" data-depth="60">
+                <article class="neomorphic-card" data-role="control">
+                    <span class="card-heading">Depth Layer: Foreground</span>
+                    <h2 class="card-title">Visualizer Control Stack</h2>
+                    <p class="card-body">
+                        Foreground panel floats at `translateZ(60px)`, linking to the WebGL visualizer pool. It exposes live
+                        metrics, and click pulses trigger ripples that ripple through all layers.
+                    </p>
+                    <div class="card-metrics">
+                        <span>rotation</span><span class="metric-value" data-metric="rotation">0.28x</span>
+                        <span>preset</span><span class="metric-value" data-metric="preset">XR-04</span>
+                        <span>depth</span><span class="metric-value" data-metric="z">60px</span>
+                        <span>chaos</span><span class="metric-value" data-metric="chaos">0.15</span>
+                    </div>
+                </article>
+            </div>
+
+            <div class="depth-layer accent" data-depth="120">
+                <article class="neomorphic-card" data-role="hud">
+                    <span class="card-heading">Depth Layer: Accent</span>
+                    <h2 class="card-title">HUD Signal</h2>
+                    <p class="card-body">
+                        Accent layer hosts notification banners and holographic glyphs. When chaos pulses engage it catches the
+                        pulse first, saturating the rim lights and increasing `box-shadow` glow.
+                    </p>
+                    <div class="card-metrics">
+                        <span>alerts</span><span class="metric-value" data-metric="alerts">03</span>
+                        <span>intensity</span><span class="metric-value" data-metric="intensity">0.48</span>
+                        <span>depth</span><span class="metric-value" data-metric="z">120px</span>
+                        <span>status</span><span class="metric-value" data-metric="status">stable</span>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const layouts = {
+            home: { depth: 60, gridOpacity: 0.18, chaos: 0.15, hue: 208, theme: 'aurora', tilt: 6 },
+            tech: { depth: 80, gridOpacity: 0.24, chaos: 0.22, hue: 192, theme: 'ion-drift', tilt: 8 },
+            media: { depth: 70, gridOpacity: 0.2, chaos: 0.18, hue: 256, theme: 'aurora', tilt: 5 },
+            orbit: { depth: 90, gridOpacity: 0.26, chaos: 0.28, hue: 228, theme: 'solar-ember', tilt: 9 },
+            flux: { depth: 110, gridOpacity: 0.3, chaos: 0.32, hue: 264, theme: 'ion-drift', tilt: 10 },
+        };
+
+        const root = document.documentElement;
+        const holo = document.getElementById('holo');
+        const chaosOverlay = document.querySelector('.chaos-overlay');
+        const ripple = document.querySelector('.interaction-ripple');
+        const buttons = document.querySelectorAll('.layout-button[data-layout]');
+        const chaosButton = document.querySelector(".layout-button[data-action='chaos']");
+        const depthControl = document.getElementById('depthControl');
+        const glowControl = document.getElementById('glowControl');
+        const themeControl = document.getElementById('themeControl');
+        const pointerToggle = document.getElementById('pointerToggle');
+        const pointerStatus = document.getElementById('pointerStatus');
+        const resetButton = document.getElementById('resetDeck');
+        const liveRegion = document.getElementById('statusLive');
+        const outputs = {
+            depth: document.getElementById('depthValue'),
+            glow: document.getElementById('glowValue'),
+        };
+        const indicator = {
+            layout: document.getElementById('indicator-layout'),
+            depth: document.getElementById('indicator-depth'),
+            grid: document.getElementById('indicator-grid'),
+            chaos: document.getElementById('indicator-chaos'),
+        };
+        const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const layers = Array.from(document.querySelectorAll('.depth-layer'));
+        const baseLayerDepths = layers.map((layer) => Number(layer.dataset.depth));
+        const metrics = {
+            grid: document.querySelector('.metric-value[data-metric="grid"]'),
+            glow: document.querySelector('.metric-value[data-metric="glow"]'),
+            chaos: document.querySelector('.metric-value[data-metric="chaos"]'),
+            hue: document.querySelector('.metric-value[data-metric="hue"]'),
+        };
+        const themePresets = {
+            aurora: { primary: 'hsla(208, 92%, 66%, 0.65)', secondary: 'hsla(288, 95%, 70%, 0.65)', glow: 0.35, label: 'Aurora Cyan' },
+            'ion-drift': { primary: 'hsla(192, 92%, 62%, 0.68)', secondary: 'hsla(264, 95%, 72%, 0.65)', glow: 0.38, label: 'Ion Drift' },
+            'solar-ember': { primary: 'hsla(28, 95%, 72%, 0.65)', secondary: 'hsla(342, 85%, 68%, 0.62)', glow: 0.42, label: 'Solar Ember' },
+        };
+        const defaultSettings = {
+            layout: 'home',
+            depthMultiplier: 1,
+            glow: 18,
+            theme: 'aurora',
+            pointer: true,
+        };
+
+        let currentLayout = 'home';
+        let baseDepth = 60;
+        let layoutFactor = 1;
+        let depthMultiplier = 1;
+        let pointerTracking = true;
+        let storedPointerPreference = true;
+
+        function applyDepthMultiplier(multiplier) {
+            depthMultiplier = multiplier;
+            outputs.depth.textContent = `${multiplier.toFixed(2)}×`;
+            layers.forEach((layer, index) => {
+                const base = baseLayerDepths[index];
+                if (!Number.isFinite(base)) return;
+                const value = base * layoutFactor * multiplier;
+                layer.style.setProperty('--layer-depth', `${value}px`);
+            });
+            const effectiveDepth = Math.round(baseDepth * multiplier);
+            indicator.depth.textContent = `${effectiveDepth}px`;
+            root.style.setProperty('--hover-lift', `${24 * multiplier}px`);
+        }
+
+        function applyGlow(percent) {
+            const value = Math.max(10, Math.min(40, percent));
+            glowControl.value = value;
+            outputs.glow.textContent = `${value}%`;
+            const normalized = value / 100;
+            root.style.setProperty('--grid-opacity', normalized);
+            indicator.grid.textContent = `${Math.round(normalized * 100)}%`;
+            if (metrics.grid) {
+                metrics.grid.textContent = `${Math.round(normalized * 100)}%`;
+            }
+            if (metrics.glow) {
+                metrics.glow.textContent = normalized.toFixed(2);
+            }
+        }
+
+        function announceStatus(message) {
+            if (!liveRegion) return;
+            liveRegion.textContent = '';
+            requestAnimationFrame(() => {
+                liveRegion.textContent = message;
+            });
+        }
+
+        function applyTheme(key, { announce = true } = {}) {
+            const preset = themePresets[key];
+            if (!preset) return;
+            root.style.setProperty('--primary', preset.primary);
+            root.style.setProperty('--secondary', preset.secondary);
+            root.style.setProperty('--glow', `rgba(0, 255, 255, ${preset.glow})`);
+            if (themeControl) {
+                themeControl.value = key;
+            }
+            if (announce) {
+                announceStatus(`${preset.label} theme applied.`);
+            }
+        }
+
+        function updatePointerState(enabled, { announce = true } = {}) {
+            pointerTracking = enabled;
+            if (pointerStatus) {
+                pointerStatus.textContent = enabled ? 'active' : 'idle';
+                pointerStatus.style.color = enabled ? 'rgba(0, 255, 255, 0.75)' : 'rgba(255, 180, 220, 0.68)';
+            }
+            if (!enabled) {
+                holo.style.transform = 'rotateX(0deg) rotateY(0deg)';
+            }
+            if (announce) {
+                announceStatus(`Pointer orbit ${enabled ? 'enabled' : 'paused'}.`);
+            }
+        }
+
+        function applyLayout(name) {
+            const config = layouts[name];
+            if (!config) return;
+
+            currentLayout = name;
+            baseDepth = config.depth;
+            layoutFactor = config.depth / 60;
+            holo.dataset.layout = name;
+
+            root.style.setProperty('--hue', config.hue);
+            root.style.setProperty('--chaos-level', config.chaos);
+            root.style.setProperty('--deck-tilt', config.tilt || 6);
+            applyTheme(config.theme, { announce: false });
+
+            indicator.layout.textContent = name;
+            indicator.chaos.textContent = config.chaos.toFixed(2);
+            if (metrics.chaos) {
+                metrics.chaos.textContent = config.chaos.toFixed(2);
+            }
+            if (metrics.hue) {
+                metrics.hue.textContent = `${Math.round(config.hue)}°`;
+            }
+
+            depthControl.value = '1';
+            applyDepthMultiplier(1);
+            applyGlow(Math.round(config.gridOpacity * 100));
+            announceStatus(`Layout ${name} engaged.`);
+        }
+
+        buttons.forEach((button) => {
+            button.addEventListener('click', () => {
+                buttons.forEach((b) => b.classList.remove('active'));
+                button.classList.add('active');
+                applyLayout(button.dataset.layout);
+            });
+        });
+
+        if (chaosButton) {
+            chaosButton.addEventListener('click', (event) => {
+                chaosOverlay.classList.add('active');
+                let hold = reduceMotionQuery.matches ? 0 : 880;
+                if (event.shiftKey && !reduceMotionQuery.matches) {
+                    hold = 1320;
+                }
+                const reset = () => chaosOverlay.classList.remove('active');
+                if (hold === 0) {
+                    requestAnimationFrame(reset);
+                } else {
+                    setTimeout(reset, hold);
+                }
+                announceStatus(event.shiftKey ? 'Chaos pulse extended.' : 'Chaos pulse triggered.');
+            });
+        }
+
+        depthControl.addEventListener('input', (event) => {
+            const multiplier = Number(event.target.value);
+            applyDepthMultiplier(multiplier);
+        });
+
+        glowControl.addEventListener('input', (event) => {
+            const value = Number(event.target.value);
+            applyGlow(value);
+        });
+
+        if (themeControl) {
+            themeControl.addEventListener('change', (event) => {
+                applyTheme(event.target.value);
+            });
+        }
+
+        if (pointerToggle) {
+            pointerToggle.addEventListener('change', (event) => {
+                storedPointerPreference = event.target.checked;
+                updatePointerState(event.target.checked);
+            });
+        }
+
+        if (resetButton) {
+            resetButton.addEventListener('click', () => {
+                buttons.forEach((button) => {
+                    button.classList.toggle('active', button.dataset.layout === defaultSettings.layout);
+                });
+                applyLayout(defaultSettings.layout);
+                depthControl.value = defaultSettings.depthMultiplier.toFixed(2);
+                applyDepthMultiplier(defaultSettings.depthMultiplier);
+                glowControl.value = defaultSettings.glow;
+                applyGlow(defaultSettings.glow);
+                if (themeControl) {
+                    themeControl.value = defaultSettings.theme;
+                }
+                applyTheme(defaultSettings.theme, { announce: false });
+                if (pointerToggle) {
+                    pointerToggle.checked = defaultSettings.pointer;
+                }
+                storedPointerPreference = defaultSettings.pointer;
+                updatePointerState(defaultSettings.pointer, { announce: false });
+                announceStatus('Deck reset to default configuration.');
+            });
+        }
+
+        function handlePointer(event) {
+            if (!pointerTracking) return;
+            const rect = holo.getBoundingClientRect();
+            const relX = (event.clientX - rect.left) / rect.width - 0.5;
+            const relY = (event.clientY - rect.top) / rect.height - 0.5;
+            const tilt = Number(getComputedStyle(root).getPropertyValue('--deck-tilt')) || 6;
+            holo.style.transform = `rotateX(${relY * -tilt}deg) rotateY(${relX * tilt}deg)`;
+        }
+
+        holo.addEventListener('pointermove', handlePointer);
+
+        holo.addEventListener('mouseleave', () => {
+            holo.style.transform = 'rotateX(0deg) rotateY(0deg)';
+        });
+
+        holo.addEventListener('click', (event) => {
+            if (reduceMotionQuery.matches) return;
+            const rect = holo.getBoundingClientRect();
+            ripple.style.left = `${event.clientX - rect.left}px`;
+            ripple.style.top = `${event.clientY - rect.top}px`;
+            ripple.classList.remove('active');
+            void ripple.offsetWidth;
+            ripple.classList.add('active');
+        });
+
+        function handleReduceMotion(event) {
+            const reduce = event.matches;
+            document.body.classList.toggle('reduce-motion', reduce);
+            if (pointerToggle) {
+                pointerToggle.disabled = reduce;
+                pointerToggle.setAttribute('aria-disabled', reduce ? 'true' : 'false');
+            }
+            if (reduce) {
+                storedPointerPreference = pointerToggle ? pointerToggle.checked : pointerTracking;
+                if (pointerToggle) {
+                    pointerToggle.checked = false;
+                }
+                updatePointerState(false, { announce: false });
+            } else {
+                const restored = pointerToggle ? storedPointerPreference : true;
+                if (pointerToggle) {
+                    pointerToggle.checked = restored;
+                }
+                updatePointerState(restored, { announce: false });
+                applyDepthMultiplier(Number(depthControl.value));
+            }
+            announceStatus(reduce ? 'Reduced motion preference applied.' : 'Motion preference restored.');
+        }
+
+        updatePointerState(pointerToggle ? pointerToggle.checked : true, { announce: false });
+        reduceMotionQuery.addEventListener('change', handleReduceMotion);
+        handleReduceMotion(reduceMotionQuery);
+
+        applyLayout('home');
+    </script>
+</body>
+</html>

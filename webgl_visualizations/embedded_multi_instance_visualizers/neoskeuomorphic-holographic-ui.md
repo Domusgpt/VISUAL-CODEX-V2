@@ -7,102 +7,56 @@
 *   **Key Features & Effects:**
 
     *   **Holographic Depth System:**
-        *   **`holographic-container`:** Uses `perspective` and `transform-style: preserve-3d` to create a 3D scene.
-        *   **`depth-layer`:** Multiple layers (background, midground, foreground, accent) are positioned at different `translateZ` values, creating a sense of depth. These layers transition smoothly.
+        *   **`holographic-container`:** Applies `perspective: 1400px` and `transform-style: preserve-3d` so nested layers retain depth when rotated as a group.
+        *   **`depth-layer`:** Background, midground, foreground, and accent layers start at `translateZ(-160px)`, `-40px`, `60px`, and `120px`. Layout scripts recalculate those offsets per mode to keep the parallax spacing consistent with the GEMINI capture.
     *   **Neoskeuomorphic Cards:**
-        *   **Styling:** Cards (`.neomorphic-card`) combine glassmorphism (`backdrop-filter: blur(20px)`) with complex `box-shadow` properties to create a soft, glowing, and slightly embossed look. The shadows include outer shadows for depth, inner highlights for a glass effect, and holographic rim lighting (cyan glow).
-        *   **Hover Effects:** On hover, cards `translateY` slightly, rotate in 3D space (`rotateX`, `rotateY`), and their `box-shadow` intensifies with additional magenta and yellow glows, creating a vibrant, interactive pop-out effect.
-        *   **Click Effects:** When clicked, cards have a distinct `transform` and `box-shadow` (yellow glow) to indicate interaction.
-    *   **Multi-Layered Visualizers:** Each depth layer and each neoskeuomorphic card can host its own `visualizer-canvas`. These visualizers have different "roles" (`shadow-visualizer`, `highlight-visualizer`, `content-visualizer`, `accent-visualizer`) with distinct CSS `opacity`, `filter` (blur, brightness), and `mix-blend-mode` properties, creating complex layered visual effects.
-    *   **Dynamic Layouts:** The system supports different "layouts" (`layout-home`, `layout-tech`, `layout-media`, etc.) that dynamically reposition and resize the neoskeuomorphic cards using CSS, creating distinct UI arrangements.
-    *   **Grid Overlay System:** A semi-transparent grid (`.grid-overlay`) with repeating linear gradients (cyan and magenta) overlays the entire scene. It can become `active` and pulse (`gridPulse` animation) with increased opacity.
+        *   **Styling:** `.neomorphic-card` stacks outer shadows (`0 28px 55px rgba(0,0,0,0.6)`), rim lights (`0 0 0 1px rgba(0,255,255,0.12)`), and inner highlights to reproduce the soft glass extrusion.
+        *   **Hover Effects:** Hover transforms apply `translateZ(24px) rotateX(-4deg) rotateY(3deg)` and swap the rim lighting for a brighter cyan/magenta glow, while click states lean forward with a yellow highlight ring.
+        *   **Glassmorphism:** Each card uses `backdrop-filter: blur(28px) saturate(1.4)` and pseudo-elements to paint radial bloom and inset glows.
+    *   **Multi-Layered Visualizers:** Each depth layer can embed a WebGL canvas (`visualizer-canvas`), and the CSS keeps them optically distinct via `mix-blend-mode: screen`, per-layer opacity, and custom hue rotations derived from root-level CSS variables.
+    *   **Dynamic Layouts:** Layout presets (HOME, TECH, MEDIA, ORBIT, FLUX) manipulate layer transforms and update CSS custom properties for depth, hue, chaos, and grid opacity. The entire container tilts based on pointer position using `rotateX/rotateY` for live parallax.
+    *   **Grid Overlay System:** `.grid-overlay` builds a cross-hatched hologram with two `repeating-linear-gradient` layers (cyan horizontal, magenta vertical). The `gridPulse` animation nudges opacity and translation so the grid shimmers.
     *   **Interactive Feedback Systems:**
-        *   **`interaction-ripple`:** A circular ripple effect expands and fades out (`rippleExpand` animation) from the mouse click location, providing visual feedback for interaction.
-        *   **Scroll Progress Bar:** A vertical scrollbar (`.scroll-progress`) on the right side of the screen with a multi-color linear gradient fill (`.scroll-fill`) that indicates scroll position. The fill's `box-shadow` glows.
-        *   **Chaos Overlay:** A repeating linear gradient overlay (`.chaos-overlay`) with magenta and cyan lines that becomes `active` and flickers (`chaosFlicker` animation) with increased opacity based on scroll accumulation, simulating a "chaos" or "glitch" effect.
-    *   **State Controls:** A floating control bar (`.state-controls`) with circular "state dots" (`.state-dot`) that represent different UI layouts. The active dot has a vibrant linear gradient background (cyan to magenta) and a strong `box-shadow` glow, and scales up.
-    *   **State Indicator:** A floating panel (`.state-indicator`) with glassmorphism, displaying the current layout, depth, scroll progress, chaos level, and mouse reactivity.
-*   **Code Highlights:**
+        *   **`interaction-ripple`:** Clicks inside the container spawn an expanding radial gradient (360px diameter) to simulate depth ripples.
+        *   **Chaos Overlay:** `.chaos-overlay` toggles via control buttons and uses `@keyframes chaosFlutter` to flicker twin diagonals of cyan/magenta streaks based on `--chaos-level`.
+        *   **State Indicator:** A glass info bar (`.state-indicator`) displays live depth offset, grid intensity, and chaos level, refreshing whenever the layout changes.
+        *   **Control Dock:** The flex-based `.control-dock` pairs layout buttons with depth and grid glow sliders, allowing reviewers to scale `--layer-depth` via a multiplier and rewrite `--grid-opacity` without editing code.
 
-    *   **CSS (Holographic Container & Depth Layers):**
-        ```css
-        .holographic-container {
-            perspective: 1200px;
-            transform-style: preserve-3d;
-        }
-        .depth-layer.background { transform: translateZ(-100px); }
-        .depth-layer.foreground { transform: translateZ(50px); }
-        ```
+---
 
-    *   **CSS (Neoskeuomorphic Card Shadows & Hover):**
-        ```css
-        .neomorphic-card {
-            backdrop-filter: blur(20px);
-            box-shadow:
-                0 20px 40px rgba(0, 0, 0, 0.4),
-                inset 0 1px 2px rgba(255, 255, 255, 0.1),
-                0 0 0 1px rgba(0, 255, 255, 0.2),
-                0 0 20px rgba(0, 255, 255, 0.1);
-        }
-        .neomorphic-card:hover {
-            transform: translateY(-8px) rotateX(2deg) rotateY(1deg);
-            box-shadow:
-                0 0 0 2px rgba(0, 255, 255, 0.4),
-                0 0 40px rgba(0, 255, 255, 0.2),
-                0 0 80px rgba(255, 0, 255, 0.1); /* Magenta glow */
-        }
-        ```
+#### CSS Focus Points
 
-    *   **CSS (Chaos Overlay & Flicker Animation):**
-        ```css
-        .chaos-overlay {
-            background:
-                repeating-linear-gradient(22.5deg, transparent, transparent 3px, rgba(255, 0, 255, 0.03) 3px, rgba(255, 0, 255, 0.03) 6px),
-                repeating-linear-gradient(67.5deg, transparent, transparent 3px, rgba(0, 255, 255, 0.03) 3px, rgba(0, 255, 255, 0.03) 6px);
-        }
-        .chaos-overlay.active {
-            opacity: 1;
-            animation: chaosFlicker 0.12s infinite;
-        }
-        @keyframes chaosFlicker {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
-        ```
+```css
+.depth-layer {
+    --layer-depth: 0px;
+    --layer-tilt-x: 0deg;
+    --layer-tilt-y: 0deg;
+    --layer-scale: 1;
+    transform: translateZ(var(--layer-depth)) rotateX(var(--layer-tilt-x)) rotateY(var(--layer-tilt-y)) scale(var(--layer-scale));
+}
+.depth-layer.background { --layer-depth: -160px; --layer-scale: 1.12; }
+.depth-layer.accent { --layer-depth: 120px; }
+.neomorphic-card:hover {
+    transform: translateZ(var(--hover-lift)) rotateX(-4deg) rotateY(3deg);
+}
+.holographic-container[data-layout="tech"] .depth-layer.foreground { --layer-tilt-y: 6deg; }
+.control-dock input[type="range"]::-webkit-slider-thumb {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.85), rgba(255, 0, 255, 0.85));
+}
+```
 
-    *   **JavaScript (`HolographicVisualizer` - Embedded Shader):**
-        ```glsl
-        // Enhanced 4D rotation matrices
-        mat4 rotateXW(float theta) { /* ... */ }
-        // ...
-        // Enhanced geometric functions with more detail
-        float hypercubeLattice(vec3 p, float gridSize) { /* ... */ }
-        float tetrahedronLattice(vec3 p, float gridSize) { /* ... */ }
-        float sphereLattice(vec3 p, float gridSize) { /* ... */ }
-        float torusLattice(vec3 p, float gridSize) { /* ... */ }
-        float waveLattice(vec3 p, float gridSize) { /* ... */ }
-        // ...
-        // Enhanced effect functions
-        vec3 rgbGlitch(vec3 color, vec2 uv, float intensity) { /* ... */ }
-        float moirePattern(vec2 uv, float intensity) { /* ... */ }
-        float gridOverlay(vec2 uv, float intensity) { /* ... */ }
-        // ...
-        void main() {
-            // ...
-            // Enhanced 4D space with mouse reactivity
-            // ...
-            // Enhanced 4D rotations with mouse reactivity
-            // ...
-            // Dynamic density with variation
-            // ...
-            // Enhanced coloring with mouse reactivity
-            // ...
-            // Add enhanced effects (moire, grid, rgbGlitch)
-            // ...
-            // Mouse interaction glow
-            // ...
-            // Click pulse effect
-            // ...
-        }
-        ```
+---
+
+#### Interactive Behaviour
+
+*   **Layout Buttons:** Buttons with `data-layout` values call `applyLayout`, which recalculates layer transforms (`translateZ`) relative to the base depth, updates CSS variables, and refreshes the info bar.
+*   **Chaos Pulses:** The `chaos` button toggles `.chaos-overlay.active` for ~880 ms, amplifying the holographic streaks and rim lighting.
+*   **Pointer Parallax:** Pointer movement rotates the entire container via `rotateX/rotateY`, keeping the 3D stack dynamic regardless of scroll.
+*   **Depth & Glow Dials:** The calibration range inputs multiply the base `data-depth` offsets and update `--grid-opacity`, while keeping the state indicator in sync.
+*   **Ripple Feedback:** Clicks retrigger the `.interaction-ripple` animation by removing and re-adding the `active` class, and a `(prefers-reduced-motion)` listener disables the ripple and pointer tilt so the deck can be inspected statically.
+
+---
+
+#### Demo Reference
+
+*   The standalone demo (`demos/neoskeuomorphic-holographic-ui-demo.html`) condenses the GEMINI asset into a gallery-safe HTML file, maintaining layered depth, grid overlays, chaos pulses, ripple feedback, and now a tuning dock with layout presets, depth multipliers, and reduced-motion friendly behaviour.
