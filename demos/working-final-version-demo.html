@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Working Final Version – Consolidated System</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --primary: #6ff3ff;
+            --secondary: #ff5ee8;
+            --accent: #ffe072;
+            --surface: rgba(7, 6, 18, 0.82);
+            --grid-density: 26px;
+            --chaos-level: 0.12;
+            --glow-cyan: rgba(111, 243, 255, 0.4);
+            --glow-magenta: rgba(255, 94, 232, 0.36);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Sora", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at 16% 18%, rgba(255, 94, 232, 0.18), transparent 45%),
+                radial-gradient(circle at 80% 12%, rgba(111, 243, 255, 0.2), transparent 44%),
+                #050410;
+            color: #f3f6ff;
+        }
+
+        body.reduce-motion * {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+        }
+
+        body.reduce-motion .chaos-overlay {
+            display: none;
+        }
+
+        .shell {
+            position: relative;
+            min-height: 100vh;
+            padding: clamp(24px, 4vw, 48px);
+            display: grid;
+            gap: clamp(24px, 3vw, 36px);
+        }
+
+        .command-ribbon {
+            position: sticky;
+            top: clamp(24px, 4vw, 48px);
+            z-index: 10;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 28px;
+            border-radius: 26px;
+            background: linear-gradient(135deg, rgba(6, 0, 16, 0.9), rgba(25, 0, 44, 0.7));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow:
+                0 26px 40px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.08),
+                0 0 28px var(--glow-cyan);
+            backdrop-filter: blur(22px) saturate(1.25);
+        }
+
+        .theme-select {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 0.68rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(245, 248, 255, 0.68);
+        }
+
+        .theme-select select {
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(8, 0, 16, 0.7);
+            color: #f3f6ff;
+            padding: 8px 12px;
+            font-size: 0.74rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .theme-select select:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .brand {
+            font-size: 1.05rem;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--primary);
+            text-shadow: 0 0 18px var(--glow-cyan);
+        }
+
+        .ribbon-button {
+            border: none;
+            border-radius: 999px;
+            padding: 10px 24px;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-weight: 600;
+            cursor: pointer;
+            color: #060412;
+            background: linear-gradient(120deg, rgba(111, 243, 255, 0.82), rgba(255, 94, 232, 0.82));
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.55),
+                0 0 18px rgba(255, 94, 232, 0.4),
+                0 18px 24px rgba(0, 0, 0, 0.45);
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .ribbon-button:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+                0 0 22px rgba(255, 224, 114, 0.5),
+                0 22px 28px rgba(0, 0, 0, 0.5);
+        }
+
+        .ribbon-button.active {
+            transform: translateY(-1px);
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.9),
+                0 0 26px rgba(255, 224, 114, 0.55),
+                0 24px 32px rgba(0, 0, 0, 0.55);
+        }
+
+        .status-led {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.72rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+        }
+
+        .status-led::before {
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 12px var(--accent);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: minmax(260px, 320px) minmax(320px, 1fr) minmax(240px, 320px);
+            gap: clamp(24px, 3vw, 36px);
+        }
+
+        .panel {
+            position: relative;
+            padding: clamp(18px, 3vw, 26px);
+            border-radius: 24px;
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow:
+                0 24px 38px rgba(0, 0, 0, 0.55),
+                0 0 0 1px rgba(255, 255, 255, 0.06),
+                0 0 34px rgba(255, 94, 232, 0.25);
+            backdrop-filter: blur(20px) saturate(1.15);
+            overflow: hidden;
+        }
+
+        .panel h2 {
+            margin: 0 0 18px;
+            text-transform: uppercase;
+            letter-spacing: 0.24em;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .story-deck {
+            display: grid;
+            gap: 16px;
+        }
+
+        .story-card {
+            position: relative;
+            padding: 18px;
+            border-radius: 18px;
+            background: linear-gradient(140deg, rgba(6, 0, 16, 0.86), rgba(30, 0, 52, 0.65));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow:
+                0 16px 26px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.08),
+                0 0 24px rgba(111, 243, 255, 0.22);
+            transform: perspective(800px) rotateX(var(--tilt-x, -6deg)) rotateY(var(--tilt-y, 6deg));
+            transition: transform 320ms ease, box-shadow 320ms ease;
+        }
+
+        .story-card.active {
+            box-shadow:
+                0 20px 36px rgba(0, 0, 0, 0.5),
+                0 0 0 2px rgba(255, 224, 114, 0.45),
+                0 0 40px rgba(255, 224, 114, 0.35);
+        }
+
+        .story-card h3 {
+            margin: 0 0 10px;
+            font-size: 0.95rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .story-card p {
+            margin: 0;
+            font-size: 0.78rem;
+            line-height: 1.6;
+            color: rgba(220, 228, 255, 0.75);
+        }
+
+        .visualizer-spine {
+            display: grid;
+            gap: 18px;
+        }
+
+        .visualizer-slot {
+            position: relative;
+            min-height: 180px;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: linear-gradient(140deg, rgba(6, 0, 16, 0.86), rgba(12, 2, 28, 0.75));
+            box-shadow:
+                0 22px 36px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.06),
+                0 0 28px var(--glow-magenta);
+        }
+
+        .visualizer-slot::before {
+            content: attr(data-label);
+            position: absolute;
+            top: 16px;
+            left: 22px;
+            font-size: 0.7rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.6);
+            z-index: 2;
+        }
+
+        .visualizer-slot::after {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent calc(var(--grid-density) - 1px),
+                    rgba(255, 94, 232, 0.28) calc(var(--grid-density))
+                );
+            opacity: 0.45;
+            mix-blend-mode: screen;
+            animation: slotDrift 20s linear infinite;
+        }
+
+        .visualizer-canvas {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.18), transparent 45%),
+                conic-gradient(from 120deg at 50% 50%, rgba(111, 243, 255, 0.55), rgba(255, 94, 232, 0.28), transparent);
+            filter: saturate(1.3) brightness(1.1);
+        }
+
+        .telemetry-grid {
+            display: grid;
+            gap: 14px;
+        }
+
+        .calibration-dock {
+            margin-top: 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .calibration-dock label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(200, 215, 255, 0.76);
+        }
+
+        .calibration-dock label output {
+            font-size: 0.7rem;
+            letter-spacing: 0.12em;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        .calibration-dock input[type="range"] {
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            overflow: hidden;
+        }
+
+        .calibration-dock input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(120deg, rgba(111, 243, 255, 0.85), rgba(255, 94, 232, 0.85));
+            box-shadow: 0 0 12px rgba(111, 243, 255, 0.45);
+            cursor: pointer;
+        }
+
+        .calibration-dock input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(120deg, rgba(111, 243, 255, 0.85), rgba(255, 94, 232, 0.85));
+            box-shadow: 0 0 12px rgba(111, 243, 255, 0.45);
+            border: none;
+            cursor: pointer;
+        }
+
+        .telemetry-item {
+            display: grid;
+            grid-template-columns: auto auto;
+            align-items: baseline;
+            gap: 10px;
+            font-size: 0.78rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(180, 200, 255, 0.75);
+        }
+
+        .telemetry-value {
+            justify-self: end;
+            font-size: 0.9rem;
+            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .telemetry-value[data-state="warning"] {
+            color: #ffd966;
+        }
+
+        .telemetry-value[data-state="danger"] {
+            color: #ff7a7a;
+        }
+
+        .telemetry-value[data-state="success"] {
+            color: #6fffb3;
+        }
+
+        .chaos-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(25deg, transparent, transparent 4px, rgba(255, 94, 232, var(--chaos-level)) 4px, rgba(255, 94, 232, var(--chaos-level)) 6px),
+                repeating-linear-gradient(65deg, transparent, transparent 4px, rgba(111, 243, 255, var(--chaos-level)) 4px, rgba(111, 243, 255, var(--chaos-level)) 6px);
+            mix-blend-mode: screen;
+            opacity: 0;
+            z-index: 20;
+        }
+
+        .chaos-overlay.active {
+            opacity: 1;
+            animation: chaosPulse 140ms infinite;
+        }
+
+        .scan-lines {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 3px);
+            opacity: 0.28;
+            mix-blend-mode: screen;
+            z-index: 5;
+            animation: scan 12s linear infinite;
+        }
+
+        @keyframes slotDrift {
+            0% {
+                transform: translate3d(-8%, -8%, 0);
+            }
+            100% {
+                transform: translate3d(8%, 8%, 0);
+            }
+        }
+
+        @keyframes chaosPulse {
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes scan {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(100%);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .story-card,
+            .visualizer-slot::after,
+            .scan-lines {
+                animation: none !important;
+            }
+        }
+
+        @media (max-width: 1080px) {
+            .main-grid {
+                grid-template-columns: minmax(260px, 1fr) minmax(320px, 1fr);
+            }
+
+            .telemetry-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .panel.telemetry {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .command-ribbon {
+                position: static;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <header class="command-ribbon">
+            <div class="brand">VIB3STYLEPACK // FINAL</div>
+            <label class="theme-select" for="themeSelect">
+                <span>palette</span>
+                <select id="themeSelect" aria-label="Select palette mode">
+                    <option value="0">Nebula</option>
+                    <option value="1">Aurora</option>
+                    <option value="2">Cobalt</option>
+                </select>
+            </label>
+            <button class="ribbon-button" data-action="play">play sequence</button>
+            <button class="ribbon-button" data-action="theme">cycle theme</button>
+            <button class="ribbon-button" data-action="auto" aria-pressed="false">auto loop</button>
+            <button class="ribbon-button" data-action="reset">reset</button>
+            <button class="ribbon-button" data-action="chaos">chaos pulse</button>
+            <div class="status-led" data-status="stable" role="status" aria-live="polite" aria-atomic="true">sync locked</div>
+        </header>
+
+        <main class="main-grid">
+            <section class="panel story" aria-label="Story deck">
+                <h2>Story deck</h2>
+                <div class="story-deck" id="storyDeck"></div>
+            </section>
+
+            <section class="panel spine" aria-label="Visualizer spine">
+                <h2>Visualizer spine</h2>
+                <div class="visualizer-spine" id="visualizerSpine"></div>
+            </section>
+
+            <aside class="panel telemetry" aria-label="Telemetry">
+                <h2>Telemetry</h2>
+                <div class="telemetry-grid" id="telemetryGrid"></div>
+                <div class="calibration-dock">
+                    <label for="chaosDial">chaos throttle<output id="chaosDialValue">0.18</output></label>
+                    <input type="range" id="chaosDial" min="0" max="40" value="18" step="1" />
+                    <label for="morphDial">morph gain<output id="morphDialValue">0.62</output></label>
+                    <input type="range" id="morphDial" min="30" max="130" value="62" step="2" />
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <div class="chaos-overlay" aria-hidden="true"></div>
+    <div class="scan-lines" aria-hidden="true"></div>
+
+    <script>
+        const orchestrator = {
+            theme: 0,
+            chaos: 0.12,
+            density: 26,
+            morph: 0.62,
+            glitch: 0.18,
+            sequenceIndex: 0,
+        };
+
+        const themes = [
+            {
+                name: 'Nebula',
+                primary: '#6ff3ff',
+                secondary: '#ff5ee8',
+                accent: '#ffe072',
+                density: 26,
+            },
+            {
+                name: 'Aurora',
+                primary: '#9effc9',
+                secondary: '#5b9bff',
+                accent: '#ffdc92',
+                density: 22,
+            },
+            {
+                name: 'Cobalt',
+                primary: '#9ab0ff',
+                secondary: '#ff7ce0',
+                accent: '#ffc5a1',
+                density: 30,
+            },
+        ];
+
+        const defaultState = {
+            theme: 0,
+            chaos: 0.12,
+            morph: 0.62,
+            glitch: 0.18,
+        };
+
+        const storyScenes = [
+            { title: 'Prelude', desc: 'Initialize hypercube registry & calibrate morph circuits.' },
+            { title: 'Phase Shift', desc: 'Blend vaporwave overlays with neoskeuomorphic deck.' },
+            { title: 'Interlink', desc: 'Stream telemetry into orchestrator & card presets.' },
+            { title: 'Launch', desc: 'Deploy chaos overlay & showcase final composite.' },
+        ];
+
+        const visualizers = [
+            { label: 'atlas', role: 'density' },
+            { label: 'spectral', role: 'morph' },
+            { label: 'glitch', role: 'glitch' },
+        ];
+
+        const telemetryMetrics = [
+            { label: 'geometry', key: 'geometry', format: (v) => v },
+            { label: 'density', key: 'density', format: (v) => `${v}px` },
+            { label: 'morph', key: 'morph', format: (v) => v.toFixed(2) },
+            { label: 'glitch', key: 'glitch', format: (v) => v.toFixed(2) },
+            { label: 'chaos', key: 'chaos', format: (v) => v.toFixed(2) },
+            { label: 'theme', key: 'themeName', format: (v) => v.toUpperCase() },
+        ];
+
+        const root = document.documentElement;
+        const storyDeck = document.getElementById('storyDeck');
+        const spine = document.getElementById('visualizerSpine');
+        const telemetry = document.getElementById('telemetryGrid');
+        const chaosOverlay = document.querySelector('.chaos-overlay');
+        const controls = {
+            chaosDial: document.getElementById('chaosDial'),
+            chaosOutput: document.getElementById('chaosDialValue'),
+            morphDial: document.getElementById('morphDial'),
+            morphOutput: document.getElementById('morphDialValue'),
+            autoButton: document.querySelector('[data-action="auto"]'),
+            resetButton: document.querySelector('[data-action="reset"]'),
+            themeSelect: document.getElementById('themeSelect'),
+            statusLed: document.querySelector('.status-led'),
+        };
+        const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let autoHandle = null;
+
+        storyScenes.forEach((scene, index) => {
+            const card = document.createElement('article');
+            card.className = 'story-card';
+            if (index === 0) card.classList.add('active');
+            card.innerHTML = `<h3>${scene.title}</h3><p>${scene.desc}</p>`;
+            storyDeck.appendChild(card);
+        });
+
+        visualizers.forEach((viz) => {
+            const slot = document.createElement('div');
+            slot.className = 'visualizer-slot';
+            slot.dataset.label = viz.label;
+            slot.innerHTML = `<div class="visualizer-canvas" data-role="${viz.role}"></div>`;
+            spine.appendChild(slot);
+        });
+
+        telemetryMetrics.forEach((metric) => {
+            const item = document.createElement('div');
+            item.className = 'telemetry-item';
+            item.innerHTML = `<span>${metric.label}</span><span class="telemetry-value" data-key="${metric.key}">--</span>`;
+            telemetry.appendChild(item);
+        });
+
+        function setStatus(message, state = 'stable') {
+            controls.statusLed.textContent = message;
+            controls.statusLed.dataset.status = state;
+        }
+
+        function syncCalibration() {
+            controls.chaosDial.value = Math.round(orchestrator.chaos * 100);
+            controls.chaosOutput.textContent = orchestrator.chaos.toFixed(2);
+            controls.morphDial.value = Math.round(orchestrator.morph * 100);
+            controls.morphOutput.textContent = orchestrator.morph.toFixed(2);
+        }
+
+        function applyTheme(themeIndex) {
+            const theme = themes[themeIndex % themes.length];
+            root.style.setProperty('--primary', theme.primary);
+            root.style.setProperty('--secondary', theme.secondary);
+            root.style.setProperty('--accent', theme.accent);
+            root.style.setProperty('--grid-density', `${theme.density}px`);
+            orchestrator.density = theme.density;
+            orchestrator.themeName = theme.name;
+            if (controls.themeSelect) {
+                controls.themeSelect.value = String(themeIndex % themes.length);
+            }
+            updateTelemetry();
+            syncCalibration();
+        }
+
+        function updateTelemetry() {
+            const geometry = orchestrator.density > 25 ? 'hypercube' : 'tetra-cloud';
+            const map = {
+                geometry,
+                density: orchestrator.density,
+                morph: orchestrator.morph,
+                glitch: orchestrator.glitch,
+                chaos: orchestrator.chaos,
+                themeName: orchestrator.themeName || themes[0].name,
+            };
+            document.querySelectorAll('.telemetry-value').forEach((node) => {
+                const key = node.dataset.key;
+                const metric = telemetryMetrics.find((m) => m.key === key);
+                if (!metric) return;
+                const value = metric.format(map[key]);
+                node.textContent = value;
+                node.dataset.state = key === 'chaos' && map[key] > 0.28 ? 'danger' : key === 'glitch' && map[key] > 0.24 ? 'warning' : 'success';
+            });
+        }
+
+        function highlightScene(index) {
+            storyDeck.querySelectorAll('.story-card').forEach((card, idx) => {
+                card.classList.toggle('active', idx === index);
+            });
+        }
+
+        function animateChaosPulse() {
+            if (reduceMotionQuery.matches) return;
+            chaosOverlay.classList.add('active');
+            setTimeout(() => chaosOverlay.classList.remove('active'), 900);
+        }
+
+        function playSequence() {
+            const presets = [
+                { theme: 0, chaos: 0.12, morph: 0.58, glitch: 0.16 },
+                { theme: 1, chaos: 0.18, morph: 0.74, glitch: 0.22 },
+                { theme: 2, chaos: 0.24, morph: 0.88, glitch: 0.28 },
+                { theme: 0, chaos: 0.3, morph: 1.04, glitch: 0.34 },
+            ];
+
+            let step = 0;
+            const stepDelay = reduceMotionQuery.matches ? 400 : 1200;
+
+            function advance() {
+                const preset = presets[step % presets.length];
+                orchestrator.theme = preset.theme;
+                orchestrator.chaos = preset.chaos;
+                orchestrator.morph = preset.morph;
+                orchestrator.glitch = preset.glitch;
+                applyTheme(preset.theme);
+                highlightScene(step % storyScenes.length);
+                animateChaosPulse();
+                setStatus(`sequence step ${step + 1}`, 'active');
+                syncCalibration();
+                step += 1;
+                if (step < presets.length) {
+                    setTimeout(advance, stepDelay);
+                } else {
+                    setStatus('sequence complete', 'stable');
+                }
+            }
+
+            advance();
+        }
+
+        function startAutoSequence() {
+            stopAutoSequence();
+            controls.autoButton.classList.add('active');
+            controls.autoButton.setAttribute('aria-pressed', 'true');
+            const interval = reduceMotionQuery.matches ? 5000 : 7200;
+            autoHandle = setInterval(playSequence, interval);
+            playSequence();
+            setStatus('auto loop engaged', 'active');
+        }
+
+        function stopAutoSequence() {
+            if (autoHandle) {
+                clearInterval(autoHandle);
+                autoHandle = null;
+            }
+            controls.autoButton.classList.remove('active');
+            controls.autoButton.setAttribute('aria-pressed', 'false');
+            setStatus('sync locked', 'stable');
+        }
+
+        document.querySelectorAll('.ribbon-button').forEach((button) => {
+            const action = button.dataset.action;
+            button.addEventListener('click', () => {
+                switch (action) {
+                    case 'play':
+                        stopAutoSequence();
+                        playSequence();
+                        break;
+                    case 'theme':
+                        orchestrator.theme = (orchestrator.theme + 1) % themes.length;
+                        applyTheme(orchestrator.theme);
+                        setStatus('theme cycled', 'stable');
+                        break;
+                    case 'auto':
+                        if (autoHandle) {
+                            stopAutoSequence();
+                        } else if (!reduceMotionQuery.matches) {
+                            startAutoSequence();
+                        }
+                        break;
+                    case 'reset':
+                        stopAutoSequence();
+                        orchestrator.theme = defaultState.theme;
+                        orchestrator.chaos = defaultState.chaos;
+                        orchestrator.morph = defaultState.morph;
+                        orchestrator.glitch = defaultState.glitch;
+                        applyTheme(orchestrator.theme);
+                        syncCalibration();
+                        updateTelemetry();
+                        setStatus('system reset', 'stable');
+                        break;
+                    case 'chaos':
+                        orchestrator.chaos = Math.min(0.4, orchestrator.chaos + 0.06);
+                        animateChaosPulse();
+                        updateTelemetry();
+                        syncCalibration();
+                        setStatus('chaos pulse', 'active');
+                        break;
+                    default:
+                        break;
+                }
+            });
+        });
+
+        if (controls.themeSelect) {
+            controls.themeSelect.addEventListener('change', (event) => {
+                const nextTheme = Number(event.target.value) || 0;
+                orchestrator.theme = nextTheme % themes.length;
+                applyTheme(orchestrator.theme);
+                setStatus('palette applied', 'stable');
+            });
+        }
+
+        controls.chaosDial.addEventListener('input', (event) => {
+            orchestrator.chaos = Number(event.target.value) / 100;
+            syncCalibration();
+            updateTelemetry();
+            setStatus('chaos tuned', 'stable');
+        });
+
+        controls.morphDial.addEventListener('input', (event) => {
+            orchestrator.morph = Number(event.target.value) / 100;
+            syncCalibration();
+            updateTelemetry();
+            setStatus('morph tuned', 'stable');
+        });
+
+        function handleReduceMotion(event) {
+            const reduce = event.matches;
+            document.body.classList.toggle('reduce-motion', reduce);
+            controls.autoButton.disabled = reduce;
+            controls.autoButton.setAttribute('aria-disabled', reduce ? 'true' : 'false');
+            if (reduce) {
+                stopAutoSequence();
+                setStatus('reduced motion', 'stable');
+            }
+        }
+
+        reduceMotionQuery.addEventListener('change', handleReduceMotion);
+        handleReduceMotion(reduceMotionQuery);
+
+        applyTheme(orchestrator.theme);
+        updateTelemetry();
+        syncCalibration();
+        setStatus('sync locked', 'stable');
+    </script>
+</body>
+</html>
