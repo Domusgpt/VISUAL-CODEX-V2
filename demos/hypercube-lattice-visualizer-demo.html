@@ -50,11 +50,163 @@
         .slider-label { margin-bottom: 5px; }
         input[type="range"] { width: 100%; }
         .btn { 
-            background: rgba(0,255,255,0.2); border: 1px solid #00ffff; color: #00ffff; 
+            background: rgba(0,255,255,0.2); border: 1px solid #00ffff; color: #00ffff;
             padding: 8px 16px; margin: 5px; cursor: pointer; border-radius: 5px;
         }
         .btn:hover { background: rgba(0,255,255,0.4); box-shadow: 0 0 10px #00ffff; }
         .info { position: fixed; bottom: 20px; left: 20px; color: #ff00ff; font-size: 14px; }
+        .export-tools {
+            margin-top: 14px;
+            border-top: 1px solid rgba(0,255,255,0.25);
+            padding-top: 12px;
+        }
+        .export-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .export-grid .btn {
+            flex: 1 1 140px;
+            min-height: 38px;
+            margin: 0;
+        }
+        .export-meta {
+            font-size: 11px;
+            color: rgba(0,255,255,0.75);
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+        .scene-dock {
+            margin-top: 16px;
+            border-top: 1px solid rgba(255,0,255,0.3);
+            padding-top: 12px;
+        }
+        .scene-dock strong {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 8px;
+            letter-spacing: 0.06em;
+            color: #ff00ff;
+        }
+        .scene-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+        }
+        .scene-btn {
+            background: linear-gradient(135deg, rgba(0,0,0,0.5), rgba(40,0,60,0.65));
+            border: 1px solid rgba(255,0,255,0.4);
+            color: #ff99ff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            letter-spacing: 0.04em;
+            transition: transform 0.2s ease, border 0.2s ease;
+        }
+        .scene-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,255,0,0.6);
+        }
+        .scene-btn.active {
+            border-color: rgba(255,255,0,0.8);
+            color: #ffff99;
+            box-shadow: 0 0 14px rgba(255,255,0,0.35);
+        }
+        .scene-autopilot {
+            margin-top: 10px;
+            width: 100%;
+            background: rgba(255,255,0,0.18);
+            border: 1px solid rgba(255,255,0,0.4);
+            color: #ffff99;
+            padding: 8px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s ease;
+        }
+        .scene-autopilot:hover {
+            background: rgba(255,255,0,0.3);
+            box-shadow: 0 0 12px rgba(255,255,0,0.25);
+        }
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            border: 1px solid rgba(0,255,255,0.45);
+            border-radius: 8px;
+            padding: 12px 18px;
+            color: #00ffff;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 9999;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .portal-feed {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 240px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            background: rgba(0,0,0,0.78);
+            border: 1px solid rgba(255,0,255,0.3);
+            border-radius: 12px;
+            padding: 14px;
+            color: #ff99ff;
+            font-size: 11px;
+            box-shadow: 0 0 16px rgba(255,0,255,0.2);
+        }
+        .portal-feed h4 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+        }
+        .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .portal-card {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,0,255,0.35);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .portal-card img {
+            width: 100%;
+            display: block;
+            filter: saturate(1.4) contrast(1.1);
+        }
+        .portal-card span {
+            display: block;
+            padding: 4px 6px;
+            font-size: 10px;
+            letter-spacing: 0.04em;
+            background: rgba(30,0,40,0.7);
+        }
+        .scene-ticker {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.85);
+            border: 1px solid rgba(255,0,255,0.4);
+            color: #ff99ff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            max-width: 300px;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -86,12 +238,45 @@
         </div>
         <button class="btn" onclick="randomizeParams()">Randomize</button>
         <button class="btn" onclick="resetParams()">Reset</button>
+
+        <div class="export-tools">
+            <strong>Export &amp; Capture</strong>
+            <div class="export-grid">
+                <button class="btn" id="exportLatticeBtn">Export JSON State</button>
+                <button class="btn" id="captureLatticePngBtn">Capture PNG</button>
+                <button class="btn" id="copyLatticeBtn">Copy Settings</button>
+            </div>
+            <div class="export-meta" id="latticeExportMeta">No exports yet</div>
+        </div>
+
+        <div class="scene-dock">
+            <strong>Evolution Scenes</strong>
+            <div class="scene-grid" id="sceneGrid">
+                <button class="scene-btn active" data-scene="0">Euclidean Weave</button>
+                <button class="scene-btn" data-scene="1">Spectral Bloom</button>
+                <button class="scene-btn" data-scene="2">Graviton Vortex</button>
+                <button class="scene-btn" data-scene="3">Chrono Strata</button>
+                <button class="scene-btn" data-scene="4">Aurora Labyrinth</button>
+                <button class="scene-btn" data-scene="5">Mycelial Bloom</button>
+                <button class="scene-btn" data-scene="6">Refraction Choir</button>
+            </div>
+            <button class="scene-autopilot" id="sceneAutopilotBtn">Enable Scene Drifter</button>
+        </div>
         </div>
     </div>
 
     <div class="info">
         Click and drag to rotate • Mouse wheel to zoom • R to randomize
     </div>
+
+    <div class="toast" id="latticeToast"></div>
+
+    <div class="portal-feed" id="portalFeed">
+        <h4>Portal Shards</h4>
+        <div class="portal-grid" id="portalGrid"></div>
+    </div>
+
+    <div class="scene-ticker" id="sceneTicker">Scene drift idle.</div>
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -106,12 +291,253 @@
             morph: 0.5,
             glitch: 0.2,
             speed: 1.0,
-            moire: 0.3
+            moire: 0.3,
+            sceneMode: 0
         };
 
         let mouse = { x: 0, y: 0, down: false };
         let rotation = { x: 0, y: 0 };
         let zoom = 1.0;
+        let lastAction = 'init';
+        const exportHistory = [];
+        const latticeToast = document.getElementById('latticeToast');
+        const sessionId = `lattice-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+        const portalGrid = document.getElementById('portalGrid');
+        const sceneTicker = document.getElementById('sceneTicker');
+        const sceneButtons = Array.from(document.querySelectorAll('.scene-btn'));
+        const sceneAutopilotBtn = document.getElementById('sceneAutopilotBtn');
+
+        let sceneAutopilot = false;
+        let sceneFlux = 0.0;
+        let lastSceneTick = Date.now();
+        let sceneVariant = Math.random();
+        let sceneSequence = null;
+        let sceneSequenceIndex = 0;
+        let sceneSchedule = null;
+
+        const SCENE_TARGETS = [
+            {
+                name: 'Euclidean Weave',
+                ticker: 'Euclidean weave stabilized – orthogonal symmetry active.',
+                params: { density: 0.6, morph: 0.4, glitch: 0.18, speed: 0.9, moire: 0.3 },
+                rotation: { x: 0.35, y: 0.35 },
+                zoom: 1.0
+            },
+            {
+                name: 'Spectral Bloom',
+                ticker: 'Spectral bloom ignited – chroma petals expanding.',
+                params: { density: 0.9, morph: 0.8, glitch: 0.45, speed: 1.6, moire: 0.55 },
+                rotation: { x: 0.9, y: 0.2 },
+                zoom: 0.85
+            },
+            {
+                name: 'Graviton Vortex',
+                ticker: 'Graviton vortex spinning – lattice folding inward.',
+                params: { density: 1.4, morph: 1.1, glitch: 0.6, speed: 2.1, moire: 0.7 },
+                rotation: { x: 1.4, y: 0.5 },
+                zoom: 1.2
+            },
+            {
+                name: 'Chrono Strata',
+                ticker: 'Chrono strata layered – time-sliced filaments visible.',
+                params: { density: 0.45, morph: 0.65, glitch: 0.25, speed: 0.6, moire: 0.45 },
+                rotation: { x: 0.2, y: 1.1 },
+                zoom: 0.95
+            },
+            {
+                name: 'Aurora Labyrinth',
+                ticker: 'Aurora labyrinth engaged – polar ribbons refracting.',
+                params: { density: 0.75, morph: 1.4, glitch: 0.35, speed: 1.8, moire: 0.85 },
+                rotation: { x: 0.6, y: 1.4 },
+                zoom: 0.8
+            },
+            {
+                name: 'Mycelial Bloom',
+                ticker: 'Mycelial bloom activated – organic filaments branching.',
+                params: { density: 1.05, morph: 1.75, glitch: 0.5, speed: 1.3, moire: 0.6 },
+                rotation: { x: 1.1, y: 0.9 },
+                zoom: 1.05
+            },
+            {
+                name: 'Refraction Choir',
+                ticker: 'Refraction choir resonating – harmonic prisms singing.',
+                params: { density: 1.8, morph: 0.9, glitch: 0.7, speed: 2.4, moire: 0.95 },
+                rotation: { x: 0.4, y: 1.7 },
+                zoom: 0.88
+            }
+        ];
+
+        const SCENE_SEQUENCES = [
+            [0, 2, 5, 3],
+            [4, 1, 6],
+            [2, 4, 0, 5],
+            [6, 3, 1, 4]
+        ];
+
+        function showToast(message) {
+            if (!latticeToast) return;
+            latticeToast.textContent = message;
+            latticeToast.classList.add('show');
+            clearTimeout(showToast.timeout);
+            showToast.timeout = setTimeout(() => latticeToast.classList.remove('show'), 2200);
+        }
+
+        function updateSceneTicker(message) {
+            if (!sceneTicker) return;
+            sceneTicker.textContent = message;
+            lastSceneTick = Date.now();
+        }
+
+        function addPortalShard(label) {
+            if (!portalGrid) return;
+            requestAnimationFrame(() => {
+                const shard = document.createElement('div');
+                shard.className = 'portal-card';
+                const img = document.createElement('img');
+                try {
+                    img.src = canvas.toDataURL('image/webp', 0.6);
+                } catch (e) {
+                    img.src = canvas.toDataURL('image/png');
+                }
+                const caption = document.createElement('span');
+                caption.textContent = label;
+                shard.appendChild(img);
+                shard.appendChild(caption);
+                portalGrid.prepend(shard);
+                while (portalGrid.children.length > 6) {
+                    portalGrid.removeChild(portalGrid.lastElementChild);
+                }
+            });
+        }
+
+        function updateSceneButtons() {
+            sceneButtons.forEach((button) => {
+                const scene = Number(button.dataset.scene || 0);
+                button.classList.toggle('active', scene === params.sceneMode);
+            });
+        }
+
+        function applySceneTargets(mode, blend = 0.45) {
+            const target = SCENE_TARGETS[mode];
+            if (!target) return;
+            Object.entries(target.params).forEach(([key, value]) => {
+                if (typeof params[key] === 'number') {
+                    params[key] = params[key] * (1 - blend) + value * blend;
+                }
+            });
+            if (target.rotation) {
+                rotation.x = rotation.x * (1 - blend) + target.rotation.x * blend;
+                rotation.y = rotation.y * (1 - blend) + target.rotation.y * blend;
+            }
+            if (typeof target.zoom === 'number') {
+                zoom = zoom * (1 - blend) + target.zoom * blend;
+            }
+            updateSliders();
+        }
+
+        function pickSceneSequence() {
+            const selection = SCENE_SEQUENCES[Math.floor(Math.random() * SCENE_SEQUENCES.length)] || [];
+            return selection.slice();
+        }
+
+        function resetSceneSchedule() {
+            if (sceneSchedule) {
+                clearTimeout(sceneSchedule);
+                sceneSchedule = null;
+            }
+        }
+
+        function scheduleSceneAutopilot(initial = false) {
+            if (!sceneAutopilot) return;
+            if (!sceneSequence || sceneSequenceIndex >= sceneSequence.length) {
+                sceneSequence = pickSceneSequence();
+                sceneSequenceIndex = 0;
+                if (sceneSequence.length) {
+                    const itinerary = sceneSequence
+                        .map(index => SCENE_TARGETS[index]?.name || `Scene ${index}`)
+                        .join(' → ');
+                    updateSceneTicker(`Scene drifter itinerary: ${itinerary}`);
+                    showToast(`Scene itinerary locked: ${itinerary}`);
+                }
+            }
+            if (!sceneSequence?.length) return;
+            const next = sceneSequence[sceneSequenceIndex % sceneSequence.length];
+            sceneSequenceIndex += 1;
+            setSceneMode(next, 'autopilot');
+            const delay = initial ? 2000 : 6000 + Math.random() * 3200;
+            resetSceneSchedule();
+            sceneSchedule = setTimeout(() => scheduleSceneAutopilot(), delay);
+        }
+
+        function setSceneMode(mode, source = 'manual') {
+            const quiet = source === 'init';
+            if (mode === params.sceneMode && source !== 'autopilot' && !quiet) {
+                logSnapshot(`scene:${source}`, { sceneMode: mode });
+                return;
+            }
+            params.sceneMode = mode;
+            sceneFlux = quiet ? 0.6 : 1.0;
+            sceneVariant = Math.random();
+            updateSceneButtons();
+            applySceneTargets(mode, source === 'autopilot' ? 0.55 : 0.45);
+            const scene = SCENE_TARGETS[mode];
+            if (scene) {
+                if (!quiet) {
+                    showToast(`${scene.name} engaged`);
+                    updateSceneTicker(scene.ticker);
+                } else {
+                    updateSceneTicker('Scene drift idle.');
+                }
+                addPortalShard(scene.name);
+            }
+            logSnapshot(`scene:${source}`, { sceneMode: mode, autopilot: sceneAutopilot, variant: sceneVariant });
+        }
+
+        function toggleSceneAutopilot() {
+            sceneAutopilot = !sceneAutopilot;
+            if (sceneAutopilotBtn) {
+                sceneAutopilotBtn.textContent = sceneAutopilot ? 'Disable Scene Drifter' : 'Enable Scene Drifter';
+            }
+            if (sceneAutopilot) {
+                updateSceneTicker('Scene drifter engaged – cycling evolutions.');
+                showToast('Scene drifter enabled');
+                sceneSequence = pickSceneSequence();
+                sceneSequenceIndex = 0;
+                scheduleSceneAutopilot(true);
+            } else {
+                updateSceneTicker('Scene drift idle.');
+                showToast('Scene drifter disabled');
+                resetSceneSchedule();
+                sceneSequence = null;
+                sceneSequenceIndex = 0;
+            }
+        }
+
+        function updateExportMeta(text) {
+            const meta = document.getElementById('latticeExportMeta');
+            if (!meta) return;
+            const now = new Date();
+            meta.textContent = `${text} • ${now.toLocaleTimeString()}`;
+        }
+
+        function logSnapshot(source, extra = {}) {
+            const snapshot = {
+                timestamp: new Date().toISOString(),
+                source,
+                params: { ...params },
+                rotation: { ...rotation },
+                zoom,
+                mouse: { ...mouse },
+                sceneMode: params.sceneMode,
+                sceneAutopilot,
+                variant: extra?.variant ?? sceneVariant,
+                ...extra
+            };
+            exportHistory.push(snapshot);
+            if (exportHistory.length > 40) {
+                exportHistory.shift();
+            }
+        }
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -140,6 +566,9 @@
             uniform float u_moire;
             uniform vec2 u_rotation;
             uniform float u_zoom;
+            uniform float u_sceneMode;
+            uniform float u_sceneFlux;
+            uniform float u_sceneVariant;
             
             // 4D rotation matrices
             mat4 rotateXY(float theta) {
@@ -203,6 +632,69 @@
                 float pattern2 = sin((uv.x + uv.y) * 35.0 * (1.0 + intensity * 0.5));
                 return pattern1 * pattern2 * intensity;
             }
+
+            vec3 applySceneEvolution(vec3 color, vec4 p4d, vec2 uv) {
+                float mode = u_sceneMode;
+                float flux = clamp(u_sceneFlux, 0.0, 1.5);
+                float variant = u_sceneVariant;
+                vec2 centered = uv - 0.5;
+                float radius = length(centered);
+                if (mode < 0.5) {
+                    float ripple = sin((p4d.x + p4d.y) * 6.0 + u_time * u_speed * 0.5);
+                    return color * (1.0 + ripple * 0.18 * flux);
+                } else if (mode < 1.5) {
+                    float bloom = smoothstep(0.35, 0.05, radius) * flux;
+                    vec3 palette = vec3(0.5 + bloom * 0.8, 0.2 + bloom * 0.9, 0.9 + bloom * 0.6);
+                    return mix(color, palette, clamp(bloom + 0.2, 0.0, 0.8));
+                } else if (mode < 2.5) {
+                    float angle = atan(centered.y, centered.x);
+                    float vortex = sin(angle * 8.0 + radius * 30.0 - u_time * u_speed * 1.5);
+                    vec3 graviton = vec3(0.25 + flux * 0.9, 0.1 + flux * 0.4, 0.55 + flux * 1.1) * (0.6 + vortex * 0.4);
+                    return mix(color, graviton, clamp(flux * 0.75, 0.0, 1.0));
+                } else if (mode < 3.5) {
+                    float strata = sin(p4d.z * 10.0 + u_time * 0.8) * cos(p4d.w * 14.0 + u_time * 0.6);
+                    vec3 chrono = vec3(0.75, 0.85, 0.45) * (0.6 + strata * 0.4);
+                    chrono += vec3(0.2 * flux, 0.05 * flux, 0.25 * flux);
+                    return mix(color, chrono, clamp(0.35 + flux * 0.6, 0.0, 1.0));
+                } else if (mode < 4.5) {
+                    float labyrinth = sin((p4d.x * 8.0 + p4d.y * 5.0) + variant * 6.283 + u_time * u_speed * 1.2);
+                    float radial = cos(radius * (24.0 + variant * 12.0) - u_time * u_speed * 0.8);
+                    float weave = smoothstep(-0.2, 0.8, labyrinth * radial);
+                    vec3 aurora = vec3(
+                        0.24 + weave * 0.6,
+                        0.5 + weave * 0.55,
+                        0.9 + weave * 0.45
+                    );
+                    aurora += vec3(0.12 * flux, 0.18 * flux, 0.04 * flux);
+                    float blend = clamp(0.45 + weave * 0.4 + flux * 0.25, 0.0, 1.0);
+                    return mix(color, aurora, blend);
+                } else if (mode < 5.5) {
+                    float spore = sin((p4d.x + p4d.y + p4d.z) * (6.0 + variant * 4.0) + u_time * 1.3);
+                    float tendril = cos((p4d.x - p4d.z) * (7.0 + variant * 3.0) - u_time * 0.9);
+                    float growth = pow(max(0.0, spore * 0.5 + tendril * 0.5 + flux * 0.2), 1.4);
+                    vec3 mycelial = vec3(
+                        0.3 + growth * 0.5,
+                        0.78 + growth * 0.45,
+                        0.5 + growth * 0.35
+                    );
+                    mycelial *= 0.7 + sin(radius * (14.0 + variant * 5.0)) * 0.3;
+                    float blend = clamp(0.4 + growth * 0.6, 0.0, 1.0);
+                    return mix(color, mycelial, blend);
+                } else {
+                    float prism = sin((p4d.x * 12.0 + p4d.y * 8.0) * (1.0 + variant * 0.4) + u_time * u_speed * 1.7);
+                    float harmonic = sin((p4d.z + p4d.w) * (9.0 + variant * 5.0) - u_time * u_speed * 1.2);
+                    float chorus = abs(prism * harmonic);
+                    float shimmer = sin(radius * (22.0 + variant * 9.0) - u_time * 2.4);
+                    vec3 choir = vec3(
+                        0.58 + chorus * 0.55,
+                        0.28 + chorus * 0.45,
+                        0.95 + shimmer * 0.35
+                    );
+                    choir += vec3(shimmer * 0.15, 0.08 * flux, chorus * 0.2);
+                    float blend = clamp(0.35 + chorus * 0.6 + flux * 0.3, 0.0, 1.0);
+                    return mix(color, choir, blend);
+                }
+            }
             
             void main() {
                 vec2 uv = gl_FragCoord.xy / u_resolution;
@@ -252,19 +744,21 @@
                 
                 // Apply RGB glitch
                 color = rgbGlitch(color, uv, u_glitch);
-                
+
                 // Mouse interaction glow
                 vec2 mousePos = u_mouse / u_resolution;
                 float mouseDist = length(uv - mousePos);
                 color += exp(-mouseDist * 8.0) * 0.2;
-                
+
                 // Add depth-based intensity variation
                 float depth = (sin(p4d.z * 2.0) + sin(p4d.w * 2.0)) * 0.25 + 0.5;
                 color *= depth;
-                
+
                 // Final brightness adjustment
                 color *= 0.3 + lattice * 0.7;
-                
+
+                color = applySceneEvolution(color, p4d, uv);
+
                 gl_FragColor = vec4(color, 1.0);
             }
         `;
@@ -315,7 +809,10 @@
             speed: gl.getUniformLocation(program, 'u_speed'),
             moire: gl.getUniformLocation(program, 'u_moire'),
             rotation: gl.getUniformLocation(program, 'u_rotation'),
-            zoom: gl.getUniformLocation(program, 'u_zoom')
+            zoom: gl.getUniformLocation(program, 'u_zoom'),
+            sceneMode: gl.getUniformLocation(program, 'u_sceneMode'),
+            sceneFlux: gl.getUniformLocation(program, 'u_sceneFlux'),
+            sceneVariant: gl.getUniformLocation(program, 'u_sceneVariant')
         };
 
         // Mouse and touch interactions
@@ -323,12 +820,15 @@
             mouse.down = true;
             mouse.x = e.clientX;
             mouse.y = e.clientY;
+            lastAction = 'drag-start';
+            logSnapshot('drag-start');
         });
 
         canvas.addEventListener('mousemove', (e) => {
             if (mouse.down) {
                 rotation.x += (e.clientX - mouse.x) * 0.01;
                 rotation.y += (e.clientY - mouse.y) * 0.01;
+                lastAction = 'dragging';
             }
             mouse.x = e.clientX;
             mouse.y = e.clientY;
@@ -336,22 +836,31 @@
 
         canvas.addEventListener('mouseup', () => {
             mouse.down = false;
+            lastAction = 'drag-end';
+            logSnapshot('drag-end');
         });
 
         canvas.addEventListener('wheel', (e) => {
             zoom *= e.deltaY > 0 ? 1.1 : 0.9;
             zoom = Math.max(0.1, Math.min(5.0, zoom));
             e.preventDefault();
+            lastAction = 'zoom';
+            logSnapshot('zoom');
         });
 
         // Control panel interactions
         function setupSlider(id, param, valueId) {
             const slider = document.getElementById(id);
             const valueDisplay = document.getElementById(valueId);
-            
+
             slider.addEventListener('input', (e) => {
                 params[param] = parseFloat(e.target.value);
                 valueDisplay.textContent = params[param].toFixed(1);
+                lastAction = `slider:${param}`;
+            });
+
+            slider.addEventListener('change', () => {
+                logSnapshot(`slider:${param}`);
             });
         }
 
@@ -361,14 +870,35 @@
         setupSlider('speed', 'speed', 'speedValue');
         setupSlider('moire', 'moire', 'moireValue');
 
+        sceneButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const scene = Number(button.dataset.scene || 0);
+                if (sceneAutopilot) {
+                    toggleSceneAutopilot();
+                }
+                setSceneMode(scene, 'manual');
+            });
+        });
+
+        sceneAutopilotBtn?.addEventListener('click', toggleSceneAutopilot);
+
         function randomizeParams() {
-            params.density = Math.random() * 1.9 + 0.1;
-            params.morph = Math.random();
-            params.glitch = Math.random() * 0.8;
-            params.speed = Math.random() * 2.9 + 0.1;
-            params.moire = Math.random();
-            
+            const randomValues = {
+                density: Math.random() * 1.9 + 0.1,
+                morph: Math.random(),
+                glitch: Math.random() * 0.8,
+                speed: Math.random() * 2.9 + 0.1,
+                moire: Math.random()
+            };
+
+            Object.assign(params, randomValues);
+
             updateSliders();
+            updateSceneButtons();
+            sceneFlux = Math.min(1.0, sceneFlux + 0.4);
+            lastAction = 'randomize';
+            showToast('Hypercube lattice randomized');
+            logSnapshot('randomize', { randomValues });
         }
 
         function resetParams() {
@@ -377,8 +907,13 @@
             params.glitch = 0.2;
             params.speed = 1.0;
             params.moire = 0.3;
-            
+
             updateSliders();
+            updateSceneButtons();
+            sceneFlux = Math.min(1.0, sceneFlux + 0.3);
+            lastAction = 'reset';
+            showToast('Lattice parameters reset');
+            logSnapshot('reset');
         }
 
         function updateSliders() {
@@ -421,31 +956,49 @@
             gl.uniform1f(uniforms.moire, params.moire);
             gl.uniform2f(uniforms.rotation, rotation.x, rotation.y);
             gl.uniform1f(uniforms.zoom, zoom);
-            
+            sceneFlux = Math.max(0.0, sceneFlux - 0.004);
+            const now = Date.now();
+            if (sceneAutopilot && now - lastSceneTick > 9000) {
+                updateSceneTicker('Scene drifter aligning next gate…');
+            } else if (!sceneAutopilot && now - lastSceneTick > 15000) {
+                updateSceneTicker('Tap a scene tile to retune the lattice.');
+            }
+            gl.uniform1f(uniforms.sceneMode, params.sceneMode);
+            gl.uniform1f(uniforms.sceneFlux, sceneFlux);
+            gl.uniform1f(uniforms.sceneVariant, sceneVariant);
+
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
             requestAnimationFrame(animate);
         }
-        
-        animate(0);
 
-        // Export function for Lattice Visualizer
+        animate(0);
+        setSceneMode(0, 'init');
+        logSnapshot('init');
+        updateExportMeta('Session initialized');
+
+        // Export & capture utilities
         function exportLatticeData() {
             const exportData = {
                 timestamp: new Date().toISOString(),
+                sessionId,
+                lastAction,
                 latticeParams: { ...params },
                 mousePosition: { x: mouse.x, y: mouse.y },
                 rotationState: { x: rotation.x, y: rotation.y },
                 zoomLevel: zoom,
+                sceneMode: params.sceneMode,
+                sceneAutopilot,
+                portalShards: portalGrid ? portalGrid.children.length : 0,
+                recentScenes: exportHistory.filter(entry => (entry.source || '').startsWith('scene:')).slice(-8),
                 canvasSize: { width: canvas.width, height: canvas.height },
-                visualizerType: 'Hypercube Lattice System',
-                version: '1.0'
+                interactionHistory: [...exportHistory.slice(-15)],
+                version: '1.1'
             };
-            
-            // Create downloadable JSON
+
             const dataStr = JSON.stringify(exportData, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(dataBlob);
-            
+
             const link = document.createElement('a');
             link.href = url;
             link.download = `lattice-visualizer-export-${Date.now()}.json`;
@@ -453,19 +1006,48 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            
+
             console.log('🔬 Lattice Visualizer data exported successfully');
+            showToast('Lattice JSON export ready');
+            updateExportMeta('JSON export ready');
         }
-        
-        // Add export button to controls
-        const controlsContent = document.querySelector('.controls-content');
-        if (controlsContent) {
-            const exportBtn = document.createElement('button');
-            exportBtn.textContent = 'Export Lattice';
-            exportBtn.className = 'btn';
-            exportBtn.onclick = exportLatticeData;
-            controlsContent.appendChild(exportBtn);
+
+        function captureLatticePng() {
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `lattice-visualizer-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('PNG snapshot captured');
+            updateExportMeta('PNG snapshot saved');
         }
+
+        async function copyLatticeSettings() {
+            const payload = {
+                params: { ...params },
+                rotation: { ...rotation },
+                zoom,
+                lastAction,
+                sceneMode: params.sceneMode,
+                sceneAutopilot
+            };
+
+            try {
+                await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+                showToast('Lattice settings copied');
+                updateExportMeta('Settings copied');
+            } catch (error) {
+                console.warn('Clipboard copy failed', error);
+                showToast('Clipboard unavailable');
+            }
+        }
+
+        document.getElementById('exportLatticeBtn')?.addEventListener('click', exportLatticeData);
+        document.getElementById('captureLatticePngBtn')?.addEventListener('click', captureLatticePng);
+        document.getElementById('copyLatticeBtn')?.addEventListener('click', copyLatticeSettings);
     </script>
     
     <!-- Add collapsible menu system -->

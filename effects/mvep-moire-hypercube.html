@@ -68,6 +68,57 @@
             color: #ff00ff;
             font-weight: bold;
         }
+        .phase-dock {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,255,255,0.25);
+        }
+        .phase-dock h4 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            color: #00ffff;
+        }
+        .phase-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(120px, 1fr));
+            gap: 6px;
+        }
+        .phase-chip {
+            background: linear-gradient(135deg, rgba(0,0,0,0.5), rgba(0,40,60,0.7));
+            border: 1px solid rgba(0,255,255,0.35);
+            color: #a0ffff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: transform 0.2s ease, border 0.2s ease;
+        }
+        .phase-chip:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,255,0,0.6);
+        }
+        .phase-chip.active {
+            border-color: rgba(255,255,0,0.85);
+            color: #ffffcc;
+            box-shadow: 0 0 14px rgba(255,255,0,0.35);
+        }
+        .phase-autopilot {
+            margin-top: 10px;
+            width: 100%;
+            background: rgba(255,255,0,0.18);
+            border: 1px solid rgba(255,255,0,0.45);
+            color: #ffffaa;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .phase-autopilot:hover {
+            background: rgba(255,255,0,0.32);
+            box-shadow: 0 0 12px rgba(255,255,0,0.25);
+        }
         .audio-btn {
             background: rgba(0,255,255,0.2);
             border: 1px solid #00ffff;
@@ -86,6 +137,57 @@
             left: 20px;
             color: #ffff00;
             font-size: 14px;
+        }
+        .phase-timeline {
+            position: fixed;
+            top: 140px;
+            left: 20px;
+            width: 260px;
+            max-height: calc(100vh - 160px);
+            overflow-y: auto;
+            background: rgba(0,0,0,0.75);
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 12px;
+            padding: 14px;
+            color: #a0ffff;
+            font-size: 11px;
+            box-shadow: 0 0 16px rgba(0,255,255,0.2);
+        }
+        .phase-timeline h4 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+        }
+        .phase-timeline-entry {
+            border-left: 2px solid rgba(0,255,255,0.35);
+            padding-left: 10px;
+            margin-bottom: 8px;
+        }
+        .phase-timeline-entry strong {
+            display: block;
+            color: #ffffaa;
+            font-size: 11px;
+        }
+        .phase-timeline-entry span {
+            display: block;
+            color: rgba(255,255,255,0.7);
+            margin-top: 2px;
+        }
+        .phase-orbit {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            border: 1px solid rgba(0,255,255,0.35);
+            border-radius: 10px;
+            padding: 10px 16px;
+            color: #a0ffff;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 0 14px rgba(0,255,255,0.2);
         }
     </style>
 </head>
@@ -130,8 +232,27 @@
             <label>Color Shift: <span class="value-display" id="colorValue">0.0</span></label>
             <input type="range" id="colorShift" min="-1.0" max="1.0" step="0.1" value="0.0">
         </div>
+        <div class="phase-dock">
+            <h4>Phase Evolutions</h4>
+            <div class="phase-grid" id="phaseGrid">
+                <button class="phase-chip active" data-phase="0">Luminous Lattice</button>
+                <button class="phase-chip" data-phase="1">Nebula Bloom</button>
+                <button class="phase-chip" data-phase="2">Gravity Rain</button>
+                <button class="phase-chip" data-phase="3">Temporal Lace</button>
+                <button class="phase-chip" data-phase="4">Aether Vines</button>
+                <button class="phase-chip" data-phase="5">Chroma Tide</button>
+            </div>
+            <button class="phase-autopilot" id="phaseAutopilotBtn">Engage Phase Autopilot</button>
+        </div>
         <button class="audio-btn" id="audioBtn">Enable Audio</button>
     </div>
+
+    <div class="phase-timeline" id="phaseTimeline">
+        <h4>Phase Timeline</h4>
+        <div id="phaseTimelineEntries"></div>
+    </div>
+
+    <div class="phase-orbit" id="phaseTicker">Phase orbit idle. Scroll or select a phase.</div>
 
     <script>
         class MVEPMoireHypercube {
@@ -141,6 +262,9 @@
                 
                 this.mouseX = 0.5;
                 this.mouseY = 0.5;
+                this.touchIntensity = 0.0;
+                this.touchPoint = { x: 0.5, y: 0.5 };
+                this.touchChaos = 0.0;
                 this.time = 0;
                 this.startTime = Date.now();
                 
@@ -152,15 +276,70 @@
                     rotationSpeed: 1.2,
                     gridDensity: 12.0,
                     moireScale: 1.01,
-                    colorShift: 0.0
+                    colorShift: 0.0,
+                    sceneMode: 0
                 };
-                
+
                 // Audio
                 this.audioEnabled = false;
                 this.audioContext = null;
                 this.analyser = null;
                 this.audioData = { bass: 0, mid: 0, high: 0, pitch: 0 };
-                
+
+                this.phaseButtons = Array.from(document.querySelectorAll('.phase-chip'));
+                this.phaseAutopilotBtn = document.getElementById('phaseAutopilotBtn');
+                this.phaseTimelineEl = document.getElementById('phaseTimelineEntries');
+                this.phaseTickerEl = document.getElementById('phaseTicker');
+                this.phaseHistory = [];
+                this.phaseAutopilot = false;
+                this.phasePulse = 0.0;
+                this.scrollPhaseIndex = -1;
+                this.scrollMomentum = 0.0;
+                this.phaseVariant = Math.random();
+                this.phaseSequence = null;
+                this.phaseSequenceIndex = 0;
+                this.phaseSchedule = null;
+
+                this.phasePresets = [
+                    {
+                        name: 'Luminous Lattice',
+                        ticker: 'Luminous lattice stabilized – crystalline edges sharpened.',
+                        targets: { dimension: 3.6, morphFactor: 0.5, glitchIntensity: 0.04, rotationSpeed: 1.0, gridDensity: 10.0, moireScale: 1.01, colorShift: -0.2 }
+                    },
+                    {
+                        name: 'Nebula Bloom',
+                        ticker: 'Nebula bloom unfolding – chromatic mist blooms outward.',
+                        targets: { dimension: 4.1, morphFactor: 1.1, glitchIntensity: 0.08, rotationSpeed: 1.6, gridDensity: 14.5, moireScale: 1.015, colorShift: 0.35 }
+                    },
+                    {
+                        name: 'Gravity Rain',
+                        ticker: 'Gravity rain activated – vertical sheets bending geometry.',
+                        targets: { dimension: 4.4, morphFactor: 0.9, glitchIntensity: 0.12, rotationSpeed: 1.9, gridDensity: 18.0, moireScale: 1.02, colorShift: -0.6 }
+                    },
+                    {
+                        name: 'Temporal Lace',
+                        ticker: 'Temporal lace weaving – layered echoes trailing motion.',
+                        targets: { dimension: 3.9, morphFactor: 1.3, glitchIntensity: 0.09, rotationSpeed: 0.85, gridDensity: 8.5, moireScale: 0.995, colorShift: 0.6 }
+                    },
+                    {
+                        name: 'Aether Vines',
+                        ticker: 'Aether vines entwined – bio-lattice strands climbing.',
+                        targets: { dimension: 3.5, morphFactor: 1.6, glitchIntensity: 0.07, rotationSpeed: 1.45, gridDensity: 11.5, moireScale: 1.018, colorShift: 0.85 }
+                    },
+                    {
+                        name: 'Chroma Tide',
+                        ticker: 'Chroma tide surging – spectral undertow oscillating.',
+                        targets: { dimension: 4.6, morphFactor: 1.05, glitchIntensity: 0.14, rotationSpeed: 2.1, gridDensity: 20.0, moireScale: 1.028, colorShift: -0.85 }
+                    }
+                ];
+
+                this.phaseSequences = [
+                    [0, 2, 5, 3],
+                    [1, 4, 2],
+                    [4, 0, 3, 5],
+                    [5, 1, 3, 0]
+                ];
+
                 this.init();
             }
             
@@ -174,6 +353,7 @@
                 this.createShaders();
                 this.createGeometry();
                 this.bindEvents();
+                this.setPhase(0, 'init');
                 this.animate();
             }
             
@@ -213,7 +393,13 @@
                     uniform float u_colorShift;
                     uniform vec2 u_resolution;
                     uniform vec2 u_mouse;
-                    
+                    uniform float u_touchIntensity;
+                    uniform vec2 u_touchPoint;
+                    uniform float u_touchChaos;
+                    uniform float u_sceneMode;
+                    uniform float u_phasePulse;
+                    uniform float u_phaseVariant;
+
                     // Audio uniforms
                     uniform float u_audioEnabled;
                     uniform float u_bassLevel;
@@ -314,7 +500,7 @@
                         
                         return vec3(r, g, b);
                     }
-                    
+
                     // Hue shift function
                     vec3 hueShift(vec3 color, float shift) {
                         float c = cos(shift);
@@ -326,11 +512,73 @@
                         );
                         return hueMatrix * color;
                     }
-                    
+
+                    vec3 applyPhaseEvolution(vec3 color, vec3 rayDir, vec2 uv) {
+                        float mode = u_sceneMode;
+                        float flux = clamp(u_phasePulse, 0.0, 1.5);
+                        float variant = u_phaseVariant;
+                        vec2 centered = uv - 0.5;
+                        float radius = length(centered);
+                        if (mode < 0.5) {
+                            vec3 glow = vec3(0.2 + flux * 0.6, 0.15 + flux * 0.4, 0.35 + flux * 0.7);
+                            return color * (1.0 + flux * 0.35) + glow * 0.4;
+                        } else if (mode < 1.5) {
+                            float bloom = smoothstep(0.45, 0.05, radius);
+                            vec3 nebula = vec3(0.35 + flux * 0.7, 0.25 + flux * 0.6, 0.9 + flux * 0.5);
+                            nebula *= 0.8 + sin(rayDir.y * 4.0 + u_time * 1.5) * 0.2;
+                            return mix(color, nebula, clamp(0.35 + bloom * flux, 0.0, 0.85));
+                        } else if (mode < 2.5) {
+                            float streak = sin(rayDir.y * 6.0 + u_time * 4.0) * cos(uv.x * 40.0 - u_time * 2.0);
+                            vec3 rain = vec3(0.2 + flux * 0.6, 0.1 + flux * 0.25, 0.45 + flux * 0.8) * (0.8 + streak * 0.4);
+                            return mix(color, rain, clamp(0.4 + flux * 0.6, 0.0, 1.0));
+                        } else if (mode < 3.5) {
+                            float lace = sin((rayDir.x + rayDir.z) * 6.0 + u_time * 1.2) * cos(rayDir.y * 6.0 - u_time * 1.4);
+                            vec3 overlay = vec3(0.7 + flux * 0.4, 0.75 + flux * 0.35, 0.95 + flux * 0.4);
+                            overlay *= 0.8 + lace * 0.3;
+                            overlay += vec3(flux * 0.25);
+                            return mix(color, overlay, clamp(0.45 + flux * 0.5, 0.0, 1.0));
+                        } else if (mode < 4.5) {
+                            float vineWeave = sin((rayDir.x + rayDir.z) * (5.0 + variant * 3.5) + u_time * 1.8);
+                            float vineCurl = cos((rayDir.y + radius) * (12.0 + variant * 6.0) - u_time * 1.2);
+                            float tendrils = pow(max(0.0, vineWeave * 0.6 + vineCurl * 0.4 + flux * 0.25), 1.35);
+                            vec3 vines = vec3(
+                                0.28 + tendrils * 0.5,
+                                0.92 + tendrils * 0.35,
+                                0.44 + tendrils * 0.4
+                            );
+                            vines *= 0.75 + sin(rayDir.z * (8.0 + variant * 2.5) + u_time * 0.8) * 0.25;
+                            float blend = clamp(0.4 + tendrils * 0.55 + flux * 0.25, 0.0, 1.0);
+                            return mix(color, vines, blend);
+                        } else if (mode < 5.5) {
+                            float tide = sin(centered.x * (18.0 + variant * 10.0) + u_time * (1.6 + variant));
+                            float undertow = cos((rayDir.y + rayDir.z) * (9.0 + variant * 5.0) - u_time * 1.4);
+                            float swell = tide * 0.6 + undertow * 0.4;
+                            vec3 tideColor = vec3(
+                                0.34 + swell * 0.6,
+                                0.42 + swell * 0.35,
+                                0.98 + swell * 0.45
+                            );
+                            tideColor += vec3(0.25 * flux, 0.15 * flux, 0.35 * flux);
+                            float mixAmt = clamp(0.45 + abs(swell) * 0.5 + flux * 0.25, 0.0, 1.0);
+                            return mix(color, tideColor, mixAmt);
+                        } else {
+                            float chaos = sin((rayDir.x + rayDir.y + rayDir.z) * (10.0 + variant * 6.0) + u_time * 2.2);
+                            float bands = sin(radius * (28.0 + variant * 12.0) - u_time * 1.6);
+                            vec3 veil = vec3(
+                                0.6 + chaos * 0.35,
+                                0.2 + bands * 0.3,
+                                0.95 + chaos * 0.4
+                            );
+                            veil += vec3(0.12 * flux, 0.05 * flux, 0.18 * flux);
+                            float blend = clamp(0.5 + flux * 0.4, 0.0, 1.0);
+                            return mix(color, veil, blend);
+                        }
+                    }
+
                     void main() {
                         vec2 uv = (v_uv - 0.5) * 2.0;
                         uv.x *= u_resolution.x / u_resolution.y;
-                        
+
                         // Ray direction for 3D effect
                         vec3 rayDir = normalize(vec3(uv, 1.0));
                         
@@ -342,32 +590,51 @@
                         
                         float lattice = hypercubeLattice(rayDir, morphFactor, u_gridDensity);
                         float moire = generateMoire(rayDir, morphFactor, u_gridDensity);
-                        
+
                         // Combine lattice and moiré
                         float combined = lattice + moire * 0.5;
-                        
+                        combined += u_phasePulse * 0.25;
+
+                        vec2 touchUV = v_uv;
+                        vec2 touchDelta = touchUV - u_touchPoint;
+                        float touchFalloff = exp(-length(touchDelta) * 6.0);
+                        float touchWave = sin(u_time * 6.0 - length(touchDelta) * 24.0) * 0.5 + 0.5;
+                        float touchContribution = u_touchIntensity * touchFalloff * touchWave;
+                        float chaosContribution = u_touchChaos * 0.35;
+
+                        combined += touchContribution * (1.0 + chaosContribution);
+                        moire += touchContribution * 0.3;
+
                         // Base colors (vaporwave palette)
                         vec3 color1 = vec3(0.0, 0.8, 1.0);  // Cyan
                         vec3 color2 = vec3(1.0, 0.0, 1.0);  // Magenta
                         vec3 color3 = vec3(1.0, 1.0, 0.0);  // Yellow
-                        
+
                         // Color mixing based on lattice pattern
                         vec3 finalColor = mix(mix(color1, color2, combined), color3, moire);
-                        
+
                         // Apply hue shifting
-                        finalColor = hueShift(finalColor, u_colorShift);
-                        
+                        finalColor = hueShift(finalColor, u_colorShift + chaosContribution * 0.8);
+
                         // Apply RGB color splitting
                         finalColor = applyColorSplitting(v_uv, finalColor);
-                        
+
                         // Add some glow and intensity
                         finalColor *= (0.5 + combined * 1.5);
-                        
+                        finalColor += touchContribution * vec3(0.25, 0.15, 0.45);
+                        finalColor += chaosContribution * 0.4;
+
                         // Audio-reactive brightness
                         if (u_audioEnabled > 0.5) {
                             finalColor *= (0.8 + u_bassLevel * 0.4 + u_midLevel * 0.3);
                         }
-                        
+
+                        // Touch-driven bloom
+                        finalColor += vec3(0.05, 0.08, 0.12) * pow(touchContribution, 1.2);
+                        finalColor = applyPhaseEvolution(finalColor, rayDir, v_uv);
+                        finalColor *= (1.0 + u_phasePulse * 0.25);
+                        finalColor = clamp(finalColor, 0.0, 1.8);
+
                         gl_FragColor = vec4(finalColor, 1.0);
                     }
                 `;
@@ -399,11 +666,17 @@
                     colorShift: this.gl.getUniformLocation(this.program, 'u_colorShift'),
                     resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
                     mouse: this.gl.getUniformLocation(this.program, 'u_mouse'),
+                    touchIntensity: this.gl.getUniformLocation(this.program, 'u_touchIntensity'),
+                    touchPoint: this.gl.getUniformLocation(this.program, 'u_touchPoint'),
+                    touchChaos: this.gl.getUniformLocation(this.program, 'u_touchChaos'),
                     audioEnabled: this.gl.getUniformLocation(this.program, 'u_audioEnabled'),
                     bassLevel: this.gl.getUniformLocation(this.program, 'u_bassLevel'),
                     midLevel: this.gl.getUniformLocation(this.program, 'u_midLevel'),
                     highLevel: this.gl.getUniformLocation(this.program, 'u_highLevel'),
-                    pitchFactor: this.gl.getUniformLocation(this.program, 'u_pitchFactor')
+                    pitchFactor: this.gl.getUniformLocation(this.program, 'u_pitchFactor'),
+                    sceneMode: this.gl.getUniformLocation(this.program, 'u_sceneMode'),
+                    phasePulse: this.gl.getUniformLocation(this.program, 'u_phasePulse'),
+                    phaseVariant: this.gl.getUniformLocation(this.program, 'u_phaseVariant')
                 };
             }
             
@@ -447,46 +720,69 @@
                 
                 // PARAMETER-ONLY SCROLL (NO ACTUAL PAGE MOVEMENT)
                 this.scrollParameter = 0;
-                
+                this.refreshScrollIndicator();
+
                 window.addEventListener('wheel', (e) => {
                     e.preventDefault(); // Prevent actual scrolling
-                    
+
                     // Accumulate scroll input into parameter
                     const delta = e.deltaY * 0.001;
                     this.scrollParameter += delta;
                     this.scrollParameter = Math.max(0, Math.min(1, this.scrollParameter)); // Clamp 0-1
-                    
+
                     // Bind scroll parameter to grid density (5.0 to 25.0)
                     this.params.gridDensity = 5.0 + (this.scrollParameter * 20.0);
-                    document.getElementById('gridDensity').value = this.params.gridDensity;
-                    document.getElementById('gridValue').textContent = this.params.gridDensity.toFixed(1);
-                    
                     // Bind scroll parameter to color shift (-1.0 to 1.0)
                     this.params.colorShift = -1.0 + (this.scrollParameter * 2.0);
-                    document.getElementById('colorShift').value = this.params.colorShift;
-                    document.getElementById('colorValue').textContent = this.params.colorShift.toFixed(1);
-                    
-                    // Update scroll indicator
-                    const indicator = document.getElementById('scrollIndicator');
-                    if (indicator) {
-                        indicator.textContent = `Scroll: ${(this.scrollParameter * 100).toFixed(1)}% | Grid: ${this.params.gridDensity.toFixed(1)} | Color: ${this.params.colorShift.toFixed(2)}`;
-                    }
-                    
+                    this.scrollMomentum = Math.min(1.0, Math.abs(delta) * 3.0);
+                    this.phasePulse = Math.min(1.0, this.phasePulse + Math.abs(delta) * 2.0);
+                    this.updateControlDisplays();
+                    this.syncPhaseWithScroll();
+
                     console.log(`🎛️ Parameter scroll: ${(this.scrollParameter * 100).toFixed(1)}% → Grid: ${this.params.gridDensity.toFixed(1)}, Color: ${this.params.colorShift.toFixed(2)} (no page movement)`);
                 }, { passive: false });
-                
+
                 // Parameter controls
                 const params = ['dimension', 'morphFactor', 'glitchIntensity', 'rotationSpeed', 'gridDensity', 'moireScale', 'colorShift'];
+                const displayMap = {
+                    dimension: 'dimensionValue',
+                    morphFactor: 'morphValue',
+                    glitchIntensity: 'glitchValue',
+                    rotationSpeed: 'rotationValue',
+                    gridDensity: 'gridValue',
+                    moireScale: 'moireValue',
+                    colorShift: 'colorValue'
+                };
                 params.forEach(param => {
                     const slider = document.getElementById(param);
-                    const display = document.getElementById(param + 'Value');
+                    const display = document.getElementById(displayMap[param]);
                     slider.addEventListener('input', (e) => {
                         this.params[param] = parseFloat(e.target.value);
-                        display.textContent = e.target.value;
+                        if (display) {
+                            const step = slider.step || '0.1';
+                            const decimals = step.includes('.') ? step.split('.')[1].length : 0;
+                            display.textContent = Number(this.params[param]).toFixed(Math.min(3, Math.max(decimals, 1)));
+                        }
+                        this.refreshScrollIndicator();
                     });
                 });
 
                 document.getElementById('audioBtn').addEventListener('click', () => this.toggleAudio());
+
+                if (this.phaseButtons.length) {
+                    this.phaseButtons.forEach((button) => {
+                        button.addEventListener('click', () => {
+                            const phase = Number(button.dataset.phase || 0);
+                            if (this.phaseAutopilot) {
+                                this.togglePhaseAutopilot();
+                            }
+                            this.setPhase(phase, 'manual');
+                        });
+                    });
+                }
+
+                this.phaseAutopilotBtn?.addEventListener('click', () => this.togglePhaseAutopilot());
+                this.updateControlDisplays();
             }
             
             async initAudio() {
@@ -516,6 +812,180 @@
                     this.audioEnabled = false;
                     document.getElementById('audioBtn').textContent = 'Enable Audio';
                     document.getElementById('status').textContent = 'MVEP 4D Hypercube - Mouse: Move | Audio: OFF';
+                }
+            }
+
+            updatePhaseTicker(message) {
+                if (!this.phaseTickerEl) return;
+                this.phaseTickerEl.textContent = message;
+            }
+
+            updatePhaseButtons() {
+                if (!this.phaseButtons) return;
+                this.phaseButtons.forEach((button) => {
+                    const phase = Number(button.dataset.phase || 0);
+                    button.classList.toggle('active', phase === this.params.sceneMode);
+                });
+            }
+
+            refreshScrollIndicator() {
+                const indicator = document.getElementById('scrollIndicator');
+                if (!indicator) return;
+                const percent = (this.scrollParameter || 0) * 100;
+                indicator.textContent = `Scroll: ${percent.toFixed(1)}% | Grid: ${this.params.gridDensity.toFixed(1)} | Color: ${this.params.colorShift.toFixed(2)}`;
+            }
+
+            updateControlDisplays() {
+                const mapping = [
+                    ['dimension', 'dimensionValue', this.params.dimension],
+                    ['morphFactor', 'morphValue', this.params.morphFactor],
+                    ['glitchIntensity', 'glitchValue', this.params.glitchIntensity],
+                    ['rotationSpeed', 'rotationValue', this.params.rotationSpeed],
+                    ['gridDensity', 'gridValue', this.params.gridDensity],
+                    ['moireScale', 'moireValue', this.params.moireScale],
+                    ['colorShift', 'colorValue', this.params.colorShift]
+                ];
+                mapping.forEach(([sliderId, displayId, value]) => {
+                    const slider = document.getElementById(sliderId);
+                    const display = document.getElementById(displayId);
+                    if (slider) {
+                        slider.value = value;
+                    }
+                    if (display) {
+                        const step = slider?.step || '0.1';
+                        const decimals = step.includes('.') ? step.split('.')[1].length : 0;
+                        display.textContent = Number(value).toFixed(Math.min(3, Math.max(decimals, 1)));
+                    }
+                });
+                this.refreshScrollIndicator();
+            }
+
+            updatePhaseTimeline() {
+                if (!this.phaseTimelineEl) return;
+                const recent = this.phaseHistory.slice(-8).reverse();
+                this.phaseTimelineEl.innerHTML = recent.map((entry) => {
+                    const time = new Date(entry.timestamp).toLocaleTimeString();
+                    const variant = typeof entry.variant === 'number' ? ` • λ=${entry.variant.toFixed(2)}` : '';
+                    return `
+                        <div class="phase-timeline-entry">
+                            <strong>${time} • ${entry.name}</strong>
+                            <span>${entry.source}${variant}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            recordPhase(source) {
+                const preset = this.phasePresets[this.params.sceneMode];
+                this.phaseHistory.push({
+                    timestamp: Date.now(),
+                    mode: this.params.sceneMode,
+                    name: preset?.name || `Phase ${this.params.sceneMode}`,
+                    source,
+                    variant: this.phaseVariant
+                });
+                if (this.phaseHistory.length > 40) {
+                    this.phaseHistory.shift();
+                }
+                this.updatePhaseTimeline();
+            }
+
+            applyPhasePreset(mode, blend = 0.5) {
+                const preset = this.phasePresets[mode];
+                if (!preset) return;
+                Object.entries(preset.targets).forEach(([key, value]) => {
+                    if (typeof this.params[key] === 'number') {
+                        this.params[key] = this.params[key] * (1 - blend) + value * blend;
+                    }
+                });
+                this.updateControlDisplays();
+            }
+
+            pickPhaseSequence() {
+                const selection = this.phaseSequences[Math.floor(Math.random() * this.phaseSequences.length)] || [];
+                return selection.slice();
+            }
+
+            resetPhaseSchedule() {
+                if (this.phaseSchedule) {
+                    clearTimeout(this.phaseSchedule);
+                    this.phaseSchedule = null;
+                }
+            }
+
+            schedulePhaseAutopilot(initial = false) {
+                if (!this.phaseAutopilot) return;
+                if (!this.phaseSequence || this.phaseSequenceIndex >= this.phaseSequence.length) {
+                    this.phaseSequence = this.pickPhaseSequence();
+                    this.phaseSequenceIndex = 0;
+                    if (this.phaseSequence.length) {
+                        const itinerary = this.phaseSequence
+                            .map(index => this.phasePresets[index]?.name || `Phase ${index}`)
+                            .join(' → ');
+                        this.updatePhaseTicker(`Autopilot itinerary: ${itinerary}`);
+                    }
+                }
+                if (!this.phaseSequence?.length) return;
+                const next = this.phaseSequence[this.phaseSequenceIndex % this.phaseSequence.length];
+                this.phaseSequenceIndex += 1;
+                this.setPhase(next, 'autopilot');
+                const delay = initial ? 2200 : 6500 + Math.random() * 3500;
+                this.resetPhaseSchedule();
+                this.phaseSchedule = setTimeout(() => this.schedulePhaseAutopilot(), delay);
+            }
+
+            setPhase(mode, source = 'manual') {
+                const quiet = source === 'init';
+                if (mode === this.params.sceneMode && source !== 'autopilot' && source !== 'scroll-sync' && !quiet) {
+                    this.recordPhase(`${source}:retain`);
+                    return;
+                }
+                this.params.sceneMode = mode;
+                this.scrollPhaseIndex = mode;
+                if (source !== 'scroll-sync' && this.phasePresets.length > 1) {
+                    this.scrollParameter = mode / Math.max(1, this.phasePresets.length - 1);
+                }
+                this.phasePulse = quiet ? Math.max(this.phasePulse, 0.6) : 1.0;
+                this.phaseVariant = Math.random();
+                this.updatePhaseButtons();
+                this.applyPhasePreset(mode, source === 'autopilot' ? 0.55 : 0.45);
+                const preset = this.phasePresets[mode];
+                if (preset) {
+                    if (!quiet) {
+                        this.updatePhaseTicker(preset.ticker);
+                    } else {
+                        this.updatePhaseTicker('Phase orbit idle. Scroll or select a phase.');
+                    }
+                }
+                this.touchChaos = Math.min(1.0, this.touchChaos + (quiet ? 0.15 : 0.3));
+                this.recordPhase(`${source}:${preset?.name || mode}`);
+            }
+
+            togglePhaseAutopilot() {
+                this.phaseAutopilot = !this.phaseAutopilot;
+                if (this.phaseAutopilotBtn) {
+                    this.phaseAutopilotBtn.textContent = this.phaseAutopilot ? 'Disengage Phase Autopilot' : 'Engage Phase Autopilot';
+                }
+                if (this.phaseAutopilot) {
+                    this.updatePhaseTicker('Autopilot weaving through the phase orbit.');
+                    this.phaseSequence = this.pickPhaseSequence();
+                    this.phaseSequenceIndex = 0;
+                    this.schedulePhaseAutopilot(true);
+                } else {
+                    this.updatePhaseTicker('Phase orbit idle. Scroll or select a phase.');
+                    this.resetPhaseSchedule();
+                    this.phaseSequence = null;
+                    this.phaseSequenceIndex = 0;
+                }
+            }
+
+            syncPhaseWithScroll() {
+                const phases = this.phasePresets.length;
+                if (!phases) return;
+                const index = Math.min(phases - 1, Math.max(0, Math.floor((this.scrollParameter || 0) * phases)));
+                if (index !== this.scrollPhaseIndex) {
+                    this.scrollPhaseIndex = index;
+                    this.setPhase(index, 'scroll-sync');
                 }
             }
             
@@ -550,11 +1020,15 @@
             
             render() {
                 this.time = (Date.now() - this.startTime) / 1000;
-                
+
                 this.updateAudio();
-                
+
+                // Ease touch parameters back to calm state
+                this.touchIntensity = Math.max(0.0, this.touchIntensity * 0.92 - 0.001);
+                this.touchChaos = Math.max(0.0, this.touchChaos * 0.94 - 0.0005);
+
                 this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-                
+
                 // Set uniforms
                 this.gl.uniform1f(this.uniforms.time, this.time);
                 this.gl.uniform1f(this.uniforms.dimension, this.params.dimension);
@@ -566,7 +1040,17 @@
                 this.gl.uniform1f(this.uniforms.colorShift, this.params.colorShift);
                 this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
                 this.gl.uniform2f(this.uniforms.mouse, this.mouseX, this.mouseY);
-                
+                this.gl.uniform1f(this.uniforms.touchIntensity, this.touchIntensity);
+                this.gl.uniform2f(this.uniforms.touchPoint, this.touchPoint.x, this.touchPoint.y);
+                this.gl.uniform1f(this.uniforms.touchChaos, this.touchChaos);
+
+                this.phasePulse = Math.max(0.0, this.phasePulse * 0.95 - 0.0008);
+                this.scrollMomentum = Math.max(0.0, this.scrollMomentum * 0.9 - 0.0005);
+                const phaseFlux = Math.min(1.5, this.phasePulse + this.scrollMomentum * 0.6 + this.touchChaos * 0.25);
+                this.gl.uniform1f(this.uniforms.sceneMode, this.params.sceneMode || 0);
+                this.gl.uniform1f(this.uniforms.phasePulse, phaseFlux);
+                this.gl.uniform1f(this.uniforms.phaseVariant, this.phaseVariant);
+
                 // Audio uniforms
                 this.gl.uniform1f(this.uniforms.audioEnabled, this.audioEnabled ? 1.0 : 0.0);
                 this.gl.uniform1f(this.uniforms.bassLevel, this.audioData.bass);
@@ -590,97 +1074,120 @@
 
         // Add touch reactions for mobile
         function setupTouchReactions() {
-            let touchIntensity = 0;
-            let touchX = 0.5;
-            let touchY = 0.5;
-            
-            // Touch start - trigger intense reaction
-            document.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                touchX = touch.clientX / window.innerWidth;
-                touchY = touch.clientY / window.innerHeight;
-                touchIntensity = 1.0;
-                
-                // Visual feedback
-                const touchIndicator = document.createElement('div');
-                touchIndicator.style.cssText = `
+            const rippleStyleId = 'mvep-touch-ripple-style';
+            if (!document.getElementById(rippleStyleId)) {
+                const rippleStyle = document.createElement('style');
+                rippleStyle.id = rippleStyleId;
+                rippleStyle.textContent = `
+                    @keyframes mvepTouchRipple {
+                        0% { transform: scale(0.4); opacity: 0.9; }
+                        100% { transform: scale(3.2); opacity: 0; }
+                    }
+
+                    .mvep-touch-ripple {
+                        position: absolute;
+                        width: 70px;
+                        height: 70px;
+                        border-radius: 50%;
+                        border: 2px solid rgba(0, 255, 255, 0.8);
+                        pointer-events: none;
+                        animation: mvepTouchRipple 0.7s ease-out forwards;
+                        box-shadow: 0 0 18px rgba(255, 0, 255, 0.4);
+                    }
+                `;
+                document.head.appendChild(rippleStyle);
+            }
+
+            const overlayId = 'mvep-touch-overlay';
+            let overlay = document.getElementById(overlayId);
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = overlayId;
+                overlay.style.cssText = `
                     position: fixed;
-                    left: ${touch.clientX - 25}px;
-                    top: ${touch.clientY - 25}px;
-                    width: 50px;
-                    height: 50px;
-                    border: 2px solid #00ffff;
-                    border-radius: 50%;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
                     pointer-events: none;
-                    z-index: 1000;
-                    animation: touchRipple 0.6s ease-out forwards;
+                    z-index: 1200;
                 `;
-                document.body.appendChild(touchIndicator);
-                
-                // Add ripple animation
-                const style = document.createElement('style');
-                style.textContent = `
-                    @keyframes touchRipple {
-                        0% { transform: scale(0); opacity: 1; }
-                        100% { transform: scale(3); opacity: 0; }
-                    }
-                `;
-                document.head.appendChild(style);
-                
-                setTimeout(() => document.body.removeChild(touchIndicator), 600);
-                
-                console.log('🔥 Touch reaction triggered');
-            }, { passive: false });
-            
-            // Touch move - continuous reaction
-            document.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                touchX = touch.clientX / window.innerWidth;
-                touchY = touch.clientY / window.innerHeight;
-                touchIntensity = 0.8;
-                
-                // Update MVEP visualizer with touch data
-                if (mvepVisualizer) {
-                    mvepVisualizer.mouseX = touchX;
-                    mvepVisualizer.mouseY = 1.0 - touchY;
-                    mvepVisualizer.interactionIntensity = touchIntensity;
+                document.body.appendChild(overlay);
+            }
+
+            const statusEl = document.getElementById('status');
+
+            const spawnRipple = (clientX, clientY, scale = 1) => {
+                const ripple = document.createElement('div');
+                ripple.className = 'mvep-touch-ripple';
+                ripple.style.left = `${clientX - 35}px`;
+                ripple.style.top = `${clientY - 35}px`;
+                ripple.style.transform = `scale(${Math.max(0.6, scale)})`;
+                overlay.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 700);
+            };
+
+            const updateTouchState = (clientX, clientY, intensity) => {
+                if (!mvepVisualizer) return;
+                const normX = clientX / window.innerWidth;
+                const normY = 1.0 - (clientY / window.innerHeight);
+
+                mvepVisualizer.mouseX = normX;
+                mvepVisualizer.mouseY = normY;
+                mvepVisualizer.touchPoint = { x: normX, y: normY };
+                mvepVisualizer.touchIntensity = Math.min(1.0, Math.max(mvepVisualizer.touchIntensity, intensity));
+                mvepVisualizer.touchChaos = Math.min(1.0, mvepVisualizer.touchChaos + intensity * 0.25);
+
+                if (statusEl) {
+                    statusEl.textContent = 'MVEP 4D Hypercube – Touch drive active';
                 }
-            }, { passive: false });
-            
-            // Touch end - decay reaction
-            document.addEventListener('touchend', (e) => {
-                touchIntensity *= 0.5;
-                setTimeout(() => {
-                    touchIntensity = 0;
-                }, 300);
-                
-                console.log('🌊 Touch reaction ending');
-            });
-            
-            // Multi-touch support
+            };
+
+            const updateChaosFromTouches = (touches) => {
+                if (!mvepVisualizer || touches.length < 2) return;
+                const touch1 = touches[0];
+                const touch2 = touches[1];
+                const distance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+                const normalized = Math.min(1, distance / 240);
+                mvepVisualizer.touchChaos = Math.min(1.0, mvepVisualizer.touchChaos + normalized * 0.4);
+            };
+
             document.addEventListener('touchstart', (e) => {
-                if (e.touches.length > 1) {
-                    const touch1 = e.touches[0];
-                    const touch2 = e.touches[1];
-                    const distance = Math.sqrt(
-                        Math.pow(touch2.clientX - touch1.clientX, 2) +
-                        Math.pow(touch2.clientY - touch1.clientY, 2)
-                    );
-                    
-                    // Multi-touch creates chaos effect
-                    if (mvepVisualizer) {
-                        mvepVisualizer.chaosIntensity = Math.min(1.0, distance / 200);
+                if (!mvepVisualizer) return;
+                if (e.target && e.target.closest('.controls')) return;
+                const primary = e.touches[0];
+                updateTouchState(primary.clientX, primary.clientY, 1.0);
+                spawnRipple(primary.clientX, primary.clientY, 1);
+                updateChaosFromTouches(e.touches);
+                e.preventDefault();
+            }, { passive: false });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!mvepVisualizer) return;
+                if (e.target && e.target.closest('.controls')) return;
+                const primary = e.touches[0];
+                updateTouchState(primary.clientX, primary.clientY, 0.8);
+                updateChaosFromTouches(e.touches);
+                e.preventDefault();
+            }, { passive: false });
+
+            document.addEventListener('touchend', (e) => {
+                if (!mvepVisualizer) return;
+                if (e.touches.length === 0) {
+                    mvepVisualizer.touchIntensity *= 0.4;
+                    if (statusEl) {
+                        statusEl.textContent = 'MVEP 4D Hypercube - Mouse: Move | Scroll: Grid/Color | Audio: ' + (mvepVisualizer.audioEnabled ? 'LIVE' : 'OFF');
                     }
-                    
-                    console.log('⚡ Multi-touch chaos effect activated');
                 }
             });
         }
         
         // Initialize touch reactions when DOM is ready
-        document.addEventListener('DOMContentLoaded', setupTouchReactions);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupTouchReactions);
+        } else {
+            setupTouchReactions();
+        }
     </script>
     
     <!-- Add collapsible menu system -->
