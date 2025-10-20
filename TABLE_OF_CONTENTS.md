@@ -45,10 +45,12 @@ This document provides an organized index of all cataloged visual effects, anima
 *   [VIB34D Visualizer Pool - Dynamic Visualizer Management](/mnt/c/Users/millz/visual_codex/core_documentation/vib34d-visualizer-pool.md)
 *   [VIB3CODE - Morphing Blog System](/mnt/c/Users/millz/visual_codex/webgl_visualizations/full_page_background_visualizers/vib3code-morphing-blog.md)
 *   [Neoskeuomorphic Holographic UI](/mnt/c/Users/millz/visual_codex/webgl_visualizations/embedded_multi_instance_visualizers/neoskeuomorphic-holographic-ui.md)
+*   [VIB34D Editor Dashboard – Holographic Index Cards](webgl_visualizations/embedded_multi_instance_visualizers/vib34d-editor-dashboard-index.md)
 *   [Dynamic Layout System](/mnt/c/Users/millz/visual_codex/css_animations_effects/particle_systems_css_based/dynamic-layout-system.md)
 *   [Enhanced Vaporwave System](/mnt/c/Users/millz/visual_codex/webgl_visualizations/embedded_multi_instance_visualizers/enhanced-vaporwave-system.md)
 *   [Optimized Full Page Polytopal System](/mnt/c/Users/millz/visual_codex/webgl_visualizations/full_page_background_visualizers/optimized-full-page-polytopal-system.md)
 *   [Enhanced Vaporwave System Codex](/mnt/c/Users/millz/visual_codex/webgl_visualizations/embedded_multi_instance_visualizers/enhanced_vaporwave_system_codex.md)
+*   [Working Final Version – Consolidated System](webgl_visualizations/embedded_multi_instance_visualizers/working-final-version.md)
 
 ---
 
@@ -59,6 +61,8 @@ This document provides an organized index of all cataloged visual effects, anima
 *   [Neoskeuomorphic Holographic UI](/mnt/c/Users/millz/visual_codex/webgl_visualizations/embedded_multi_instance_visualizers/neoskeuomorphic-holographic-ui.md)
 *   [VIB3CODE - Holographic Blog Production](/mnt/c/Users/millz/visual_codex/css_animations_effects/holographic_neoskeuomorphic_ui/holographic-blog-production.md)
 *   [VIB3CODE Enhanced UI](/mnt/c/Users/millz/visual_codex/css_animations_effects/holographic_neoskeuomorphic_ui/vib3code-enhanced-ui.md)
+*   [VIB34D Editor Dashboard – Holographic Index Cards](webgl_visualizations/embedded_multi_instance_visualizers/vib34d-editor-dashboard-index.md)
+*   [Working Final Version – Consolidated System](webgl_visualizations/embedded_multi_instance_visualizers/working-final-version.md)
 
 ### 2.2. Gradient Animations
 *   [VIB3CODE Enhanced Theme & Animations](/mnt/c/Users/millz/visual_codex/css_animations_effects/gradient_animations/vib3code-enhanced-theme.md)
