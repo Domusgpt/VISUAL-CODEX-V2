@@ -87,6 +87,40 @@
             color: #ffff00;
             font-size: 14px;
         }
+        .scene-pill-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .scene-pill {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 6px 4px;
+            border-radius: 6px;
+            border: 1px solid rgba(0,255,255,0.35);
+            background: rgba(0,0,0,0.35);
+            color: #ffe6ff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .scene-pill:hover {
+            background: rgba(255,0,255,0.25);
+            color: white;
+            box-shadow: 0 0 12px rgba(255,0,255,0.3);
+        }
+        .scene-pill.active {
+            background: linear-gradient(135deg, rgba(0,255,255,0.35), rgba(255,0,255,0.35));
+            border-color: rgba(255,255,255,0.65);
+            color: white;
+        }
+        .evolution-status {
+            margin-top: 6px;
+            font-size: 10px;
+            color: rgba(200,255,255,0.8);
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -94,7 +128,7 @@
     <canvas id="canvas"></canvas>
     
     <div class="status" id="status">
-        MVEP 4D Hypercube - Mouse: Move | Scroll: Grid/Color | Audio: Click to Enable
+        MVEP 4D Hypercube Evolution • Mouse: Move | Scroll: Grid/Color | Audio & Evolutions: Control Panel
     </div>
     
     <div class="scroll-indicator" id="scrollIndicator">
@@ -130,6 +164,27 @@
             <label>Color Shift: <span class="value-display" id="colorValue">0.0</span></label>
             <input type="range" id="colorShift" min="-1.0" max="1.0" step="0.1" value="0.0">
         </div>
+        <div class="control-group">
+            <label>Trail Persistence: <span class="value-display" id="trailPersistenceValue">0.45</span></label>
+            <input type="range" id="trailPersistence" min="0.0" max="1.0" step="0.05" value="0.45">
+        </div>
+        <div class="control-group">
+            <label>Resonance Warp: <span class="value-display" id="resonanceWarpValue">0.30</span></label>
+            <input type="range" id="resonanceWarp" min="0.0" max="1.0" step="0.05" value="0.3">
+        </div>
+        <div class="control-group">
+            <label>Evolution Scenes</label>
+            <div class="scene-pill-grid">
+                <button class="scene-pill active" data-mode="aurora">Aurora Bloom</button>
+                <button class="scene-pill" data-mode="gravity">Gravity Lens</button>
+                <button class="scene-pill" data-mode="prism">Prism Surge</button>
+                <button class="scene-pill" data-mode="abyss">Abyss Echo</button>
+                <button class="scene-pill" data-mode="zenith">Zenith Veil</button>
+                <button class="scene-pill" data-mode="rift">Rift Bloom</button>
+            </div>
+            <div class="evolution-status" id="evolutionStatus">Aurora Bloom baseline</div>
+        </div>
+        <button class="audio-btn" id="evolutionCycleBtn">Cycle Evolutions</button>
         <button class="audio-btn" id="audioBtn">Enable Audio</button>
     </div>
 
@@ -141,8 +196,12 @@
                 
                 this.mouseX = 0.5;
                 this.mouseY = 0.5;
+                this.touchIntensity = 0.0;
+                this.touchPoint = { x: 0.5, y: 0.5 };
+                this.touchChaos = 0.0;
                 this.time = 0;
                 this.startTime = Date.now();
+                this.lastPersist = Date.now();
                 
                 // MVEP Parameters
                 this.params = {
@@ -152,15 +211,97 @@
                     rotationSpeed: 1.2,
                     gridDensity: 12.0,
                     moireScale: 1.01,
-                    colorShift: 0.0
+                    colorShift: 0.0,
+                    trailPersistence: 0.45,
+                    resonanceWarp: 0.3
                 };
-                
+
+                this.storageKey = 'mvep-moire-hypercube-phase3-state';
+                this.storageAvailable = false;
+                try {
+                    const testKey = `${this.storageKey}-test`;
+                    localStorage.setItem(testKey, '1');
+                    localStorage.removeItem(testKey);
+                    this.storageAvailable = true;
+                } catch (error) {
+                    console.warn('MVEP storage unavailable', error);
+                }
+
                 // Audio
                 this.audioEnabled = false;
                 this.audioContext = null;
                 this.analyser = null;
                 this.audioData = { bass: 0, mid: 0, high: 0, pitch: 0 };
-                
+
+                this.evolutionMode = 'aurora';
+                this.evolutionPhase = 0;
+                this.evolutionMemory = 0.22;
+                this.evolutionConfigs = {
+                    aurora: {
+                        label: 'Aurora Bloom',
+                        paletteA: [0.2, 0.8, 1.0],
+                        paletteB: [1.0, 0.4, 1.0],
+                        pulse: 0.4,
+                        morphBoost: 0.2,
+                        chaosBoost: 0.15,
+                        colorShiftBase: 0.1,
+                        vector: [0.45, 0.9, 1.2]
+                    },
+                    gravity: {
+                        label: 'Gravity Lens',
+                        paletteA: [0.9, 0.9, 0.3],
+                        paletteB: [0.2, 0.6, 1.3],
+                        pulse: 0.55,
+                        morphBoost: 0.35,
+                        chaosBoost: 0.25,
+                        colorShiftBase: -0.05,
+                        vector: [1.0, 0.7, 1.1]
+                    },
+                    prism: {
+                        label: 'Prism Surge',
+                        paletteA: [1.2, 0.5, 0.9],
+                        paletteB: [0.4, 1.1, 1.2],
+                        pulse: 0.7,
+                        morphBoost: 0.5,
+                        chaosBoost: 0.2,
+                        colorShiftBase: 0.25,
+                        vector: [1.35, 0.8, 1.25]
+                    },
+                    abyss: {
+                        label: 'Abyss Echo',
+                        paletteA: [0.15, 0.35, 1.2],
+                        paletteB: [0.8, 0.2, 1.4],
+                        pulse: 0.85,
+                        morphBoost: 0.65,
+                        chaosBoost: 0.4,
+                        colorShiftBase: -0.3,
+                        vector: [0.3, 0.5, 1.45]
+                    },
+                    zenith: {
+                        label: 'Zenith Veil',
+                        paletteA: [0.45, 1.05, 1.35],
+                        paletteB: [1.1, 0.55, 1.4],
+                        pulse: 0.5,
+                        morphBoost: 0.4,
+                        chaosBoost: 0.22,
+                        colorShiftBase: 0.18,
+                        vector: [0.85, 1.1, 1.35]
+                    },
+                    rift: {
+                        label: 'Rift Bloom',
+                        paletteA: [0.25, 0.6, 1.25],
+                        paletteB: [1.25, 0.35, 1.5],
+                        pulse: 0.95,
+                        morphBoost: 0.7,
+                        chaosBoost: 0.45,
+                        colorShiftBase: -0.22,
+                        vector: [0.4, 0.9, 1.5]
+                    }
+                };
+
+                this.evolutionStatusEl = null;
+                this.evolutionCycleTimer = null;
+
                 this.init();
             }
             
@@ -174,6 +315,11 @@
                 this.createShaders();
                 this.createGeometry();
                 this.bindEvents();
+                const restored = this.restoreState();
+                this.setEvolutionMode(this.evolutionMode, { manual: restored });
+                if (restored) {
+                    this.updateEvolutionStatus('State recall engaged');
+                }
                 this.animate();
             }
             
@@ -213,7 +359,18 @@
                     uniform float u_colorShift;
                     uniform vec2 u_resolution;
                     uniform vec2 u_mouse;
-                    
+                    uniform float u_touchIntensity;
+                    uniform vec2 u_touchPoint;
+                    uniform float u_touchChaos;
+                    uniform float u_trailPersistence;
+                    uniform float u_resonanceWarp;
+                    uniform float u_evolutionPhase;
+                    uniform vec3 u_evolutionPrimary;
+                    uniform vec3 u_evolutionSecondary;
+                    uniform float u_evolutionPulse;
+                    uniform vec3 u_evolutionVector;
+                    uniform float u_memoryImprint;
+
                     // Audio uniforms
                     uniform float u_audioEnabled;
                     uniform float u_bassLevel;
@@ -264,13 +421,14 @@
                     // 4D Hypercube distance field
                     float hypercubeLattice(vec3 p, float morphFactor, float gridDensity) {
                         // Convert to 4D space
-                        vec4 p4d = vec4(p * gridDensity, sin(u_time * 0.5) * morphFactor);
-                        
+                        float resonance = 1.0 + u_resonanceWarp * 0.6;
+                        vec4 p4d = vec4(p * gridDensity * resonance, sin(u_time * 0.5) * morphFactor);
+
                         // Apply 4D rotations with mouse influence
-                        float rotX = u_time * u_rotationSpeed + u_mouse.x * 3.14159;
+                        float rotX = u_time * u_rotationSpeed + u_mouse.x * 3.14159 + u_evolutionPhase * 6.283 * 0.25;
                         float rotY = u_time * u_rotationSpeed * 0.7 + u_mouse.y * 3.14159;
-                        float rotZ = u_time * u_rotationSpeed * 0.5;
-                        
+                        float rotZ = u_time * u_rotationSpeed * 0.5 + u_evolutionPulse;
+
                         // Audio-reactive rotation if available
                         if (u_audioEnabled > 0.5) {
                             rotX += u_bassLevel * 2.0;
@@ -345,29 +503,52 @@
                         
                         // Combine lattice and moiré
                         float combined = lattice + moire * 0.5;
-                        
+
+                        vec2 touchUV = v_uv;
+                        vec2 touchDelta = touchUV - u_touchPoint;
+                        float touchFalloff = exp(-length(touchDelta) * 6.0);
+                        float touchWave = sin(u_time * 6.0 - length(touchDelta) * 24.0) * 0.5 + 0.5;
+                        float touchContribution = u_touchIntensity * touchFalloff * touchWave;
+                        float chaosContribution = u_touchChaos * 0.35;
+                        float evolutionWave = sin(u_evolutionPhase * 6.283 + length(rayDir.xy) * 8.0);
+
+                        combined += touchContribution * (1.0 + chaosContribution);
+                        combined += evolutionWave * u_trailPersistence * 0.4;
+                        moire += touchContribution * 0.3 + evolutionWave * u_resonanceWarp * 0.25;
+
                         // Base colors (vaporwave palette)
                         vec3 color1 = vec3(0.0, 0.8, 1.0);  // Cyan
                         vec3 color2 = vec3(1.0, 0.0, 1.0);  // Magenta
                         vec3 color3 = vec3(1.0, 1.0, 0.0);  // Yellow
-                        
+                        vec3 evolutionPalette = mix(u_evolutionPrimary, u_evolutionSecondary, evolutionWave * 0.5 + 0.5);
+                        vec3 memoryVector = mix(u_evolutionVector, evolutionPalette, u_memoryImprint * 0.4 + 0.2);
+
                         // Color mixing based on lattice pattern
                         vec3 finalColor = mix(mix(color1, color2, combined), color3, moire);
-                        
+                        finalColor = mix(finalColor, evolutionPalette, u_trailPersistence * 0.35 + chaosContribution * 0.25);
+                        finalColor = mix(finalColor, memoryVector, u_memoryImprint * 0.4 + u_trailPersistence * 0.15);
+
                         // Apply hue shifting
-                        finalColor = hueShift(finalColor, u_colorShift);
-                        
+                        finalColor = hueShift(finalColor, u_colorShift + chaosContribution * 0.8 + u_evolutionPulse * 0.6);
+
                         // Apply RGB color splitting
                         finalColor = applyColorSplitting(v_uv, finalColor);
-                        
+
                         // Add some glow and intensity
-                        finalColor *= (0.5 + combined * 1.5);
-                        
+                        finalColor *= (0.5 + combined * (1.2 + u_evolutionPulse));
+                        finalColor += touchContribution * vec3(0.25, 0.15, 0.45);
+                        finalColor += chaosContribution * 0.4;
+                        finalColor += evolutionWave * u_trailPersistence * vec3(0.08, 0.12, 0.18);
+
                         // Audio-reactive brightness
                         if (u_audioEnabled > 0.5) {
                             finalColor *= (0.8 + u_bassLevel * 0.4 + u_midLevel * 0.3);
                         }
-                        
+
+                        // Touch-driven bloom
+                        finalColor += vec3(0.05, 0.08, 0.12) * pow(touchContribution + u_trailPersistence * 0.2, 1.2);
+                        finalColor = clamp(finalColor, 0.0, 1.8);
+
                         gl_FragColor = vec4(finalColor, 1.0);
                     }
                 `;
@@ -399,6 +580,17 @@
                     colorShift: this.gl.getUniformLocation(this.program, 'u_colorShift'),
                     resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
                     mouse: this.gl.getUniformLocation(this.program, 'u_mouse'),
+                    touchIntensity: this.gl.getUniformLocation(this.program, 'u_touchIntensity'),
+                    touchPoint: this.gl.getUniformLocation(this.program, 'u_touchPoint'),
+                    touchChaos: this.gl.getUniformLocation(this.program, 'u_touchChaos'),
+                    trailPersistence: this.gl.getUniformLocation(this.program, 'u_trailPersistence'),
+                    resonanceWarp: this.gl.getUniformLocation(this.program, 'u_resonanceWarp'),
+                    evolutionPhase: this.gl.getUniformLocation(this.program, 'u_evolutionPhase'),
+                    evolutionPrimary: this.gl.getUniformLocation(this.program, 'u_evolutionPrimary'),
+                    evolutionSecondary: this.gl.getUniformLocation(this.program, 'u_evolutionSecondary'),
+                    evolutionPulse: this.gl.getUniformLocation(this.program, 'u_evolutionPulse'),
+                    evolutionVector: this.gl.getUniformLocation(this.program, 'u_evolutionVector'),
+                    memoryImprint: this.gl.getUniformLocation(this.program, 'u_memoryImprint'),
                     audioEnabled: this.gl.getUniformLocation(this.program, 'u_audioEnabled'),
                     bassLevel: this.gl.getUniformLocation(this.program, 'u_bassLevel'),
                     midLevel: this.gl.getUniformLocation(this.program, 'u_midLevel'),
@@ -473,20 +665,178 @@
                     }
                     
                     console.log(`🎛️ Parameter scroll: ${(this.scrollParameter * 100).toFixed(1)}% → Grid: ${this.params.gridDensity.toFixed(1)}, Color: ${this.params.colorShift.toFixed(2)} (no page movement)`);
+                    this.persistState();
                 }, { passive: false });
                 
                 // Parameter controls
-                const params = ['dimension', 'morphFactor', 'glitchIntensity', 'rotationSpeed', 'gridDensity', 'moireScale', 'colorShift'];
+                this.evolutionStatusEl = document.getElementById('evolutionStatus');
+
+                const params = ['dimension', 'morphFactor', 'glitchIntensity', 'rotationSpeed', 'gridDensity', 'moireScale', 'colorShift', 'trailPersistence', 'resonanceWarp'];
                 params.forEach(param => {
                     const slider = document.getElementById(param);
                     const display = document.getElementById(param + 'Value');
                     slider.addEventListener('input', (e) => {
                         this.params[param] = parseFloat(e.target.value);
-                        display.textContent = e.target.value;
+                        const decimals = (param === 'colorShift' || param === 'gridDensity' || param === 'dimension' || param === 'rotationSpeed') ? 1 : 2;
+                        display.textContent = parseFloat(e.target.value).toFixed(decimals);
+                    });
+                    slider.addEventListener('change', () => this.persistState());
+                });
+
+                document.querySelectorAll('.scene-pill').forEach((pill) => {
+                    pill.addEventListener('click', () => {
+                        this.stopEvolutionCycle();
+                        document.querySelectorAll('.scene-pill').forEach(btn => btn.classList.remove('active'));
+                        pill.classList.add('active');
+                        this.setEvolutionMode(pill.dataset.mode, { manual: true });
                     });
                 });
 
+                const cycleBtn = document.getElementById('evolutionCycleBtn');
+                if (cycleBtn) {
+                    this.cycleButton = cycleBtn;
+                    cycleBtn.addEventListener('click', () => this.cycleEvolutions());
+                }
+
                 document.getElementById('audioBtn').addEventListener('click', () => this.toggleAudio());
+            }
+
+            updateEvolutionStatus(text) {
+                if (!this.evolutionStatusEl) return;
+                const now = new Date();
+                this.evolutionStatusEl.textContent = `${text} • ${now.toLocaleTimeString()}`;
+            }
+
+            persistState() {
+                if (!this.storageAvailable) return;
+                const payload = {
+                    params: this.params,
+                    evolutionMode: this.evolutionMode,
+                    evolutionMemory: this.evolutionMemory,
+                    evolutionPhase: this.evolutionPhase,
+                    scrollParameter: this.scrollParameter || 0
+                };
+                try {
+                    localStorage.setItem(this.storageKey, JSON.stringify(payload));
+                } catch (error) {
+                    console.warn('Failed to persist MVEP state', error);
+                }
+            }
+
+            restoreState() {
+                if (!this.storageAvailable) return false;
+                const raw = localStorage.getItem(this.storageKey);
+                if (!raw) return false;
+                try {
+                    const saved = JSON.parse(raw);
+                    if (saved.params) {
+                        Object.assign(this.params, saved.params);
+                        Object.entries(saved.params).forEach(([key, value]) => {
+                            const slider = document.getElementById(key);
+                            const display = document.getElementById(`${key}Value`);
+                            if (slider) {
+                                slider.value = value;
+                            }
+                            if (display) {
+                                const decimals = (key === 'colorShift' || key === 'gridDensity' || key === 'dimension' || key === 'rotationSpeed') ? 1 : 2;
+                                display.textContent = parseFloat(value).toFixed(decimals);
+                            }
+                        });
+                    }
+                    if (saved.evolutionMode && this.evolutionConfigs[saved.evolutionMode]) {
+                        this.evolutionMode = saved.evolutionMode;
+                    }
+                    if (typeof saved.evolutionMemory === 'number') {
+                        this.evolutionMemory = saved.evolutionMemory;
+                    }
+                    if (typeof saved.evolutionPhase === 'number') {
+                        this.evolutionPhase = saved.evolutionPhase;
+                    }
+                    if (typeof saved.scrollParameter === 'number') {
+                        this.scrollParameter = saved.scrollParameter;
+                        const indicator = document.getElementById('scrollIndicator');
+                        if (indicator) {
+                            indicator.textContent = `Scroll: ${(this.scrollParameter * 100).toFixed(1)}% | Grid: ${this.params.gridDensity.toFixed(1)} | Color: ${this.params.colorShift.toFixed(2)}`;
+                        }
+                    }
+                    return true;
+                } catch (error) {
+                    console.warn('Failed to restore MVEP state', error);
+                    return false;
+                }
+            }
+
+            setEvolutionMode(mode, { manual = false } = {}) {
+                const config = this.evolutionConfigs[mode];
+                if (!config) return;
+                this.evolutionMode = mode;
+                this.params.morphFactor = Math.min(1.5, 0.6 + config.morphBoost);
+                this.params.glitchIntensity = Math.min(0.2, 0.03 + config.chaosBoost * 0.4);
+                const baseShift = config.colorShiftBase ?? 0;
+                this.params.colorShift = Math.max(-1.0, Math.min(1.0, baseShift + (manual ? 0 : this.touchChaos * 0.1)));
+                this.params.trailPersistence = Math.min(1.0, Math.max(0.0, this.params.trailPersistence + config.pulse * 0.05));
+                this.params.resonanceWarp = Math.min(1.0, Math.max(0.0, config.pulse * 0.5));
+                this.touchChaos = Math.min(1.0, this.touchChaos + config.chaosBoost * 0.4);
+                this.touchIntensity = Math.min(1.0, this.touchIntensity + config.pulse * 0.2);
+                this.evolutionMemory = Math.min(1.0, this.evolutionMemory * 0.7 + (config.pulse + config.chaosBoost) * 0.25);
+
+                const controlsToUpdate = [
+                    ['morphFactor', this.params.morphFactor],
+                    ['glitchIntensity', this.params.glitchIntensity],
+                    ['colorShift', this.params.colorShift],
+                    ['trailPersistence', this.params.trailPersistence],
+                    ['resonanceWarp', this.params.resonanceWarp]
+                ];
+                controlsToUpdate.forEach(([id, value]) => {
+                    const slider = document.getElementById(id);
+                    const display = document.getElementById(id + 'Value');
+                    if (slider) slider.value = value;
+                    if (display) {
+                        const decimals = (id === 'colorShift' || id === 'gridDensity' || id === 'dimension' || id === 'rotationSpeed') ? 1 : 2;
+                        display.textContent = value.toFixed(decimals);
+                    }
+                });
+
+                document.querySelectorAll('.scene-pill').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.mode === mode);
+                });
+
+                this.updateEvolutionStatus(`${config.label} engaged${manual ? ' • manual override' : ''}`);
+                this.persistState();
+            }
+
+            stopEvolutionCycle() {
+                if (this.evolutionCycleTimer) {
+                    clearInterval(this.evolutionCycleTimer);
+                    this.evolutionCycleTimer = null;
+                    this.updateEvolutionStatus('Evolution cycle paused');
+                    if (this.cycleButton) {
+                        this.cycleButton.textContent = 'Cycle Evolutions';
+                    }
+                    this.persistState();
+                }
+            }
+
+            cycleEvolutions() {
+                if (this.evolutionCycleTimer) {
+                    this.stopEvolutionCycle();
+                    return;
+                }
+
+                const modes = Object.keys(this.evolutionConfigs);
+                let index = modes.indexOf(this.evolutionMode);
+                this.updateEvolutionStatus('Evolution cycle initiated');
+                if (this.cycleButton) {
+                    this.cycleButton.textContent = 'Stop Evolution Cycle';
+                }
+
+                index = (index + 1) % modes.length;
+                this.setEvolutionMode(modes[index]);
+
+                this.evolutionCycleTimer = setInterval(() => {
+                    index = (index + 1) % modes.length;
+                    this.setEvolutionMode(modes[index]);
+                }, 6200);
             }
             
             async initAudio() {
@@ -517,6 +867,7 @@
                     document.getElementById('audioBtn').textContent = 'Enable Audio';
                     document.getElementById('status').textContent = 'MVEP 4D Hypercube - Mouse: Move | Audio: OFF';
                 }
+                this.persistState();
             }
             
             updateAudio() {
@@ -550,11 +901,24 @@
             
             render() {
                 this.time = (Date.now() - this.startTime) / 1000;
-                
+
                 this.updateAudio();
-                
+
+                // Ease touch parameters back to calm state
+                const persistence = 0.82 + this.params.trailPersistence * 0.15;
+                const chaosDamping = 0.9 + this.params.trailPersistence * 0.08;
+                this.touchIntensity = Math.max(0.0, this.touchIntensity * persistence - 0.001 * (1.0 - this.params.trailPersistence * 0.5));
+                this.touchChaos = Math.max(0.0, this.touchChaos * chaosDamping - 0.0005);
+                this.evolutionPhase = (this.evolutionPhase + 0.0025 + this.params.resonanceWarp * 0.002 + this.audioData.mid * 0.004) % 1.0;
+                this.evolutionMemory = Math.max(0.1, this.evolutionMemory * 0.995 + this.audioData.mid * 0.002 + this.touchChaos * 0.003);
+                if (this.storageAvailable && Date.now() - this.lastPersist > 5000) {
+                    this.persistState();
+                    this.lastPersist = Date.now();
+                }
+                const evolutionConfig = this.evolutionConfigs[this.evolutionMode] || this.evolutionConfigs.aurora;
+
                 this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-                
+
                 // Set uniforms
                 this.gl.uniform1f(this.uniforms.time, this.time);
                 this.gl.uniform1f(this.uniforms.dimension, this.params.dimension);
@@ -566,7 +930,19 @@
                 this.gl.uniform1f(this.uniforms.colorShift, this.params.colorShift);
                 this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
                 this.gl.uniform2f(this.uniforms.mouse, this.mouseX, this.mouseY);
-                
+                this.gl.uniform1f(this.uniforms.touchIntensity, this.touchIntensity);
+                this.gl.uniform2f(this.uniforms.touchPoint, this.touchPoint.x, this.touchPoint.y);
+                this.gl.uniform1f(this.uniforms.touchChaos, this.touchChaos);
+                this.gl.uniform1f(this.uniforms.trailPersistence, this.params.trailPersistence);
+                this.gl.uniform1f(this.uniforms.resonanceWarp, this.params.resonanceWarp);
+                this.gl.uniform1f(this.uniforms.evolutionPhase, this.evolutionPhase);
+                this.gl.uniform3f(this.uniforms.evolutionPrimary, evolutionConfig.paletteA[0], evolutionConfig.paletteA[1], evolutionConfig.paletteA[2]);
+                this.gl.uniform3f(this.uniforms.evolutionSecondary, evolutionConfig.paletteB[0], evolutionConfig.paletteB[1], evolutionConfig.paletteB[2]);
+                const pulse = evolutionConfig.pulse + this.audioData.bass * 0.3;
+                this.gl.uniform1f(this.uniforms.evolutionPulse, pulse);
+                this.gl.uniform3f(this.uniforms.evolutionVector, evolutionConfig.vector[0], evolutionConfig.vector[1], evolutionConfig.vector[2]);
+                this.gl.uniform1f(this.uniforms.memoryImprint, this.evolutionMemory);
+
                 // Audio uniforms
                 this.gl.uniform1f(this.uniforms.audioEnabled, this.audioEnabled ? 1.0 : 0.0);
                 this.gl.uniform1f(this.uniforms.bassLevel, this.audioData.bass);
@@ -590,97 +966,120 @@
 
         // Add touch reactions for mobile
         function setupTouchReactions() {
-            let touchIntensity = 0;
-            let touchX = 0.5;
-            let touchY = 0.5;
-            
-            // Touch start - trigger intense reaction
-            document.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                touchX = touch.clientX / window.innerWidth;
-                touchY = touch.clientY / window.innerHeight;
-                touchIntensity = 1.0;
-                
-                // Visual feedback
-                const touchIndicator = document.createElement('div');
-                touchIndicator.style.cssText = `
+            const rippleStyleId = 'mvep-touch-ripple-style';
+            if (!document.getElementById(rippleStyleId)) {
+                const rippleStyle = document.createElement('style');
+                rippleStyle.id = rippleStyleId;
+                rippleStyle.textContent = `
+                    @keyframes mvepTouchRipple {
+                        0% { transform: scale(0.4); opacity: 0.9; }
+                        100% { transform: scale(3.2); opacity: 0; }
+                    }
+
+                    .mvep-touch-ripple {
+                        position: absolute;
+                        width: 70px;
+                        height: 70px;
+                        border-radius: 50%;
+                        border: 2px solid rgba(0, 255, 255, 0.8);
+                        pointer-events: none;
+                        animation: mvepTouchRipple 0.7s ease-out forwards;
+                        box-shadow: 0 0 18px rgba(255, 0, 255, 0.4);
+                    }
+                `;
+                document.head.appendChild(rippleStyle);
+            }
+
+            const overlayId = 'mvep-touch-overlay';
+            let overlay = document.getElementById(overlayId);
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = overlayId;
+                overlay.style.cssText = `
                     position: fixed;
-                    left: ${touch.clientX - 25}px;
-                    top: ${touch.clientY - 25}px;
-                    width: 50px;
-                    height: 50px;
-                    border: 2px solid #00ffff;
-                    border-radius: 50%;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
                     pointer-events: none;
-                    z-index: 1000;
-                    animation: touchRipple 0.6s ease-out forwards;
+                    z-index: 1200;
                 `;
-                document.body.appendChild(touchIndicator);
-                
-                // Add ripple animation
-                const style = document.createElement('style');
-                style.textContent = `
-                    @keyframes touchRipple {
-                        0% { transform: scale(0); opacity: 1; }
-                        100% { transform: scale(3); opacity: 0; }
-                    }
-                `;
-                document.head.appendChild(style);
-                
-                setTimeout(() => document.body.removeChild(touchIndicator), 600);
-                
-                console.log('🔥 Touch reaction triggered');
-            }, { passive: false });
-            
-            // Touch move - continuous reaction
-            document.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                touchX = touch.clientX / window.innerWidth;
-                touchY = touch.clientY / window.innerHeight;
-                touchIntensity = 0.8;
-                
-                // Update MVEP visualizer with touch data
-                if (mvepVisualizer) {
-                    mvepVisualizer.mouseX = touchX;
-                    mvepVisualizer.mouseY = 1.0 - touchY;
-                    mvepVisualizer.interactionIntensity = touchIntensity;
+                document.body.appendChild(overlay);
+            }
+
+            const statusEl = document.getElementById('status');
+
+            const spawnRipple = (clientX, clientY, scale = 1) => {
+                const ripple = document.createElement('div');
+                ripple.className = 'mvep-touch-ripple';
+                ripple.style.left = `${clientX - 35}px`;
+                ripple.style.top = `${clientY - 35}px`;
+                ripple.style.transform = `scale(${Math.max(0.6, scale)})`;
+                overlay.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 700);
+            };
+
+            const updateTouchState = (clientX, clientY, intensity) => {
+                if (!mvepVisualizer) return;
+                const normX = clientX / window.innerWidth;
+                const normY = 1.0 - (clientY / window.innerHeight);
+
+                mvepVisualizer.mouseX = normX;
+                mvepVisualizer.mouseY = normY;
+                mvepVisualizer.touchPoint = { x: normX, y: normY };
+                mvepVisualizer.touchIntensity = Math.min(1.0, Math.max(mvepVisualizer.touchIntensity, intensity));
+                mvepVisualizer.touchChaos = Math.min(1.0, mvepVisualizer.touchChaos + intensity * 0.25);
+
+                if (statusEl) {
+                    statusEl.textContent = 'MVEP 4D Hypercube – Touch drive active';
                 }
-            }, { passive: false });
-            
-            // Touch end - decay reaction
-            document.addEventListener('touchend', (e) => {
-                touchIntensity *= 0.5;
-                setTimeout(() => {
-                    touchIntensity = 0;
-                }, 300);
-                
-                console.log('🌊 Touch reaction ending');
-            });
-            
-            // Multi-touch support
+            };
+
+            const updateChaosFromTouches = (touches) => {
+                if (!mvepVisualizer || touches.length < 2) return;
+                const touch1 = touches[0];
+                const touch2 = touches[1];
+                const distance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+                const normalized = Math.min(1, distance / 240);
+                mvepVisualizer.touchChaos = Math.min(1.0, mvepVisualizer.touchChaos + normalized * 0.4);
+            };
+
             document.addEventListener('touchstart', (e) => {
-                if (e.touches.length > 1) {
-                    const touch1 = e.touches[0];
-                    const touch2 = e.touches[1];
-                    const distance = Math.sqrt(
-                        Math.pow(touch2.clientX - touch1.clientX, 2) +
-                        Math.pow(touch2.clientY - touch1.clientY, 2)
-                    );
-                    
-                    // Multi-touch creates chaos effect
-                    if (mvepVisualizer) {
-                        mvepVisualizer.chaosIntensity = Math.min(1.0, distance / 200);
+                if (!mvepVisualizer) return;
+                if (e.target && e.target.closest('.controls')) return;
+                const primary = e.touches[0];
+                updateTouchState(primary.clientX, primary.clientY, 1.0);
+                spawnRipple(primary.clientX, primary.clientY, 1);
+                updateChaosFromTouches(e.touches);
+                e.preventDefault();
+            }, { passive: false });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!mvepVisualizer) return;
+                if (e.target && e.target.closest('.controls')) return;
+                const primary = e.touches[0];
+                updateTouchState(primary.clientX, primary.clientY, 0.8);
+                updateChaosFromTouches(e.touches);
+                e.preventDefault();
+            }, { passive: false });
+
+            document.addEventListener('touchend', (e) => {
+                if (!mvepVisualizer) return;
+                if (e.touches.length === 0) {
+                    mvepVisualizer.touchIntensity *= 0.4;
+                    if (statusEl) {
+                        statusEl.textContent = 'MVEP 4D Hypercube - Mouse: Move | Scroll: Grid/Color | Audio: ' + (mvepVisualizer.audioEnabled ? 'LIVE' : 'OFF');
                     }
-                    
-                    console.log('⚡ Multi-touch chaos effect activated');
                 }
             });
         }
         
         // Initialize touch reactions when DOM is ready
-        document.addEventListener('DOMContentLoaded', setupTouchReactions);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupTouchReactions);
+        } else {
+            setupTouchReactions();
+        }
     </script>
     
     <!-- Add collapsible menu system -->
