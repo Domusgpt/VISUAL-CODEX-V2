@@ -30,17 +30,181 @@
             color: #ffff00; padding: 6px 10px; margin: 3px;
             cursor: pointer; border-radius: 3px; font-size: 11px;
         }
-        .toggle-btn.active { 
-            background: rgba(255,255,0,0.4); box-shadow: 0 0 8px #ffff00; 
+        .toggle-btn.active {
+            background: rgba(255,255,0,0.4); box-shadow: 0 0 8px #ffff00;
         }
-        .status { 
-            position: fixed; bottom: 20px; right: 20px; 
+        .export-group {
+            margin-top: 18px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,255,255,0.2);
+        }
+        .export-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .export-btn {
+            flex: 1 1 120px;
+            min-height: 36px;
+            background: linear-gradient(135deg, rgba(0,255,255,0.15), rgba(255,0,255,0.15));
+            border: 1px solid rgba(0,255,255,0.4);
+            color: #00ffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        .export-btn:hover {
+            background: linear-gradient(135deg, rgba(0,255,255,0.35), rgba(255,0,255,0.35));
+            box-shadow: 0 0 12px rgba(0,255,255,0.4);
+        }
+        .export-meta {
+            font-size: 10px;
+            opacity: 0.75;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+        .evolution-dock {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255,0,255,0.25);
+        }
+        .evolution-dock h4 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+        }
+        .evolution-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+        }
+        .evolution-card {
+            background: linear-gradient(135deg, rgba(0,0,0,0.45), rgba(40,0,40,0.65));
+            border: 1px solid rgba(255,0,255,0.35);
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, border 0.2s ease;
+        }
+        .evolution-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,0,255,0.6);
+            box-shadow: 0 0 12px rgba(255,0,255,0.35);
+        }
+        .evolution-card.active {
+            border-color: rgba(255,255,0,0.8);
+            box-shadow: 0 0 16px rgba(255,255,0,0.45);
+        }
+        .evolution-card strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 12px;
+            color: #ffff00;
+            letter-spacing: 0.05em;
+        }
+        .autopilot-btn {
+            margin-top: 10px;
+            width: 100%;
+            background: rgba(255,255,0,0.2);
+            border: 1px solid rgba(255,255,0,0.6);
+            color: #ffff00;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s ease;
+        }
+        .autopilot-btn:hover {
+            background: rgba(255,255,0,0.35);
+            box-shadow: 0 0 10px rgba(255,255,0,0.35);
+        }
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: #00ffff;
+            padding: 12px 20px;
+            border: 1px solid rgba(0,255,255,0.5);
+            border-radius: 8px;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .status {
+            position: fixed; bottom: 20px; right: 20px;
             color: #00ffff; font-size: 12px; text-align: right;
+        }
+        .timeline-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 260px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid rgba(0,255,255,0.35);
+            border-radius: 12px;
+            padding: 16px;
+            color: #00ffff;
+            font-size: 11px;
+            line-height: 1.5;
+            box-shadow: 0 0 18px rgba(0,255,255,0.2);
+        }
+        .timeline-panel h4 {
+            margin: 0 0 10px 0;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+        }
+        .timeline-entry {
+            border-left: 2px solid rgba(0,255,255,0.4);
+            margin-bottom: 10px;
+            padding-left: 10px;
+            opacity: 0.85;
+        }
+        .timeline-entry strong {
+            color: #ffff00;
+            display: block;
+            font-size: 11px;
+        }
+        .timeline-entry span {
+            display: block;
+            color: rgba(255,255,255,0.7);
+            margin-top: 2px;
+        }
+        .timeline-entry:last-child {
+            margin-bottom: 0;
+        }
+        .ticker {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 14px;
+            background: rgba(0,0,0,0.85);
+            border: 1px solid rgba(255,0,255,0.35);
+            border-radius: 10px;
+            color: #ff00ff;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            max-width: 320px;
+            line-height: 1.5;
         }
         .moire-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; opacity: 0.1; z-index: 5;
-            background: 
+            background:
                 repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(255,0,255,0.3) 8px, rgba(255,0,255,0.3) 16px),
                 repeating-linear-gradient(90deg, transparent, transparent 6px, rgba(0,255,255,0.2) 6px, rgba(0,255,255,0.2) 12px);
             animation: moireShift 8s linear infinite;
@@ -107,6 +271,51 @@
             <button class="toggle-btn active" id="moireToggle" onclick="toggleEffect('moire')">MOIRÉ</button>
             <button class="toggle-btn" id="pulseToggle" onclick="toggleEffect('pulse')">PULSE</button>
         </div>
+
+        <div class="export-group">
+            <strong>EXPORT &amp; CAPTURE</strong>
+            <div class="export-actions">
+                <button class="export-btn" id="exportCodexBtn">Export JSON Codex</button>
+                <button class="export-btn" id="capturePngBtn">Capture PNG Snapshot</button>
+                <button class="export-btn" id="copyCodexBtn">Copy Settings</button>
+            </div>
+            <div class="export-meta" id="exportMeta">Last export: never</div>
+        </div>
+
+        <div class="evolution-dock">
+            <h4>CODIFIED EVOLUTIONS</h4>
+            <div class="evolution-grid" id="evolutionGrid">
+                <div class="evolution-card active" data-mode="0">
+                    <strong>Quantum Loom</strong>
+                    Filamented lattice with classic cyan/magenta weave.
+                </div>
+                <div class="evolution-card" data-mode="1">
+                    <strong>Prismatic Bloom</strong>
+                    Radial neon blooms with breathing chromatic wells.
+                </div>
+                <div class="evolution-card" data-mode="2">
+                    <strong>Singularity Shear</strong>
+                    Torn gridlines fold into gravitational spirals.
+                </div>
+                <div class="evolution-card" data-mode="3">
+                    <strong>Temporal Drift</strong>
+                    Layered echo trails mapped to state history.
+                </div>
+                <div class="evolution-card" data-mode="4">
+                    <strong>Flux Cathedral</strong>
+                    Faceted prisms fold light into crystalline corridors.
+                </div>
+                <div class="evolution-card" data-mode="5">
+                    <strong>Aurora Cascade</strong>
+                    Polar curtains ripple through the lattice strata.
+                </div>
+                <div class="evolution-card" data-mode="6">
+                    <strong>Entropy Bloom</strong>
+                    Chaotic petal storms bloom from resonance spikes.
+                </div>
+            </div>
+            <button class="autopilot-btn" id="autopilotBtn">Activate Evolution Autopilot</button>
+        </div>
     </div>
 
     <div class="status">
@@ -114,6 +323,17 @@
         <div>Mode: HYPERCUBE LATTICE</div>
         <div>RGB SPLIT ACTIVE</div>
         <div>MOIRÉ INTERFERENCE</div>
+    </div>
+
+    <div class="timeline-panel" id="timelinePanel">
+        <h4>EVOLUTION TIMELINE</h4>
+        <div id="timelineEntries"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="ticker" id="evolutionTicker">
+        Awaiting evolutionary pulses…
     </div>
 
     <script>
@@ -131,7 +351,8 @@
             moireIntensity: 0.4,
             glitch: 0.2,
             speed: 1.0,
-            layer2Opacity: 0.5
+            layer2Opacity: 0.5,
+            evolutionMode: 0
         };
 
         let effects = {
@@ -140,9 +361,195 @@
             pulse: false
         };
 
+        let currentPreset = 'custom';
+        const exportHistory = [];
+
+        const toastEl = document.getElementById('toast');
+        const timelineEntriesEl = document.getElementById('timelineEntries');
+        const tickerEl = document.getElementById('evolutionTicker');
+        const autopilotBtn = document.getElementById('autopilotBtn');
+        const evolutionCards = Array.from(document.querySelectorAll('.evolution-card'));
+
+        let autopilotActive = false;
+        let historyCharge = 0.0;
+        let evolutionPulse = 0.0;
+        let lastTickerUpdate = 0;
+        let evolutionVariant = Math.random();
+        let autopilotSequence = null;
+        let autopilotIndex = 0;
+        let autopilotHandle = null;
+
+        const EVOLUTION_TARGETS = [
+            {
+                name: 'Quantum Loom',
+                ticker: 'Quantum Loom engaged: crystalline weaving stabilized.',
+                params: { density: 1.2, morph: 0.65, rgb: 0.35, moireIntensity: 0.45, glitch: 0.15, speed: 1.0, layer2Opacity: 0.55 }
+            },
+            {
+                name: 'Prismatic Bloom',
+                ticker: 'Prismatic Bloom unfolding – chroma wells breathing.',
+                params: { density: 0.85, morph: 1.3, rgb: 0.75, moireIntensity: 0.65, glitch: 0.12, speed: 1.6, layer2Opacity: 0.68 }
+            },
+            {
+                name: 'Singularity Shear',
+                ticker: 'Singularity Shear active – lattice torn toward event core.',
+                params: { density: 1.65, morph: 1.8, rgb: 0.55, moireIntensity: 0.85, glitch: 0.45, speed: 1.9, layer2Opacity: 0.42 }
+            },
+            {
+                name: 'Temporal Drift',
+                ticker: 'Temporal Drift streaming – echo trails mapping history.',
+                params: { density: 0.6, morph: 0.95, rgb: 0.25, moireIntensity: 0.55, glitch: 0.32, speed: 0.75, layer2Opacity: 0.78 }
+            },
+            {
+                name: 'Flux Cathedral',
+                ticker: 'Flux Cathedral resonating – refracted vaults align.',
+                params: { density: 1.1, morph: 1.5, rgb: 0.9, moireIntensity: 0.7, glitch: 0.28, speed: 1.35, layer2Opacity: 0.64 }
+            },
+            {
+                name: 'Aurora Cascade',
+                ticker: 'Aurora Cascade unfurled – polar curtains streaming.',
+                params: { density: 0.7, morph: 1.1, rgb: 1.2, moireIntensity: 0.9, glitch: 0.38, speed: 1.85, layer2Opacity: 0.52 }
+            },
+            {
+                name: 'Entropy Bloom',
+                ticker: 'Entropy Bloom erupting – petals of noise in full flare.',
+                params: { density: 1.95, morph: 2.1, rgb: 0.65, moireIntensity: 1.05, glitch: 0.6, speed: 2.35, layer2Opacity: 0.46 }
+            }
+        ];
+
+        const EVOLUTION_SEQUENCES = [
+            [0, 2, 5, 3],
+            [4, 1, 6],
+            [2, 4, 0, 5],
+            [6, 3, 1],
+            [5, 0, 4, 2, 6]
+        ];
+
         let mouse = { x: 0, y: 0 };
         let frameCount = 0;
         let lastTime = 0;
+
+        function showToast(message) {
+            if (!toastEl) return;
+            toastEl.textContent = message;
+            toastEl.classList.add('show');
+            clearTimeout(showToast.timeout);
+            showToast.timeout = setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 2200);
+        }
+
+        function pushTicker(message) {
+            if (!tickerEl) return;
+            lastTickerUpdate = Date.now();
+            tickerEl.textContent = message;
+        }
+
+        function updateTimeline() {
+            if (!timelineEntriesEl) return;
+            const recent = exportHistory.slice(-8).reverse();
+            timelineEntriesEl.innerHTML = recent.map(entry => {
+                const ts = new Date(entry.timestamp).toLocaleTimeString();
+                const evo = EVOLUTION_TARGETS[entry.evolutionMode || 0]?.name || 'Custom';
+                const variant = typeof entry.variant === 'number' ? `Variant λ=${entry.variant.toFixed(2)}` : '';
+                return `
+                    <div class="timeline-entry">
+                        <strong>${ts} • ${evo}</strong>
+                        <span>${entry.source}${variant ? ` • ${variant}` : ''}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateEvolutionUI() {
+            evolutionCards.forEach(card => {
+                const mode = Number(card.dataset.mode || 0);
+                card.classList.toggle('active', mode === params.evolutionMode);
+            });
+        }
+
+        function applyEvolutionTargets(mode, blend = 0.4) {
+            const target = EVOLUTION_TARGETS[mode];
+            if (!target) return;
+            Object.entries(target.params).forEach(([key, value]) => {
+                if (typeof params[key] === 'number') {
+                    params[key] = params[key] * (1 - blend) + value * blend;
+                }
+            });
+            updateSliders();
+        }
+
+        function pickAutopilotSequence() {
+            const selection = EVOLUTION_SEQUENCES[Math.floor(Math.random() * EVOLUTION_SEQUENCES.length)] || [];
+            return selection.slice();
+        }
+
+        function resetAutopilotSchedule() {
+            if (autopilotHandle) {
+                clearTimeout(autopilotHandle);
+                autopilotHandle = null;
+            }
+        }
+
+        function scheduleAutopilotStep(initial = false) {
+            if (!autopilotActive) return;
+            if (!autopilotSequence || autopilotIndex >= autopilotSequence.length) {
+                autopilotSequence = pickAutopilotSequence();
+                autopilotIndex = 0;
+                const itinerary = autopilotSequence
+                    .map(index => EVOLUTION_TARGETS[index]?.name || `Mode ${index}`)
+                    .join(' → ');
+                const itineraryMessage = `Autopilot itinerary locked: ${itinerary || 'cycling default grid.'}`;
+                pushTicker(itineraryMessage);
+                if (itinerary) {
+                    showToast(itineraryMessage);
+                }
+            }
+            if (!autopilotSequence.length) return;
+            const nextMode = autopilotSequence[autopilotIndex % autopilotSequence.length];
+            autopilotIndex += 1;
+            setEvolutionMode(nextMode, 'autopilot');
+            const delay = initial ? 1800 : 5200 + Math.random() * 3200;
+            resetAutopilotSchedule();
+            autopilotHandle = setTimeout(() => scheduleAutopilotStep(), delay);
+        }
+
+        function setEvolutionMode(mode, source = 'manual') {
+            if (mode === params.evolutionMode) {
+                logSnapshot(`evolution:${source}`, { evolutionMode: mode });
+                return;
+            }
+            params.evolutionMode = mode;
+            evolutionVariant = Math.random();
+            updateEvolutionUI();
+            applyEvolutionTargets(mode, source === 'autopilot' ? 0.55 : 0.45);
+            const evolutionName = EVOLUTION_TARGETS[mode]?.name || 'Custom Evolution';
+            showToast(`${evolutionName} engaged`);
+            pushTicker(EVOLUTION_TARGETS[mode]?.ticker || `${evolutionName} active.`);
+            historyCharge = Math.min(1.0, historyCharge + 0.6);
+            evolutionPulse = 1.0;
+            logSnapshot(`evolution:${source}`, { evolutionMode: mode, variant: evolutionVariant });
+        }
+
+        function toggleAutopilot() {
+            autopilotActive = !autopilotActive;
+            if (autopilotBtn) {
+                autopilotBtn.textContent = autopilotActive ? 'Disable Evolution Autopilot' : 'Activate Evolution Autopilot';
+            }
+            if (autopilotActive) {
+                pushTicker('Autopilot weaving through codex evolutions.');
+                showToast('Evolution autopilot enabled');
+                autopilotSequence = pickAutopilotSequence();
+                autopilotIndex = 0;
+                scheduleAutopilotStep(true);
+            } else {
+                showToast('Evolution autopilot disabled');
+                pushTicker('Manual control restored to codex weaver.');
+                resetAutopilotSchedule();
+                autopilotSequence = null;
+                autopilotIndex = 0;
+            }
+        }
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -174,7 +581,10 @@
             uniform float u_moireEnabled;
             uniform float u_pulseEnabled;
             uniform float u_layer2Opacity;
-            
+            uniform float u_evolutionMode;
+            uniform float u_historyCharge;
+            uniform float u_variantSeed;
+
             // 4D rotation matrices
             mat4 rotateXY(float theta) {
                 float c = cos(theta);
@@ -261,18 +671,85 @@
             vec3 glitchDistortion(vec3 color, vec2 uv, float intensity) {
                 // Digital noise
                 float noise = fract(sin(dot(uv + u_time * u_speed * 0.1, vec2(12.9898, 78.233))) * 43758.5453);
-                
+
                 // Scanline effects
                 float scanline = sin(uv.y * 800.0 + u_time * u_speed * 10.0) * intensity * 0.1;
-                
+
                 // Block displacement
                 float block = step(0.95, noise) * intensity;
                 color += vec3(block * 0.3, -block * 0.2, block * 0.1);
-                
+
                 // Add scanlines
                 color += vec3(scanline);
-                
+
                 return color;
+            }
+
+            vec3 applyEvolution(vec3 color, vec4 p4d, vec2 uv) {
+                float mode = u_evolutionMode;
+                float variant = u_variantSeed;
+                vec2 centered = uv - 0.5;
+                float radius = length(centered);
+                if (mode < 0.5) {
+                    return color;
+                } else if (mode < 1.5) {
+                    float bloom = pow(sin(radius * 18.0 + u_time * u_speed * 1.2) * 0.5 + 0.5, 1.6);
+                    vec3 bloomColor = vec3(0.7 + 0.4 * bloom, 0.2 + 0.5 * bloom, 0.8 + 0.3 * bloom);
+                    return mix(color, bloomColor, 0.55);
+                } else if (mode < 2.5) {
+                    float angle = atan(centered.y, centered.x);
+                    float shear = sin(angle * 6.0 + radius * 40.0 - u_time * u_speed * 1.6);
+                    vec3 singular = vec3(0.4 + 0.8 * shear, 0.15 + 0.45 * shear, 0.9 + 0.3 * shear);
+                    singular *= (0.6 + radius * 1.8);
+                    return mix(color, singular, 0.65);
+                } else if (mode < 3.5) {
+                    float echo = exp(-radius * 6.0) * (0.35 + u_historyCharge * 1.1);
+                    float stripes = sin((p4d.z + p4d.w) * 12.0 + u_time * u_speed * 2.5);
+                    vec3 drift = vec3(0.45 + echo, 0.25 + echo * 0.6, 0.8 + echo);
+                    drift += vec3(stripes * 0.12);
+                    return mix(color, drift, clamp(u_historyCharge + 0.25, 0.0, 1.0));
+                } else if (mode < 4.5) {
+                    float vaultWave = cos((p4d.x + p4d.y) * (12.0 + variant * 6.0) + u_time * u_speed * 1.2);
+                    float refract = sin((p4d.z - p4d.w) * (10.0 + variant * 7.0) - u_time * u_speed * 0.9);
+                    float faceted = smoothstep(0.1, 0.75, abs(vaultWave * refract));
+                    vec3 cathedral = vec3(
+                        0.28 + 0.65 * faceted,
+                        0.34 + 0.55 * faceted,
+                        0.82 + 0.4 * faceted
+                    );
+                    cathedral += vec3(
+                        sin(radius * 16.0 + variant * 6.283) * 0.12,
+                        cos(radius * 18.0 + variant * 4.712) * 0.08,
+                        sin((p4d.z + p4d.w) * 6.0 + variant * 3.1415) * 0.1
+                    );
+                    float blend = clamp(0.45 + faceted * 0.4 + u_historyCharge * 0.2, 0.0, 1.0);
+                    return mix(color, cathedral, blend);
+                } else if (mode < 5.5) {
+                    float curtain = sin(centered.y * (18.0 + variant * 10.0) + u_time * u_speed * (1.4 + variant));
+                    float aurora = cos((p4d.x + p4d.z) * (4.0 + variant * 3.0) - u_time * u_speed * 0.9);
+                    float cascade = curtain * 0.6 + aurora * 0.4;
+                    vec3 auroraColor = vec3(
+                        0.32 + cascade * 0.35,
+                        0.78 + cascade * 0.5,
+                        0.95 + cascade * 0.45
+                    );
+                    auroraColor *= 0.75 + sin(p4d.w * (6.0 + variant * 2.5) + u_time * u_speed * 0.8) * 0.25;
+                    float blend = clamp(0.4 + (cascade * 0.35) + radius * 0.1 + u_historyCharge * 0.2, 0.0, 0.95);
+                    return mix(color, auroraColor, blend);
+                } else {
+                    float bloom = sin((p4d.z + p4d.w) * (8.0 + variant * 6.0) + u_time * u_speed * 2.2);
+                    float petals = cos((p4d.x - p4d.y) * (9.0 + variant * 7.0) - u_time * u_speed * 1.6);
+                    float turbulence = pow(abs(bloom * petals), 0.65);
+                    float noise = fract(sin(dot(uv * (60.0 + variant * 20.0), vec2(45.233, 12.989))) * 43758.5453);
+                    vec3 entropy = vec3(
+                        0.58 + bloom * 0.45 + noise * 0.25,
+                        0.2 + petals * 0.4 + noise * 0.2,
+                        0.85 + turbulence * 0.5
+                    );
+                    entropy += vec3(noise * 0.18, noise * 0.12, noise * 0.22);
+                    float blend = clamp(0.35 + turbulence * 0.5 + u_historyCharge * 0.35, 0.0, 1.0);
+                    return mix(color, entropy, blend);
+                }
             }
 
             vec3 renderLayer(vec2 uv, float time_offset) {
@@ -333,21 +810,23 @@
                 
                 // Apply glitch effects
                 baseColor = glitchDistortion(baseColor, uv, u_glitch);
-                
+
                 // Mouse interaction glow
                 float mouseDist = length(uv - mouse);
                 baseColor += exp(-mouseDist * 6.0) * 0.2 * vec3(1.0, 0.5, 1.0);
-                
+
                 // Depth-based intensity variation
                 float depth4d = (sin(p4d.z * 1.5) + cos(p4d.w * 1.2)) * 0.25 + 0.75;
                 baseColor *= depth4d;
-                
+
                 // Final intensity adjustment
                 baseColor *= 0.2 + lattice * 0.8;
-                
+
                 // Subtle vignette
                 float vignette = 1.0 - length(coord) * 0.3;
                 baseColor *= vignette;
+
+                baseColor = applyEvolution(baseColor, p4d, uv);
 
                 return baseColor;
             }
@@ -403,7 +882,10 @@
             rgbEnabled: gl.getUniformLocation(program, 'u_rgbEnabled'),
             moireEnabled: gl.getUniformLocation(program, 'u_moireEnabled'),
             pulseEnabled: gl.getUniformLocation(program, 'u_pulseEnabled'),
-            layer2Opacity: gl.getUniformLocation(program, 'u_layer2Opacity')
+            layer2Opacity: gl.getUniformLocation(program, 'u_layer2Opacity'),
+            evolutionMode: gl.getUniformLocation(program, 'u_evolutionMode'),
+            historyCharge: gl.getUniformLocation(program, 'u_historyCharge'),
+            variantSeed: gl.getUniformLocation(program, 'u_variantSeed')
         };
 
         // Event handlers
@@ -412,15 +894,56 @@
             mouse.y = window.innerHeight - e.clientY;
         });
 
+        evolutionCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const mode = Number(card.dataset.mode || 0);
+                if (autopilotActive) {
+                    toggleAutopilot();
+                }
+                setEvolutionMode(mode, 'manual');
+            });
+        });
+
+        autopilotBtn?.addEventListener('click', toggleAutopilot);
+
         // Slider setup
+        function logSnapshot(source, extra = {}) {
+            const snapshot = {
+                timestamp: new Date().toISOString(),
+                source,
+                preset: currentPreset,
+                params: { ...params },
+                effects: { ...effects },
+                evolutionMode: params.evolutionMode,
+                autopilot: autopilotActive,
+                variant: extra?.variant ?? evolutionVariant,
+                ...extra
+            };
+            exportHistory.push(snapshot);
+            if (exportHistory.length > 60) {
+                exportHistory.shift();
+            }
+            historyCharge = Math.min(1.0, historyCharge + 0.25);
+            updateTimeline();
+        }
+
         function setupSlider(id, param, valueId) {
             const slider = document.getElementById(id);
             const valueDisplay = document.getElementById(valueId);
-            
+            const decimals = param === 'layer2Opacity' ? 2 : 1;
+
             slider.addEventListener('input', (e) => {
                 params[param] = parseFloat(e.target.value);
-                valueDisplay.textContent = params[param].toFixed(1);
+                if (valueDisplay) {
+                    valueDisplay.textContent = params[param].toFixed(decimals);
+                }
+                currentPreset = 'custom';
+                logSnapshot(`slider:${param}`);
             });
+
+            if (valueDisplay) {
+                valueDisplay.textContent = params[param].toFixed(decimals);
+            }
         }
 
         setupSlider('density', 'density', 'densityVal');
@@ -433,30 +956,37 @@
 
         // Preset configurations
         window.setPreset = function(preset) {
+            const preserveMode = params.evolutionMode;
             switch(preset) {
                 case 'hypercube':
-                    params = {density: 1.0, morph: 0.5, rgb: 0.3, moireIntensity: 0.4, glitch: 0.2, speed: 1.0, layer2Opacity: 0.5};
+                    params = { ...params, density: 1.0, morph: 0.5, rgb: 0.3, moireIntensity: 0.4, glitch: 0.2, speed: 1.0, layer2Opacity: 0.5 };
                     break;
                 case 'chaos':
-                    params = {density: 2.5, morph: 1.8, rgb: 0.8, moireIntensity: 0.9, glitch: 0.7, speed: 2.5, layer2Opacity: 0.7};
+                    params = { ...params, density: 2.5, morph: 1.8, rgb: 0.8, moireIntensity: 0.9, glitch: 0.7, speed: 2.5, layer2Opacity: 0.7 };
                     break;
                 case 'minimal':
-                    params = {density: 0.5, morph: 0.1, rgb: 0.1, moireIntensity: 0.2, glitch: 0.0, speed: 0.5, layer2Opacity: 0.3};
+                    params = { ...params, density: 0.5, morph: 0.1, rgb: 0.1, moireIntensity: 0.2, glitch: 0.0, speed: 0.5, layer2Opacity: 0.3 };
                     break;
                 case 'extreme':
-                    params = {density: 3.0, morph: 2.0, rgb: 1.0, moireIntensity: 1.0, glitch: 1.0, speed: 4.0, layer2Opacity: 1.0};
+                    params = { ...params, density: 3.0, morph: 2.0, rgb: 1.0, moireIntensity: 1.0, glitch: 1.0, speed: 4.0, layer2Opacity: 1.0 };
                     break;
             }
+            params.evolutionMode = preserveMode;
+            currentPreset = preset;
             updateSliders();
+            logSnapshot(`preset:${preset}`);
         };
 
         function updateSliders() {
-            Object.keys(params).forEach(key => {
+            ['density', 'morph', 'rgb', 'moireIntensity', 'glitch', 'speed', 'layer2Opacity'].forEach(key => {
                 const element = document.getElementById(key === 'moireIntensity' ? 'moireIntensity' : key);
-                if (element) {
-                    element.value = params[key];
-                    const valueId = key === 'moireIntensity' ? 'moireVal' : key + 'Val';
-                    document.getElementById(valueId).textContent = params[key].toFixed(1);
+                if (!element) return;
+                element.value = params[key];
+                const valueId = key === 'moireIntensity' ? 'moireVal' : key + 'Val';
+                const display = document.getElementById(valueId);
+                if (display) {
+                    const decimals = key === 'layer2Opacity' ? 2 : 1;
+                    display.textContent = params[key].toFixed(decimals);
                 }
             });
         }
@@ -465,10 +995,11 @@
         window.toggleEffect = function(effect) {
             effects[effect] = !effects[effect];
             document.getElementById(effect + 'Toggle').classList.toggle('active', effects[effect]);
-            
+
             if (effect === 'moire') {
                 document.getElementById('moireOverlay').style.opacity = effects[effect] ? '0.1' : '0';
             }
+            logSnapshot(`toggle:${effect}`);
         };
 
         // FPS counter
@@ -498,13 +1029,25 @@
             gl.uniform1f(uniforms.moireEnabled, effects.moire ? 1.0 : 0.0);
             gl.uniform1f(uniforms.pulseEnabled, effects.pulse ? 1.0 : 0.0);
             gl.uniform1f(uniforms.layer2Opacity, params.layer2Opacity);
-            
+            evolutionPulse = Math.max(0.0, evolutionPulse - 0.01);
+            historyCharge = Math.max(0.0, historyCharge - 0.0035);
+            if (tickerEl && Date.now() - lastTickerUpdate > 9000 && autopilotActive) {
+                pushTicker('Autopilot drifting… next evolution recalibrating.');
+            }
+            gl.uniform1f(uniforms.evolutionMode, params.evolutionMode);
+            gl.uniform1f(uniforms.historyCharge, historyCharge + evolutionPulse * 0.45);
+            gl.uniform1f(uniforms.variantSeed, evolutionVariant);
+
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
             requestAnimationFrame(animate);
         }
-        
+
         animate(0);
-        
+        logSnapshot('init');
+        updateEvolutionUI();
+        updateTimeline();
+        pushTicker('Quantum Loom standing by for manual weaving.');
+
         // Export function for Hypercube Codex
         function exportCodex() {
             const exportData = {
@@ -513,9 +1056,13 @@
                 activeEffects: { ...effects },
                 canvasSize: { width: canvas.width, height: canvas.height },
                 hypercubeType: 'Moire Pattern System',
-                version: '1.0'
+                preset: currentPreset,
+                evolutionMode: params.evolutionMode,
+                autopilotActive,
+                history: [...exportHistory.slice(-10)],
+                version: '1.1'
             };
-            
+
             // Create downloadable JSON
             const dataStr = JSON.stringify(exportData, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -528,27 +1075,54 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            
+
             console.log('🎯 Hypercube Codex exported successfully');
+            showToast('Hypercube Codex exported as JSON');
+            updateExportMeta('JSON export ready');
         }
-        
-        // Add export button to any existing controls
-        if (document.querySelector('.control-panel')) {
-            const exportBtn = document.createElement('button');
-            exportBtn.textContent = 'Export Codex';
-            exportBtn.onclick = exportCodex;
-            exportBtn.style.cssText = `
-                background: linear-gradient(45deg, #ff0080, #00ffff);
-                border: none;
-                color: white;
-                padding: 10px 20px;
-                margin: 5px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-family: 'Orbitron', monospace;
-            `;
-            document.querySelector('.control-panel').appendChild(exportBtn);
+        function captureSnapshot() {
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `hypercube-codex-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('PNG snapshot captured');
+            updateExportMeta('PNG snapshot saved');
         }
+
+        async function copyCodexToClipboard() {
+            const payload = {
+                params: { ...params },
+                effects: { ...effects },
+                preset: currentPreset
+            };
+            try {
+                await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+                showToast('Codex settings copied to clipboard');
+                updateExportMeta('Settings copied');
+            } catch (error) {
+                console.warn('Clipboard copy failed', error);
+                showToast('Clipboard copy unavailable');
+            }
+        }
+
+        function updateExportMeta(message) {
+            const meta = document.getElementById('exportMeta');
+            if (!meta) return;
+            const now = new Date();
+            meta.textContent = `${message} • ${now.toLocaleTimeString()}`;
+        }
+
+        const exportCodexBtn = document.getElementById('exportCodexBtn');
+        const capturePngBtn = document.getElementById('capturePngBtn');
+        const copyCodexBtn = document.getElementById('copyCodexBtn');
+
+        exportCodexBtn?.addEventListener('click', exportCodex);
+        capturePngBtn?.addEventListener('click', captureSnapshot);
+        copyCodexBtn?.addEventListener('click', copyCodexToClipboard);
     </script>
     
     <!-- Add collapsible menu system -->
