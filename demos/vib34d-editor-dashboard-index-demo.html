@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VIB34D Editor Dashboard – Holographic Index Cards</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: radial-gradient(circle at 20% 20%, rgba(255, 0, 255, 0.12), transparent 45%),
+                    radial-gradient(circle at 80% 10%, rgba(0, 255, 255, 0.1), transparent 40%),
+                    #05030d;
+            --grid-color: rgba(0, 255, 255, 0.12);
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+            --transition-duration: 420ms;
+            font-family: "JetBrains Mono", "Fira Code", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--bg);
+            color: #e8efff;
+            padding: clamp(18px, 4vw, 36px);
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .title-block h1 {
+            font-size: clamp(1.8rem, 2.6vw, 3rem);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #7ad6ff;
+            text-shadow: 0 0 12px rgba(0, 255, 255, 0.45);
+            margin: 0 0 8px;
+        }
+
+        .title-block p {
+            margin: 0;
+            max-width: 640px;
+            line-height: 1.6;
+            color: #97a8ff;
+        }
+
+        .control-panel {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            background: rgba(5, 10, 23, 0.75);
+            box-shadow: 0 0 18px rgba(0, 255, 255, 0.12);
+            backdrop-filter: blur(12px);
+        }
+
+        button.randomize-all {
+            font-family: inherit;
+            border: none;
+            border-radius: 999px;
+            padding: 10px 22px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            background: linear-gradient(120deg, rgba(0, 255, 255, 0.25), rgba(255, 0, 255, 0.35));
+            color: #f6f6ff;
+            transition: transform 200ms ease, box-shadow 200ms ease;
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.24);
+        }
+
+        button.randomize-all:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 22px rgba(255, 0, 255, 0.38);
+        }
+
+        .dashboard-grid {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: clamp(18px, 2.8vw, 36px);
+            padding: clamp(12px, 2vw, 20px);
+            border-radius: 28px;
+            border: 1px solid rgba(0, 255, 255, 0.14);
+            background: rgba(2, 9, 22, 0.8);
+            backdrop-filter: blur(18px);
+            overflow: hidden;
+        }
+
+        .dashboard-grid::before,
+        .dashboard-grid::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image: linear-gradient(rgba(0, 255, 255, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.12) 1px, transparent 1px);
+            background-size: 52px 52px;
+            mix-blend-mode: screen;
+            opacity: 0.25;
+            transform: translate3d(0, 0, 0);
+        }
+
+        .dashboard-grid::after {
+            background-size: 26px 26px;
+            opacity: 0.12;
+        }
+
+        .card {
+            position: relative;
+            border-radius: 20px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            cursor: pointer;
+            transition: transform var(--transition-duration) cubic-bezier(0.17, 0.84, 0.44, 1),
+                filter var(--transition-duration) ease,
+                box-shadow var(--transition-duration) ease;
+            background: linear-gradient(130deg, hsla(var(--hue, 195), 82%, 62%, 0.18), hsla(calc(var(--hue, 195) + 60), 85%, 68%, 0.05));
+            box-shadow:
+                var(--card-shadow),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                0 0 22px rgba(var(--glow-rgb, 0, 255, 255), 0.24);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(22px) saturate(var(--saturation, 1.1));
+            transform: perspective(800px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(var(--lift, 0px));
+            filter: drop-shadow(0 0 20px rgba(var(--glow-rgb, 0, 255, 255), 0.18));
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 1px;
+            border-radius: 19px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.12), transparent 40%);
+            opacity: 0.4;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .card:hover {
+            --lift: -8px;
+            --tilt-x: -4deg;
+            --tilt-y: 3deg;
+            box-shadow:
+                0 20px 45px rgba(0, 0, 0, 0.55),
+                0 0 0 2px rgba(var(--glow-rgb, 0, 255, 255), 0.35),
+                0 0 36px rgba(var(--glow-rgb, 0, 255, 255), 0.4);
+        }
+
+        .card:active {
+            --lift: -2px;
+            --tilt-x: 2deg;
+            --tilt-y: -1deg;
+            box-shadow:
+                0 16px 30px rgba(0, 0, 0, 0.55),
+                0 0 0 2px rgba(255, 255, 0, 0.45),
+                0 0 30px rgba(255, 255, 0, 0.35);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+        }
+
+        .card-title {
+            font-size: 1.05rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #f4f6ff;
+        }
+
+        .card-state {
+            font-size: 0.85rem;
+            letter-spacing: 0.2em;
+            color: rgba(255, 255, 255, 0.72);
+        }
+
+        .visualizer-preview {
+            position: relative;
+            height: 160px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background:
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.22), transparent 55%),
+                radial-gradient(circle at 70% 20%, rgba(var(--glow-rgb, 0, 255, 255), 0.28), transparent 60%),
+                conic-gradient(from 120deg at 50% 50%, rgba(var(--glow-rgb, 0, 255, 255), 0.55), transparent 210deg);
+            animation: breathe 6s ease-in-out infinite;
+        }
+
+        .visualizer-preview::after {
+            content: "";
+            position: absolute;
+            inset: -50%;
+            background:
+                repeating-linear-gradient(
+                    var(--grid-angle, 45deg),
+                    transparent,
+                    transparent calc(var(--grid-size, 22px) - 1px),
+                    rgba(var(--glow-rgb, 0, 255, 255), 0.3) calc(var(--grid-size, 22px))
+                );
+            opacity: 0.45;
+            mix-blend-mode: screen;
+            animation: scan var(--scan-speed, 18s) linear infinite;
+        }
+
+        .param-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px 12px;
+            font-size: 0.78rem;
+            letter-spacing: 0.02em;
+        }
+
+        .param {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(240, 244, 255, 0.86);
+        }
+
+        .param label {
+            font-size: 0.72rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(146, 206, 255, 0.8);
+        }
+
+        footer {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: rgba(170, 200, 255, 0.72);
+            max-width: 840px;
+            line-height: 1.6;
+        }
+
+        footer span {
+            color: rgba(255, 255, 255, 0.82);
+            font-weight: 600;
+        }
+
+        @keyframes breathe {
+            0%,
+            100% {
+                transform: scale(1);
+                filter: saturate(1.1);
+            }
+            50% {
+                transform: scale(1.03);
+                filter: saturate(1.4);
+            }
+        }
+
+        @keyframes scan {
+            0% {
+                transform: rotate(var(--grid-angle, 45deg)) translate3d(-10%, -10%, 0);
+            }
+            100% {
+                transform: rotate(var(--grid-angle, 45deg)) translate3d(10%, 10%, 0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .visualizer-preview {
+                height: 140px;
+            }
+
+            .param-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="title-block">
+            <h1>VIB34D Editor Dashboard — Holographic Index</h1>
+            <p>
+                Click any card to trigger a cascade of 25 randomized parameter states. The holographic styling responds with
+                real-time color shifts, 3D tilts, morph factors, and glitch intensity adjustments to mirror the behaviour of the
+                archived GEMINI dashboard prototypes.
+            </p>
+        </div>
+        <div class="control-panel">
+            <span>cascade every card</span>
+            <button class="randomize-all" type="button">pulse 25 states</button>
+        </div>
+    </header>
+
+    <section class="dashboard-grid" id="dashboard">
+        <article class="card" data-layouts='["GRID 5x4","GRID 6x6","FLOW AI","SYNCED"]'>
+            <header class="card-header">
+                <h2 class="card-title">Quantum Layout Cartographer</h2>
+                <span class="card-state">GRID 5x4</span>
+            </header>
+            <div class="visualizer-preview"></div>
+            <div class="param-list">
+                <div class="param"><label>color</label><span>192°</span></div>
+                <div class="param"><label>morph</label><span>0.60</span></div>
+                <div class="param"><label>density</label><span>5</span></div>
+                <div class="param"><label>rotation</label><span>0.45x</span></div>
+                <div class="param"><label>glitch</label><span>0.12</span></div>
+                <div class="param"><label>dimension</label><span>3.5D</span></div>
+            </div>
+        </article>
+        <article class="card" data-layouts='["STUDIO","XR PANELS","GRID 4x4","STREAM"]'>
+            <header class="card-header">
+                <h2 class="card-title">Reactive Preset Forge</h2>
+                <span class="card-state">STUDIO</span>
+            </header>
+            <div class="visualizer-preview"></div>
+            <div class="param-list">
+                <div class="param"><label>color</label><span>264°</span></div>
+                <div class="param"><label>morph</label><span>0.72</span></div>
+                <div class="param"><label>density</label><span>7</span></div>
+                <div class="param"><label>rotation</label><span>0.32x</span></div>
+                <div class="param"><label>glitch</label><span>0.22</span></div>
+                <div class="param"><label>dimension</label><span>4D</span></div>
+            </div>
+        </article>
+        <article class="card" data-layouts='["OMNI","VERTEX","FOCUS","XR"]'>
+            <header class="card-header">
+                <h2 class="card-title">Visualizer Swarm Control</h2>
+                <span class="card-state">OMNI</span>
+            </header>
+            <div class="visualizer-preview"></div>
+            <div class="param-list">
+                <div class="param"><label>color</label><span>144°</span></div>
+                <div class="param"><label>morph</label><span>0.48</span></div>
+                <div class="param"><label>density</label><span>4</span></div>
+                <div class="param"><label>rotation</label><span>0.60x</span></div>
+                <div class="param"><label>glitch</label><span>0.08</span></div>
+                <div class="param"><label>dimension</label><span>5D</span></div>
+            </div>
+        </article>
+        <article class="card" data-layouts='["AURORA","NEBULA","LIGHTFIELD","FOG"]'>
+            <header class="card-header">
+                <h2 class="card-title">Holographic Style Sequencer</h2>
+                <span class="card-state">AURORA</span>
+            </header>
+            <div class="visualizer-preview"></div>
+            <div class="param-list">
+                <div class="param"><label>color</label><span>312°</span></div>
+                <div class="param"><label>morph</label><span>0.84</span></div>
+                <div class="param"><label>density</label><span>6</span></div>
+                <div class="param"><label>rotation</label><span>0.20x</span></div>
+                <div class="param"><label>glitch</label><span>0.32</span></div>
+                <div class="param"><label>dimension</label><span>XR</span></div>
+            </div>
+        </article>
+    </section>
+
+    <footer>
+        <p><span>Interaction:</span> Clicking a card triggers a rapid cascade through 25 holographic presets. Every iteration rewrites CSS custom properties for hue, gradient spread, grid density, morph factor, rotation speed, and glitch intensity while cycling through saved layout states.</p>
+        <p><span>Tip:</span> Use the “pulse 25 states” control to broadcast an identical cascade across the entire dashboard and watch the cards synchronize their holographic breathing patterns.</p>
+    </footer>
+
+    <script>
+        const PARAM_LIMITS = {
+            hue: [0, 360],
+            gradientSkew: [15, 70],
+            gridSize: [18, 46],
+            morph: [0.25, 1.3],
+            rotation: [0.12, 0.88],
+            glitch: [0, 0.45],
+            dimension: ["2.5D", "3D", "3.5D", "4D", "4.5D", "5D", "XR"]
+        };
+
+        const toRgb = (hue) => {
+            const clampHue = ((hue % 360) + 360) % 360;
+            const c = 1;
+            const x = 1 - Math.abs(((clampHue / 60) % 2) - 1);
+            let r = 0, g = 0, b = 0;
+            if (clampHue < 60) [r, g, b] = [c, x, 0];
+            else if (clampHue < 120) [r, g, b] = [x, c, 0];
+            else if (clampHue < 180) [r, g, b] = [0, c, x];
+            else if (clampHue < 240) [r, g, b] = [0, x, c];
+            else if (clampHue < 300) [r, g, b] = [x, 0, c];
+            else [r, g, b] = [c, 0, x];
+            return `${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}`;
+        };
+
+        function randomBetween([min, max]) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function pickRandom(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        function buildState(card) {
+            const hue = randomBetween(PARAM_LIMITS.hue);
+            const state = {
+                hue,
+                glow: toRgb(hue),
+                gradientSkew: randomBetween(PARAM_LIMITS.gradientSkew),
+                gridSize: randomBetween(PARAM_LIMITS.gridSize),
+                morph: randomBetween(PARAM_LIMITS.morph),
+                rotation: randomBetween(PARAM_LIMITS.rotation),
+                glitch: randomBetween(PARAM_LIMITS.glitch),
+                dimension: pickRandom(PARAM_LIMITS.dimension),
+                layout: pickRandom(JSON.parse(card.dataset.layouts || "[]")) || "GRID",
+            };
+            return state;
+        }
+
+        function applyState(card, state) {
+            card.style.setProperty("--hue", state.hue.toFixed(2));
+            card.style.setProperty("--glow-rgb", state.glow);
+            card.style.setProperty("--saturation", (1 + state.glitch * 1.5).toFixed(2));
+            card.style.setProperty("--grid-angle", `${state.gradientSkew.toFixed(1)}deg`);
+            card.style.setProperty("--grid-size", `${state.gridSize.toFixed(0)}px`);
+            card.style.setProperty("--tilt-x", `${(state.rotation * 14 - 4).toFixed(2)}deg`);
+            card.style.setProperty("--tilt-y", `${(state.rotation * 10 - 3).toFixed(2)}deg`);
+            card.style.setProperty("--lift", `${-state.morph * 12}px`);
+            card.style.setProperty("--scan-speed", `${(12 - state.rotation * 6).toFixed(2)}s`);
+
+            const params = card.querySelectorAll(".param span");
+            params[0].textContent = `${state.hue.toFixed(0)}°`;
+            params[1].textContent = state.morph.toFixed(2);
+            params[2].textContent = Math.round(state.gridSize / 6);
+            params[3].textContent = `${state.rotation.toFixed(2)}x`;
+            params[4].textContent = state.glitch.toFixed(2);
+            params[5].textContent = state.dimension;
+            const stateLabel = card.querySelector(".card-state");
+            if (stateLabel) stateLabel.textContent = state.layout;
+        }
+
+        function cascade(card) {
+            const iterations = 25;
+            const states = Array.from({ length: iterations }, () => buildState(card));
+            let index = 0;
+            const tick = () => {
+                applyState(card, states[index]);
+                index += 1;
+                if (index < states.length) {
+                    window.setTimeout(tick, 120);
+                }
+            };
+            tick();
+        }
+
+        const cards = document.querySelectorAll(".card");
+        cards.forEach((card) => {
+            card.addEventListener("click", (event) => {
+                event.stopPropagation();
+                cascade(card);
+            });
+        });
+
+        document.querySelector(".randomize-all").addEventListener("click", () => {
+            let offset = 0;
+            cards.forEach((card) => {
+                window.setTimeout(() => cascade(card), offset);
+                offset += 90;
+            });
+        });
+    </script>
+</body>
+</html>

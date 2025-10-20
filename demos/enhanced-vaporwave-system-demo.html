@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enhanced Vaporwave System – Multi-Instance Visualizer</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --primary: #6ff3ff;
+            --secondary: #ff5ee8;
+            --accent: #ffe072;
+            --grid-density: 24px;
+            --layer-opacity: 0.85;
+            --chaos-strength: 0.15;
+            --canvas-glow: rgba(0, 255, 255, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(255, 94, 232, 0.2), transparent 45%),
+                radial-gradient(circle at 80% 10%, rgba(111, 243, 255, 0.18), transparent 40%),
+                #060010;
+            color: #f6f7ff;
+        }
+
+        .vaporwave-shell {
+            position: relative;
+            min-height: 100vh;
+            padding: clamp(24px, 5vw, 48px);
+            overflow: hidden;
+        }
+
+        .visualizer-layer {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: clamp(16px, 3vw, 28px);
+            padding: clamp(24px, 5vw, 48px);
+            pointer-events: none;
+        }
+
+        .visualizer-instance {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            opacity: var(--layer-opacity);
+            filter: saturate(1.2) contrast(1.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.06),
+                0 24px 40px rgba(0, 0, 0, 0.35),
+                0 0 34px rgba(111, 243, 255, 0.35);
+            background:
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent 55%),
+                conic-gradient(from 180deg at 50% 50%, rgba(111, 243, 255, 0.75), rgba(255, 94, 232, 0.35), transparent);
+        }
+
+        .visualizer-instance::after {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background:
+                repeating-linear-gradient(
+                    30deg,
+                    transparent,
+                    transparent calc(var(--grid-density) - 1px),
+                    rgba(111, 243, 255, 0.35) calc(var(--grid-density))
+                );
+            opacity: 0.55;
+            mix-blend-mode: screen;
+            animation: gridDrift 18s linear infinite;
+        }
+
+        .visualizer-instance:nth-child(2)::after {
+            background:
+                repeating-linear-gradient(
+                    120deg,
+                    transparent,
+                    transparent calc(var(--grid-density) - 1px),
+                    rgba(255, 94, 232, 0.35) calc(var(--grid-density))
+                );
+        }
+
+        .visualizer-instance:nth-child(3) {
+            grid-column: span 3;
+            min-height: 280px;
+            opacity: 0.9;
+        }
+
+        .visualizer-instance:nth-child(3)::after {
+            animation-duration: 26s;
+            background:
+                repeating-linear-gradient(
+                    60deg,
+                    transparent,
+                    transparent calc(var(--grid-density) - 1px),
+                    rgba(255, 224, 114, 0.35) calc(var(--grid-density))
+                );
+        }
+
+        header.vaporwave-header {
+            position: relative;
+            z-index: 2;
+            max-width: 920px;
+            padding: 22px 28px;
+            border-radius: 24px;
+            backdrop-filter: blur(22px) saturate(1.2);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: linear-gradient(135deg, rgba(6, 0, 16, 0.82), rgba(20, 0, 35, 0.58));
+            box-shadow: 0 22px 40px rgba(0, 0, 0, 0.5), 0 0 28px rgba(111, 243, 255, 0.26);
+        }
+
+        .vaporwave-header h1 {
+            margin: 0;
+            font-size: clamp(2.4rem, 4vw, 3.4rem);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--primary);
+            text-shadow: 0 0 18px rgba(111, 243, 255, 0.6);
+        }
+
+        .vaporwave-header p {
+            margin: 12px 0 0;
+            color: rgba(248, 249, 255, 0.75);
+            max-width: 640px;
+            line-height: 1.7;
+        }
+
+        .content-overlay {
+            position: relative;
+            z-index: 3;
+            margin-top: clamp(36px, 6vw, 64px);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: clamp(18px, 3vw, 32px);
+        }
+
+        .overlay-card {
+            position: relative;
+            padding: 26px;
+            border-radius: 22px;
+            background: linear-gradient(160deg, rgba(6, 0, 16, 0.9), rgba(35, 0, 55, 0.65));
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow:
+                0 18px 40px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.08),
+                0 0 36px rgba(255, 94, 232, 0.32);
+            backdrop-filter: blur(18px);
+        }
+
+        .overlay-card h2 {
+            margin: 0 0 16px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-size: 1rem;
+            color: var(--accent);
+        }
+
+        .overlay-card p {
+            margin: 0;
+            line-height: 1.6;
+            color: rgba(240, 244, 255, 0.78);
+        }
+
+        .ui-button-bar {
+            margin-top: 22px;
+            display: inline-flex;
+            gap: 12px;
+        }
+
+        .ui-button {
+            position: relative;
+            border: none;
+            border-radius: 999px;
+            padding: 10px 26px;
+            font-family: inherit;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: #060010;
+            cursor: pointer;
+            background: linear-gradient(125deg, rgba(111, 243, 255, 0.85), rgba(255, 94, 232, 0.85));
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+                0 0 18px rgba(255, 94, 232, 0.48),
+                0 18px 28px rgba(0, 0, 0, 0.4);
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .ui-button:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+                0 0 22px rgba(255, 224, 114, 0.5),
+                0 22px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .state-controls {
+            position: fixed;
+            right: clamp(18px, 4vw, 44px);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            z-index: 4;
+        }
+
+        .state-dot {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: linear-gradient(140deg, rgba(111, 243, 255, 0.35), rgba(255, 94, 232, 0.35));
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 0 18px rgba(111, 243, 255, 0.32);
+            transition: transform 200ms ease, box-shadow 200ms ease;
+        }
+
+        .state-dot::after {
+            content: attr(data-label);
+            position: absolute;
+            left: -140px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 6px 14px;
+            font-size: 0.68rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            border-radius: 999px;
+            background: rgba(6, 0, 16, 0.75);
+            color: rgba(248, 249, 255, 0.75);
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 180ms ease;
+        }
+
+        .state-dot:hover::after {
+            opacity: 1;
+        }
+
+        .state-dot.active {
+            transform: scale(1.18);
+            box-shadow: 0 0 32px rgba(255, 224, 114, 0.55), 0 0 0 2px rgba(255, 224, 114, 0.7);
+            background: linear-gradient(140deg, rgba(255, 224, 114, 0.75), rgba(255, 94, 232, 0.6));
+        }
+
+        .state-indicator {
+            position: fixed;
+            right: clamp(18px, 4vw, 44px);
+            bottom: clamp(18px, 5vw, 48px);
+            z-index: 4;
+            padding: 16px 24px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(6, 0, 16, 0.82);
+            backdrop-filter: blur(16px);
+            color: rgba(248, 249, 255, 0.8);
+            font-size: 0.8rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            display: grid;
+            gap: 8px;
+            min-width: 220px;
+        }
+
+        .scroll-progress {
+            position: fixed;
+            right: clamp(8px, 3vw, 32px);
+            top: 0;
+            width: 8px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 999px;
+            overflow: hidden;
+            z-index: 4;
+        }
+
+        .scroll-fill {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background: linear-gradient(180deg, rgba(111, 243, 255, 0.85), rgba(255, 94, 232, 0.85));
+            box-shadow: 0 0 22px rgba(255, 94, 232, 0.45);
+            transition: height 180ms ease;
+        }
+
+        .chaos-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(22.5deg, transparent, transparent 3px, rgba(255, 94, 232, var(--chaos-strength)) 3px, rgba(255, 94, 232, var(--chaos-strength)) 6px),
+                repeating-linear-gradient(67.5deg, transparent, transparent 3px, rgba(111, 243, 255, var(--chaos-strength)) 3px, rgba(111, 243, 255, var(--chaos-strength)) 6px);
+            mix-blend-mode: screen;
+            opacity: 0;
+            z-index: 5;
+        }
+
+        .chaos-overlay.active {
+            opacity: 1;
+            animation: chaosFlicker 120ms infinite;
+        }
+
+        .transition-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(255, 224, 114, 0.4), transparent 70%);
+            opacity: 0;
+            z-index: 6;
+        }
+
+        .transition-overlay.active {
+            animation: transitionPulse 720ms ease;
+        }
+
+        .scan-lines {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 3px);
+            mix-blend-mode: screen;
+            opacity: 0.35;
+            z-index: 1;
+            animation: scanMove 12s linear infinite;
+        }
+
+        @keyframes gridDrift {
+            0% {
+                transform: translate3d(-8%, -8%, 0);
+            }
+            100% {
+                transform: translate3d(8%, 8%, 0);
+            }
+        }
+
+        @keyframes chaosFlicker {
+            0%,
+            100% {
+                opacity: 0.75;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes transitionPulse {
+            0% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes scanMove {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(100%);
+            }
+        }
+
+        @media (max-width: 960px) {
+            .visualizer-layer {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .visualizer-instance:nth-child(3) {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .visualizer-layer {
+                grid-template-columns: 1fr;
+            }
+
+            .visualizer-instance:nth-child(3) {
+                grid-column: span 1;
+            }
+
+            .state-controls,
+            .state-indicator,
+            .scroll-progress {
+                position: static;
+                transform: none;
+                display: flex;
+                flex-direction: row;
+                gap: 12px;
+                margin-top: 24px;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .state-indicator {
+                order: 2;
+            }
+
+            .scroll-progress {
+                order: 3;
+                height: 8px;
+            }
+
+            .scroll-fill {
+                height: 100%;
+                width: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="vaporwave-shell">
+        <div class="visualizer-layer" aria-hidden="true">
+            <div class="visualizer-instance" data-role="background"></div>
+            <div class="visualizer-instance" data-role="left-panel"></div>
+            <div class="visualizer-instance" data-role="footer"></div>
+        </div>
+
+        <header class="vaporwave-header">
+            <h1>Enhanced Vaporwave System</h1>
+            <p>
+                Multi-instance canvases blend layered gradients, animated grid lattices, and neon glyphs. Scroll and input data
+                modulate density, color drift, and chaos overlays while glassmorphic panels float above the visual field.
+            </p>
+        </header>
+
+        <section class="content-overlay">
+            <article class="overlay-card" id="state-brief">
+                <h2>State Briefing</h2>
+                <p>
+                    Active profile <strong id="state-name">HOME</strong> uses density <strong id="state-density">24px</strong>,
+                    color spread <strong id="state-palette">Cyan → Magenta</strong>, and chaos level
+                    <strong id="state-chaos">0.15</strong>. Buttons trigger smooth transitions while preserving the vaporwave glow.
+                </p>
+                <div class="ui-button-bar">
+                    <button class="ui-button" data-action="transition">transition</button>
+                    <button class="ui-button pulse" data-action="chaos">chaos pulse</button>
+                </div>
+            </article>
+            <article class="overlay-card">
+                <h2>Overlay Notes</h2>
+                <p>
+                    Each `visualizer-instance` adopts unique saturation and blur filters to stack depth. Backdrop-filtered cards
+                    bend color through `linear-gradient` shells and neon text shadows. Scroll progress bars reflect state changes
+                    as gradients to mirror the original GEMINI overlay design.
+                </p>
+            </article>
+            <article class="overlay-card">
+                <h2>Interaction Metrics</h2>
+                <p>
+                    Mouse movement shifts gradient pivots using requestAnimationFrame, while the chaos overlay intensifies under
+                    pulse triggers. Layouts preload configuration sets so the gallery demo can mirror the original multi-instance
+                    choreography without external assets.
+                </p>
+            </article>
+        </section>
+
+        <div class="state-controls" role="group" aria-label="Visualizer states">
+            <button class="state-dot active" data-label="HOME" data-state='{"primary":"#6ff3ff","secondary":"#ff5ee8","accent":"#ffe072","density":24,"chaos":0.15}'></button>
+            <button class="state-dot" data-label="TECH" data-state='{"primary":"#9fffa9","secondary":"#14d1ff","accent":"#ffd966","density":18,"chaos":0.22}'></button>
+            <button class="state-dot" data-label="MEDIA" data-state='{"primary":"#ff92fb","secondary":"#6f77ff","accent":"#ffd0a8","density":20,"chaos":0.18}'></button>
+            <button class="state-dot" data-label="AUDIO" data-state='{"primary":"#6cfff2","secondary":"#ffbd6f","accent":"#ffe6a8","density":28,"chaos":0.25}'></button>
+            <button class="state-dot" data-label="QUANTUM" data-state='{"primary":"#b6d7ff","secondary":"#ff4ec4","accent":"#fff39c","density":32,"chaos":0.3}'></button>
+        </div>
+
+        <aside class="state-indicator" aria-live="polite">
+            <span>layout: <strong id="indicator-layout">home</strong></span>
+            <span>density: <strong id="indicator-density">24px</strong></span>
+            <span>chaos: <strong id="indicator-chaos">0.15</strong></span>
+            <span>color drift: <strong id="indicator-colors">cyan → magenta</strong></span>
+        </aside>
+
+        <div class="scroll-progress" aria-hidden="true">
+            <div class="scroll-fill"></div>
+        </div>
+    </div>
+
+    <div class="chaos-overlay" aria-hidden="true"></div>
+    <div class="transition-overlay" aria-hidden="true"></div>
+    <div class="scan-lines" aria-hidden="true"></div>
+
+    <script>
+        const root = document.documentElement;
+        const dots = document.querySelectorAll(".state-dot");
+        const chaosOverlay = document.querySelector(".chaos-overlay");
+        const transitionOverlay = document.querySelector(".transition-overlay");
+        const scrollFill = document.querySelector(".scroll-fill");
+        const indicator = {
+            layout: document.getElementById("indicator-layout"),
+            density: document.getElementById("indicator-density"),
+            chaos: document.getElementById("indicator-chaos"),
+            colors: document.getElementById("indicator-colors"),
+            stateName: document.getElementById("state-name"),
+            stateDensity: document.getElementById("state-density"),
+            statePalette: document.getElementById("state-palette"),
+            stateChaos: document.getElementById("state-chaos"),
+        };
+
+        function applyState(label, state) {
+            root.style.setProperty("--primary", state.primary);
+            root.style.setProperty("--secondary", state.secondary);
+            root.style.setProperty("--accent", state.accent);
+            root.style.setProperty("--grid-density", `${state.density}px`);
+            root.style.setProperty("--chaos-strength", state.chaos);
+
+            indicator.layout.textContent = label.toLowerCase();
+            indicator.density.textContent = `${state.density}px`;
+            indicator.chaos.textContent = state.chaos.toFixed(2);
+            indicator.colors.textContent = `${state.primary.toUpperCase()} → ${state.secondary.toUpperCase()}`;
+            indicator.stateName.textContent = label;
+            indicator.stateDensity.textContent = `${state.density}px`;
+            indicator.statePalette.textContent = `${state.primary.toUpperCase()} → ${state.secondary.toUpperCase()}`;
+            indicator.stateChaos.textContent = state.chaos.toFixed(2);
+
+            transitionOverlay.classList.remove("active");
+            void transitionOverlay.offsetWidth;
+            transitionOverlay.classList.add("active");
+        }
+
+        dots.forEach((dot) => {
+            dot.addEventListener("click", () => {
+                dots.forEach((d) => d.classList.remove("active"));
+                dot.classList.add("active");
+                const state = JSON.parse(dot.dataset.state);
+                applyState(dot.dataset.label, state);
+            });
+        });
+
+        document.querySelector("[data-action='transition']").addEventListener("click", () => {
+            const active = document.querySelector(".state-dot.active");
+            if (active) {
+                const next = active.nextElementSibling || dots[0];
+                next.click();
+            }
+        });
+
+        document.querySelector("[data-action='chaos']").addEventListener("click", () => {
+            chaosOverlay.classList.add("active");
+            setTimeout(() => chaosOverlay.classList.remove("active"), 900);
+        });
+
+        function updateScrollProgress() {
+            const doc = document.documentElement;
+            const scrolled = (doc.scrollTop || document.body.scrollTop) / ((doc.scrollHeight || document.body.scrollHeight) - doc.clientHeight);
+            scrollFill.style.height = `${Math.min(1, scrolled) * 100}%`;
+        }
+
+        window.addEventListener("scroll", updateScrollProgress, { passive: true });
+        updateScrollProgress();
+
+        const layer = document.querySelector(".visualizer-layer");
+        window.addEventListener("mousemove", (event) => {
+            const x = (event.clientX / window.innerWidth - 0.5) * 12;
+            const y = (event.clientY / window.innerHeight - 0.5) * 12;
+            layer.style.transform = `translate3d(${x * -1}px, ${y * -1}px, 0)`;
+        });
+    </script>
+</body>
+</html>
