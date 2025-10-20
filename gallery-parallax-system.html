@@ -30,7 +30,11 @@
             overflow-x: hidden;
             cursor: crosshair;
         }
-        
+        body.modal-open {
+            overflow: hidden;
+        }
+
+       
         /* EVOLVING BACKGROUND SYSTEM */
         .background-visualizer-container {
             position: fixed;
@@ -62,7 +66,7 @@
         
         /* PARALLAX SCROLL CONTAINER */
         .parallax-container {
-            height: 700vh; /* 7 sections × 100vh */
+            height: 800vh; /* 8 sections × 100vh */
             position: relative;
         }
         
@@ -100,6 +104,20 @@
             transform: scale(1) translateY(0);
             pointer-events: all;
         }
+        .card-section[data-card-count="4"] {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-rows: repeat(2, minmax(0, 1fr));
+            justify-items: center;
+        }
+        .card-section[data-card-count="5"] {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-auto-rows: minmax(0, 1fr);
+            align-content: center;
+        }
+        .card-section[data-card-count="4"] .floating-card,
+        .card-section[data-card-count="5"] .floating-card {
+            margin: 0 auto;
+        }
         
         .floating-card {
             background: var(--card-bg);
@@ -109,22 +127,24 @@
             position: relative;
             overflow: hidden;
             backdrop-filter: blur(10px);
-            box-shadow: 
+            box-shadow:
                 0 0 30px rgba(0, 255, 255, 0.3),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
+            transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s ease, border-color 0.3s ease;
             cursor: pointer;
             pointer-events: all;
+            will-change: transform;
+            display: flex;
+            flex-direction: column;
         }
-        
+
         .floating-card:hover {
-            transform: scale(1.05) translateZ(20px);
-            box-shadow: 
+            box-shadow:
                 0 0 50px var(--neon-magenta),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
             border-color: var(--neon-magenta);
         }
-        
+
         .floating-card h3 {
             color: var(--neon-yellow);
             margin-bottom: 10px;
@@ -140,29 +160,30 @@
             flex-grow: 1;
         }
         
-        .floating-card .preview-area {
-            width: 100%;
-            height: 120px;
-            border: 1px solid var(--electric-blue);
-            border-radius: 8px;
-            background: rgba(0, 20, 40, 0.9);
-            position: relative;
-            overflow: hidden;
+        .floating-card .card-footer {
+            margin-top: 1.1rem;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            color: var(--electric-blue);
-            font-size: 0.7em;
-            cursor: pointer;
+            font-size: 0.72em;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(210, 240, 255, 0.7);
         }
-        
-        .floating-card .preview-area iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 8px;
+
+        .floating-card .card-cta {
+            padding: 0.4rem 0.85rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 0, 255, 0.35);
+            color: rgba(255, 0, 255, 0.75);
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
-        
+
+        .floating-card:hover .card-cta {
+            background: rgba(255, 0, 255, 0.18);
+            border-color: rgba(255, 0, 255, 0.55);
+        }
+
         .floating-card .tags {
             display: flex;
             gap: 6px;
@@ -178,7 +199,227 @@
             font-size: 0.6em;
             border: 1px solid var(--neon-magenta);
         }
+        .floating-card .evolution-callout {
+            margin-top: 0.6rem;
+            font-size: 0.62em;
+            letter-spacing: 0.2em;
+            color: rgba(255, 0, 255, 0.75);
+        }
+        .floating-card .evolution-callout strong {
+            color: rgba(255, 255, 255, 0.88);
+        }
         
+
+        /* PARALLAX MODAL */
+        .parallax-modal {
+            position: fixed;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(16px);
+            z-index: 4000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+
+        .parallax-modal.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .parallax-modal-shell {
+            width: min(1180px, 94vw);
+            height: min(92vh, 860px);
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            background: rgba(6, 10, 24, 0.94);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 26px;
+            box-shadow:
+                0 40px 90px rgba(0, 0, 0, 0.6),
+                0 0 55px rgba(0, 255, 255, 0.32);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .parallax-modal-close {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 0, 255, 0.45);
+            background: rgba(0, 0, 0, 0.4);
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .parallax-modal-close:hover,
+        .parallax-modal-close:focus-visible {
+            background: rgba(255, 0, 255, 0.3);
+            color: white;
+            outline: none;
+        }
+
+        .parallax-modal-main {
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.45);
+            position: relative;
+        }
+
+        .parallax-modal-main iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #000;
+        }
+
+        .parallax-modal-sidebar {
+            display: grid;
+            grid-template-rows: auto auto 1fr auto;
+            gap: 1rem;
+        }
+
+        .parallax-modal-sidebar h2 {
+            font-size: 1.35rem;
+            letter-spacing: 0.18em;
+            color: var(--neon-yellow);
+            text-transform: uppercase;
+        }
+
+        .parallax-modal-sidebar p {
+            font-size: 0.78rem;
+            letter-spacing: 0.16em;
+            color: rgba(210, 240, 255, 0.75);
+            line-height: 1.6;
+        }
+        .modal-evolution {
+            font-size: 0.7rem;
+            letter-spacing: 0.18em;
+            color: rgba(255, 0, 255, 0.7);
+            margin-top: 0.45rem;
+            display: block;
+        }
+
+        .parallax-modal-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .parallax-modal-tags span {
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            background: rgba(0, 255, 255, 0.12);
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(230, 255, 255, 0.8);
+        }
+
+        .parallax-modal-scroll {
+            border-radius: 16px;
+            border: 1px solid rgba(0, 255, 255, 0.18);
+            background: rgba(3, 6, 16, 0.5);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .parallax-modal-scroll::before,
+        .parallax-modal-scroll::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 80px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .parallax-modal-scroll::before {
+            top: 0;
+            background: linear-gradient(180deg, rgba(6, 10, 24, 0.95), transparent);
+        }
+
+        .parallax-modal-scroll::after {
+            bottom: 0;
+            background: linear-gradient(0deg, rgba(6, 10, 24, 0.95), transparent);
+        }
+
+        .parallax-modal-track {
+            height: 100%;
+            overflow-y: scroll;
+            padding: 2.25rem 1rem;
+        }
+
+        .parallax-modal-item {
+            padding: 1rem 1.1rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 255, 0.18);
+            background: rgba(6, 12, 32, 0.6);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .parallax-modal-item strong {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .parallax-modal-item span {
+            color: rgba(210, 240, 255, 0.6);
+            font-size: 0.65rem;
+        }
+
+        .parallax-modal-item.active {
+            border-color: rgba(255, 0, 255, 0.5);
+            transform: scale(1.03);
+            box-shadow:
+                0 15px 45px rgba(0, 0, 0, 0.3),
+                0 0 25px rgba(255, 0, 255, 0.25);
+        }
+
+        .parallax-modal-foot {
+            font-size: 0.72rem;
+            letter-spacing: 0.2em;
+            color: rgba(210, 240, 255, 0.65);
+            display: flex;
+            justify-content: space-between;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 960px) {
+            .parallax-modal-shell {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: min(94vh, 920px);
+            }
+
+            .parallax-modal-scroll {
+                max-height: 280px;
+            }
+
+            .parallax-modal-foot {
+                justify-content: center;
+            }
+        }
+
         /* NAVIGATION SYSTEM */
         .scroll-indicator {
             position: fixed;
@@ -299,13 +540,13 @@
 <body>
     <!-- Background Visualizer Container -->
     <div class="background-visualizer-container" id="backgroundContainer">
-        <!-- 7 background visualizers will be created dynamically -->
+        <!-- 8 background visualizers will be created dynamically -->
     </div>
     
     <!-- Section Info -->
     <div class="section-info">
-        <div class="section-title" id="sectionTitle">Holographic Hypercubes</div>
-        <div class="section-subtitle" id="sectionSubtitle">Section 1 of 7 • Visual Codex Gallery</div>
+        <div class="section-title" id="sectionTitle">Spectral Interface Shells</div>
+        <div class="section-subtitle" id="sectionSubtitle">Section 1 of 8 • Hypercube Genesis</div>
     </div>
     
     <!-- Chaos Meter -->
@@ -318,7 +559,7 @@
     
     <!-- Scroll Indicator -->
     <div class="scroll-indicator" id="scrollIndicator">
-        <!-- 7 dots will be created dynamically -->
+        <!-- 8 dots will be created dynamically -->
     </div>
     
     <!-- Parallax Container -->
@@ -326,7 +567,29 @@
     
     <!-- Floating Cards Container -->
     <div class="floating-cards-container" id="floatingCards">
-        <!-- 7 card sections will be created dynamically -->
+        <!-- 8 card sections will be created dynamically -->
+    </div>
+
+
+    <div class="parallax-modal" id="parallaxModal" role="dialog" aria-modal="true" aria-labelledby="parallaxModalTitle">
+        <div class="parallax-modal-shell">
+            <button class="parallax-modal-close" id="parallaxModalClose" aria-label="Close modal">×</button>
+            <div class="parallax-modal-main">
+                <iframe id="parallaxModalFrame" title="Parallax demo preview"></iframe>
+            </div>
+            <div class="parallax-modal-sidebar">
+                <h2 id="parallaxModalTitle">Effect Title</h2>
+                <p id="parallaxModalDescription">Description</p>
+                <div class="parallax-modal-tags" id="parallaxModalTags"></div>
+                <div class="parallax-modal-scroll" id="parallaxModalScroll">
+                    <div class="parallax-modal-track" id="parallaxModalTrack"></div>
+                </div>
+                <div class="parallax-modal-foot" id="parallaxModalFoot">
+                    <span id="parallaxModalGroup"></span>
+                    <span id="parallaxModalType"></span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -334,72 +597,280 @@
         
         // VISUAL EFFECTS DATA WITH SMART CANVAS GROUPING
         const visualEffectsGrouped = [
-            // Group 1: Mixed Canvas/Non-Canvas (Low chaos)
-            [
-                { title: "Neoskeuomorphic Cards", description: "Modern skeuomorphic design", tags: ["css", "cards", "design"], file: "demos/neoskeuomorphic-cards.html", hasCanvas: false },
-                { title: "Neon Typography", description: "Glowing text effects", tags: ["css", "typography", "glow"], file: "demos/neon-typography.html", hasCanvas: false },
-                { title: "Holographic Progress", description: "Futuristic progress bars", tags: ["css", "progress", "holographic"], file: "demos/holographic-progress.html", hasCanvas: false },
-                { title: "State Control Dots", description: "Interactive navigation dots", tags: ["css", "controls", "interactive"], file: "demos/state-control-dots.html", hasCanvas: false },
-                { title: "Geometric Patterns", description: "SVG geometric designs", tags: ["svg", "patterns", "geometry"], file: "demos/geometric-patterns.html", hasCanvas: false },
-                { title: "3D Transforms", description: "CSS 3D perspective effects", tags: ["css", "3d", "transforms"], file: "demos/3d-transforms.html", hasCanvas: false }
-            ],
-            // Group 2: Light Canvas Load
-            [
-                { title: "Holographic Visualizer", description: "Multi-layer blend modes", tags: ["webgl", "holographic", "blend"], file: "demos/holographic-visualizer.html", hasCanvas: true },
-                { title: "Particle Systems", description: "Canvas 2D particle physics", tags: ["canvas", "particles", "physics"], file: "demos/particle-systems.html", hasCanvas: true },
-                { title: "Blend Mode Experiments", description: "CSS blend mode showcase", tags: ["css", "blend", "experiments"], file: "demos/blend-mode-experiments.html", hasCanvas: false },
-                { title: "Liquid Morphing", description: "Fluid CSS animations", tags: ["css", "fluid", "morphing"], file: "demos/liquid-morphing.html", hasCanvas: false },
-                { title: "Glitch Effects", description: "Digital corruption visuals", tags: ["css", "glitch", "digital"], file: "demos/glitch-effects.html", hasCanvas: false },
-                { title: "Cyberpunk Interface", description: "Futuristic UI elements", tags: ["css", "cyberpunk", "interface"], file: "demos/cyberpunk-interface.html", hasCanvas: false }
-            ],
-            // Group 3: Medium Canvas Load
-            [
-                { title: "MVEP Moire Hypercube", description: "4D hypercube with interference", tags: ["webgl", "4d", "moire"], file: "demos/mvep-moire-hypercube.html", hasCanvas: true },
-                { title: "Fractal Visualizations", description: "Mathematical fractal generation", tags: ["canvas", "fractal", "math"], file: "demos/fractal-visualizations.html", hasCanvas: true },
-                { title: "Matrix Rain Effect", description: "Digital rain animation", tags: ["canvas", "matrix", "rain"], file: "demos/matrix-rain-effect.html", hasCanvas: true },
-                { title: "Hologram Projections", description: "3D hologram illusions", tags: ["css", "hologram", "3d"], file: "demos/hologram-projections.html", hasCanvas: false },
-                { title: "VR Interface Elements", description: "Virtual reality UI", tags: ["css", "vr", "interface"], file: "demos/vr-interface-elements.html", hasCanvas: false },
-                { title: "Temporal Rifts", description: "Time distortion effects", tags: ["css", "temporal", "distortion"], file: "demos/temporal-rifts.html", hasCanvas: false }
-            ],
-            // Group 4: Heavy WebGL Load
-            [
-                { title: "VIB34D Complete System", description: "Revolutionary 4D framework", tags: ["webgl", "vib34d", "4d"], file: "effects/vib34d-complete-system.html", hasCanvas: true },
-                { title: "Shader Effects", description: "WebGL fragment shaders", tags: ["webgl", "shaders", "fragments"], file: "demos/shader-effects.html", hasCanvas: true },
-                { title: "Quantum Visualizer", description: "Quantum mechanics visuals", tags: ["webgl", "quantum", "physics"], file: "demos/quantum-visualizer.html", hasCanvas: true },
-                { title: "Plasma Field Generator", description: "Plasma energy fields", tags: ["webgl", "plasma", "energy"], file: "demos/plasma-field-generator.html", hasCanvas: true },
-                { title: "Crystalline Structures", description: "3D crystal formations", tags: ["webgl", "crystal", "3d"], file: "demos/crystalline-structures.html", hasCanvas: true },
-                { title: "Wormhole Visualization", description: "Spacetime distortion", tags: ["webgl", "wormhole", "physics"], file: "demos/wormhole-visualization.html", hasCanvas: true }
-            ],
-            // Group 5: Chaos Visualizers
-            [
-                { title: "Hyperdimensional Matrix", description: "8D+ chaos visualization", tags: ["webgl", "8d", "chaos"], file: "effects/insane-hyperdimensional-matrix.html", hasCanvas: true },
-                { title: "Chaos Overlay System", description: "Digital interference chaos", tags: ["webgl", "chaos", "interference"], file: "demos/chaos-overlay-system.html", hasCanvas: true },
-                { title: "Neural Network Display", description: "AI network visualization", tags: ["canvas", "neural", "ai"], file: "demos/neural-network-display.html", hasCanvas: true },
-                { title: "DNA Helix Animator", description: "Biological helix animation", tags: ["webgl", "dna", "biology"], file: "demos/dna-helix-animator.html", hasCanvas: true },
-                { title: "Cosmic Background", description: "Cosmic radiation patterns", tags: ["webgl", "cosmic", "astronomy"], file: "demos/cosmic-background.html", hasCanvas: true },
-                { title: "Dimension Portal", description: "Interdimensional gateway", tags: ["webgl", "portal", "dimension"], file: "demos/dimension-portal.html", hasCanvas: true }
-            ],
-            // Group 6: Advanced Systems
-            [
-                { title: "Elegant 4D Flow", description: "Organic 4D movements", tags: ["webgl", "4d", "organic"], file: "effects/elegant-4d-flow-visualizer.html", hasCanvas: true },
-                { title: "Multi-Canvas Visualizer", description: "Synchronized canvas system", tags: ["webgl", "multi", "sync"], file: "effects/multi-canvas-visualizer-system.html", hasCanvas: true },
-                { title: "Card Bending System", description: "3D CSS morphing cards", tags: ["css", "3d", "morphing"], file: "effects/vib34d-advanced-card-bending-system.html", hasCanvas: false },
-                { title: "Color Shift System", description: "Extreme filter effects", tags: ["css", "color", "filters"], file: "effects/enhanced-color-shift-contrast-system.html", hasCanvas: false },
-                { title: "Interactive Animations", description: "Touch responsive systems", tags: ["css", "interactive", "responsive"], file: "demos/interactive-animations.html", hasCanvas: false },
-                { title: "Consciousness Stream", description: "Abstract consciousness flow", tags: ["webgl", "consciousness", "abstract"], file: "demos/consciousness-stream.html", hasCanvas: true }
-            ],
-            // Group 7: Maximum Chaos
-            [
-                { title: "Narrative Choreography", description: "JSON-driven transformations", tags: ["webgl", "narrative", "choreography"], file: "effects/narrative-choreography-engine.html", hasCanvas: true },
-                { title: "Holographic Pulse", description: "Multi-layer glow system", tags: ["webgl", "pulse", "glow"], file: "effects/holographic-pulse-system.html", hasCanvas: true },
-                { title: "Tabbed Visualizer", description: "Advanced WebGL management", tags: ["webgl", "tabs", "management"], file: "effects/tabbed-visualizer-system.html", hasCanvas: true },
-                { title: "Active Holographic Systems", description: "125 WebGL visualizers", tags: ["webgl", "holographic", "active"], file: "demos/active-holographic-systems-mega-demo.html", hasCanvas: true, isHeavy: true },
-                { title: "Fractal Spirals", description: "Infinite recursive patterns", tags: ["webgl", "fractal", "spiral"], file: "demos/fractal-spirals.html", hasCanvas: true },
-                { title: "Polytopal Projections", description: "N-dimensional polytopes", tags: ["webgl", "polytope", "projection"], file: "demos/polytopal-projections.html", hasCanvas: true }
-            ]
+            {
+                name: 'Spectral Interface Shells',
+                description: 'CSS-driven holo panels, neon typographic grids, and light field overlays.',
+                depth: 0.18,
+                effects: [
+                    { title: 'CSS Glassmorphism Lab', description: 'Layered glass surfaces with animated blur gradients and holographic shine.', tags: ['css', 'glass', 'ui'], file: 'demos/css-glassmorphism-demo.html', type: 'css' },
+                    { title: 'CSS Glitch Array', description: 'Reactive glitch shaders driven by keyframe offsets and chromatic noise.', tags: ['css', 'glitch', 'motion'], file: 'demos/css-glitch-effects-demo.html', type: 'css' },
+                    { title: 'Cyberpunk UI Mesh', description: 'Hi-fi interface slabs with neon scanlines and hovering microcopy.', tags: ['css', 'cyberpunk', 'ui'], file: 'demos/css-cyberpunk-ui-demo.html', type: 'css' },
+                    { title: 'Vaporwave Spectrum', description: 'Gradient planes, CRT curves, and cassette-era typography.', tags: ['css', 'vaporwave', 'gradient'], file: 'demos/css-vaporwave-aesthetics-demo.html', type: 'css' },
+                    { title: 'Animated Grid Overlay', description: 'Procedural grid overlays with spectral glows and depth warps.', tags: ['css', 'grid', 'animation'], file: 'demos/animated-grid-overlay-demo.html', type: 'css' }
+                ]
+            },
+            {
+                name: 'Holographic Fields & Particles',
+                description: 'Multi-layer depth canvases, particle emitters, and responsive overlays.',
+                depth: 0.22,
+                effects: [
+                    { title: 'Holographic Depth Layers', description: 'Stacked depth planes with adaptive parallax and shimmer pulses.', tags: ['webgl', 'depth', 'layers'], file: 'demos/holographic-depth-layers-demo.html', type: 'webgl' },
+                    { title: 'Holographic Progress Indicators', description: 'Progress systems with glass arcs and neon data rings.', tags: ['css', 'progress', 'hud'], file: 'demos/holographic-progress-indicators-demo.html', type: 'css' },
+                    { title: 'Particle Halo System', description: 'Canvas particle halo orchestrated with noise displacement.', tags: ['canvas', 'particles', 'halo'], file: 'demos/holographic-particle-system-demo.html', type: 'canvas' },
+                    { title: 'Chaos Overlay Reactor', description: 'Chaos overlays layered with interference bands and strobing grids.', tags: ['webgl', 'chaos', 'overlay'], file: 'demos/chaos-overlay-effects-demo.html', type: 'webgl' },
+                    { title: 'State Control Dots', description: 'Interactive navigation dots with reactive outlines and pulses.', tags: ['css', 'navigation', 'interaction'], file: 'demos/state-control-dots-demo.html', type: 'css' }
+                ]
+            },
+            {
+                name: 'Active Holographic Engines',
+                description: 'Full spectrum holographic engines with modal expansions and parallax canvases.',
+                depth: 0.28,
+                effects: [
+                    { title: 'Active Holographic Megasuite', description: '35 variation megasuite with pagination and modal infinite scroll.', tags: ['webgl', 'holographic', 'mega'], file: 'demos/active-holographic-systems-mega-demo.html', type: 'webgl', isHeavy: true },
+                    { title: 'Tech Layout Active Holographic', description: 'Tech layout grid with synchronized holographic canvases.', tags: ['webgl', 'layout', 'multi-canvas'], file: 'demos/tech-layout-active-holographic-demo.html', type: 'webgl' },
+                    { title: 'Parallax Systems Mega', description: 'Layered parallax canvases with atmospheric fog and card choreography.', tags: ['webgl', 'parallax', 'systems'], file: 'demos/holographic-parallax-systems-mega-demo.html', type: 'webgl' },
+                    { title: 'Polytopal Consciousness Shader', description: 'Shader-driven polytopal forms with chromatic spill.', tags: ['webgl', 'shader', 'polytopal'], file: 'demos/polytopal-consciousness-shader-demo.html', type: 'webgl' },
+                    { title: 'MillzMaleficarum Codex', description: 'Immersive codex with story-driven holographic transitions.', tags: ['webgl', 'codex', 'narrative'], file: 'demos/millzmaleficarum-codex-demo.html', type: 'webgl' }
+                ]
+            },
+            {
+                name: 'VIB3 / VIB34D Narratives',
+                description: 'Narrative driven layouts powered by VIB3 and VIB34D orchestration.',
+                depth: 0.32,
+                effects: [
+                    { title: 'VIB3CODE Reactive Core', description: 'Reactive hyperAV core with pulse field orchestration.', tags: ['webgl', 'core', 'reactive'], file: 'demos/vib3code-reactive-core-demo.html', type: 'webgl' },
+                    { title: 'VIB3CODE Digital Magazine', description: 'Magazine layout blending WebGL hero visuals with text grids.', tags: ['webgl', 'magazine', 'ui'], file: 'demos/vib3code-digital-magazine-demo.html', type: 'webgl' },
+                    { title: 'VIB34D Morphing Blog', description: 'Blog navigator with morphing 4D canvases and holo nav.', tags: ['webgl', 'blog', 'morphing'], file: 'demos/vib34d-morphing-blog-demo.html', type: 'webgl' },
+                    { title: 'VIB34D Editor Dashboard', description: 'Interactive dashboard with holographic parameter decks.', tags: ['webgl', 'dashboard', 'editor'], file: 'demos/vib34d-editor-dashboard-demo.html', type: 'webgl' },
+                    { title: 'VIB34D Production Spectacular', description: 'Production showcase with synchronized stage lighting effects.', tags: ['webgl', 'production', 'showcase'], file: 'demos/vib34d-production-spectacular-demo.html', type: 'webgl' }
+                ]
+            },
+            {
+                name: 'Adaptive Interface Systems',
+                description: 'Adaptive card systems, orchestration engines, and touch-first controls.',
+                depth: 0.26,
+                effects: [
+                    { title: 'VIB34D Adaptive Cards', description: 'Adaptive card layouts with holo depth and parameter slots.', tags: ['css', 'cards', 'adaptive'], file: 'demos/vib34d-adaptive-cards-demo.html', type: 'css' },
+                    { title: 'System Orchestration Engine', description: 'System orchestration controls with reactive monitoring.', tags: ['css', 'system', 'controls'], file: 'demos/system-orchestration-engine-demo.html', type: 'css' },
+                    { title: 'Neoskeuomorphic Cards Desktop', description: 'Desktop skeuomorphic cards with layered glows and depth.', tags: ['css', 'skeuomorphic', 'desktop'], file: 'demos/neoskeuomorphic-cards-demo.html', type: 'css' },
+                    { title: 'Neoskeuomorphic Cards Mobile', description: 'Mobile tuned skeuomorphic cards with scroll choreography.', tags: ['css', 'skeuomorphic', 'mobile'], file: 'demos/neoskeuomorphic-cards-mobile.html', type: 'css' },
+                    { title: 'State Control Dots Mobile', description: 'Mobile optimized dots with gesture aware interactions.', tags: ['css', 'navigation', 'mobile'], file: 'demos/state-control-dots-mobile.html', type: 'css' }
+                ]
+            },
+            {
+                name: 'Hypercube Lattice Laboratories',
+                description: 'Hypercube visualizers, moiré laboratories, and deep math canvases.',
+                depth: 0.34,
+                effects: [
+                    { title: 'Hypercube Lattice Visualizer', description: 'Export-ready lattice visualizer with collapsible controls.', tags: ['webgl', 'lattice', 'export'], file: 'demos/hypercube-lattice-visualizer-demo.html', type: 'webgl' },
+                    { title: 'Moiré Hypercube Codex', description: 'Moiré codex with export pipeline and holographic overlays.', tags: ['webgl', 'moire', 'codex'], file: 'demos/moire-hypercube-codex-demo.html', type: 'webgl' },
+                    { title: 'MVEP 4D Hypercube Lab', description: 'Touch reactive MVEP system with scroll-parameter mapping.', tags: ['webgl', '4d', 'mvep'], file: 'effects/mvep-moire-hypercube.html', type: 'webgl' },
+                    { title: 'Hyperdimensional Matrix', description: '8D+ hyperdimensional matrix with collapsible control suite.', tags: ['webgl', 'matrix', 'chaos'], file: 'effects/insane-hyperdimensional-matrix.html', type: 'webgl' },
+                    { title: 'Hypercube Core Framework', description: 'Hypercube core WebGL framework with geometry switchers.', tags: ['webgl', 'framework', 'core'], file: 'effects/hypercube-core-webgl-framework.html', type: 'webgl' }
+                ]
+            },
+            {
+                name: 'Advanced Framework Archives',
+                description: 'Framework archives showcasing orchestration layers and CSS/JS hybrids.',
+                depth: 0.24,
+                effects: [
+                    { title: 'VIB34D Complete System', description: 'Complete 4D framework with collapsible analysis deck.', tags: ['webgl', 'framework', 'vib34d'], file: 'effects/vib34d-complete-system.html', type: 'webgl' },
+                    { title: 'Multi-Canvas Visualizer', description: 'Multi canvas coordinator with synchronized geometry.', tags: ['webgl', 'multi-canvas', 'sync'], file: 'effects/multi-canvas-visualizer-system.html', type: 'webgl' },
+                    { title: 'Elegant 4D Flow Visualizer', description: 'Organic 4D flow orchestrator with curvature fields.', tags: ['webgl', '4d', 'flow'], file: 'effects/elegant-4d-flow-visualizer.html', type: 'webgl' },
+                    { title: 'Narrative Choreography Engine', description: 'Timeline driven narrative choreography engine.', tags: ['css', 'narrative', 'timeline'], file: 'effects/narrative-choreography-engine.html', type: 'css' },
+                    { title: 'Advanced Card Bending', description: 'Advanced card bending system with mobile ready layout.', tags: ['css', 'cards', '3d'], file: 'effects/vib34d-advanced-card-bending-system.html', type: 'css' }
+                ]
+            },
+            {
+                name: 'Phase III Evolution Paths',
+                description: 'Evolution pathways bridging codex, lattice, MVEP, and megasuite upgrades.',
+                depth: 0.38,
+                evolutionSummary: 'Evolution synergy deck',
+                evolutionIntensity: 0.12,
+                effects: [
+                    {
+                        title: 'Codex Evolution Deck',
+                        description: 'Moiré codex evolutions with luminous weave, sequencing, and export journals.',
+                        tags: ['webgl', 'codex', 'evolution'],
+                        file: 'demos/moire-hypercube-codex-demo.html',
+                        type: 'webgl',
+                        evolution: { stage: 'EVO-Ω', summary: 'Pairs luminous weave presets with evolution sequencer.', pairings: ['Hypercube Codex', 'Evolution Cycle'] }
+                    },
+                    {
+                        title: 'Lattice Resonant Scenes',
+                        description: 'Hypercube lattice visualizer with resonant scenes, traversal cycle, and flux sliders.',
+                        tags: ['webgl', 'lattice', 'scenes'],
+                        file: 'demos/hypercube-lattice-visualizer-demo.html',
+                        type: 'webgl',
+                        evolution: { stage: 'EVO-Σ', summary: 'Scene traversal toggles with flux/phase control.', pairings: ['Traversal Cycle', 'Flux Field'] }
+                    },
+                    {
+                        title: 'MVEP Touch Sequencer',
+                        description: 'Touch sequencer with evolution cycle, trail persistence, and resonance warp controls.',
+                        tags: ['webgl', 'touch', 'sequencer'],
+                        file: 'effects/mvep-moire-hypercube.html',
+                        type: 'webgl',
+                        evolution: { stage: 'EVO-Λ', summary: 'Sequenced touch ripples with evolution palettes.', pairings: ['Touch Ripples', 'Audio Sync'] }
+                    },
+                    {
+                        title: 'Megasuite Evolution Deck',
+                        description: 'Active holographic megasuite with evolution banner integration and 41-variation deck.',
+                        tags: ['webgl', 'megasuite', 'evolution'],
+                        file: 'demos/active-holographic-systems-mega-demo.html',
+                        type: 'webgl',
+                        evolution: { stage: 'EVO-Ξ', summary: 'Evolution pathways surfaced inside holographic cards.', pairings: ['Evolution Banner', 'Modal Sequence'] }
+                    },
+                    {
+                        title: 'Codex Memory Loom',
+                        description: 'Persistent codex evolutions that restore luminous weave states between sessions.',
+                        tags: ['webgl', 'codex', 'memory'],
+                        file: 'demos/moire-hypercube-codex-demo.html',
+                        type: 'webgl',
+                        evolution: { stage: 'EVO-Ψ', summary: 'Memory imprinting with codex archive persistence.', pairings: ['Memory Deck', 'Evolution Log'] }
+                    },
+                    {
+                        title: 'Fusion Weave Vault',
+                        description: 'Hypercube lattice fusion controls layering scene weaves and hybrid pulses.',
+                        tags: ['webgl', 'lattice', 'fusion'],
+                        file: 'demos/hypercube-lattice-visualizer-demo.html',
+                        type: 'webgl',
+                        evolution: { stage: 'EVO-Φ', summary: 'Scene fusion blends with traversal resonance.', pairings: ['Fusion Weaves', 'Traversal Cycle'] }
+                    }
+                ]
+            }
         ];
-        
-        // BACKGROUND VISUALIZER THEMES
+
+
+        class ParallaxModal {
+            constructor(effects) {
+                this.effects = effects;
+                this.modal = document.getElementById('parallaxModal');
+                this.closeButton = document.getElementById('parallaxModalClose');
+                this.frame = document.getElementById('parallaxModalFrame');
+                this.title = document.getElementById('parallaxModalTitle');
+                this.description = document.getElementById('parallaxModalDescription');
+                this.tags = document.getElementById('parallaxModalTags');
+                this.groupLabel = document.getElementById('parallaxModalGroup');
+                this.typeLabel = document.getElementById('parallaxModalType');
+                this.scrollShell = document.getElementById('parallaxModalScroll');
+                this.track = document.getElementById('parallaxModalTrack');
+                this.activeIndex = 0;
+                this.itemHeight = 120;
+                this.loopHeight = 0;
+                this.isAdjusting = false;
+
+                this.buildTrack();
+                this.attachEvents();
+            }
+
+            buildTrack() {
+                const fragment = document.createDocumentFragment();
+                const loops = 3;
+                for (let loop = 0; loop < loops; loop++) {
+                    this.effects.forEach((effect, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'parallax-modal-item';
+                        item.dataset.index = index;
+                        const stageLabel = effect.evolution ? `<span>${effect.evolution.stage}</span>` : '';
+                        item.innerHTML = `
+                            <strong>${(index + 1).toString().padStart(2, '0')} — ${effect.title}</strong>
+                            <span>${effect.groupName}</span>
+                            ${stageLabel}
+                        `;
+                        fragment.appendChild(item);
+                    });
+                }
+                this.track.appendChild(fragment);
+                this.loopHeight = this.track.scrollHeight / loops;
+            }
+
+            attachEvents() {
+                this.closeButton.addEventListener('click', () => this.close());
+                this.modal.addEventListener('click', (event) => {
+                    if (event.target === this.modal) {
+                        this.close();
+                    }
+                });
+
+                this.scrollShell.addEventListener('scroll', () => {
+                    if (this.isAdjusting) return;
+                    this.handleScroll();
+                });
+            }
+
+            open(index) {
+                this.modal.classList.add('visible');
+                document.body.classList.add('modal-open');
+                this.applyIndex(index);
+                this.setScrollPosition(index);
+            }
+
+            close() {
+                this.modal.classList.remove('visible');
+                document.body.classList.remove('modal-open');
+            }
+
+            setScrollPosition(index) {
+                const base = this.loopHeight;
+                this.isAdjusting = true;
+                this.scrollShell.scrollTop = base + index * this.itemHeight;
+                requestAnimationFrame(() => (this.isAdjusting = false));
+            }
+
+            handleScroll() {
+                const max = this.loopHeight * 2;
+                if (this.scrollShell.scrollTop < this.loopHeight * 0.45) {
+                    this.isAdjusting = true;
+                    this.scrollShell.scrollTop += this.loopHeight;
+                    requestAnimationFrame(() => (this.isAdjusting = false));
+                    return;
+                }
+                if (this.scrollShell.scrollTop > max - this.loopHeight * 0.45) {
+                    this.isAdjusting = true;
+                    this.scrollShell.scrollTop -= this.loopHeight;
+                    requestAnimationFrame(() => (this.isAdjusting = false));
+                    return;
+                }
+
+                const normalized = (this.scrollShell.scrollTop % this.loopHeight) / this.loopHeight;
+                const targetIndex = Math.min(this.effects.length - 1, Math.floor(normalized * this.effects.length));
+                if (targetIndex !== this.activeIndex) {
+                    this.applyIndex(targetIndex);
+                }
+            }
+
+            applyIndex(index) {
+                this.activeIndex = index;
+                const effect = this.effects[index];
+                if (this.frame.dataset.src !== effect.file) {
+                    this.frame.dataset.src = effect.file;
+                    this.frame.src = effect.file;
+                }
+
+                this.title.textContent = effect.title;
+                if (effect.evolution) {
+                    const pairingText = effect.evolution.pairings ? `<span class="modal-evolution">Pairings: ${effect.evolution.pairings.join(' • ')}</span>` : '';
+                    this.description.innerHTML = `${effect.description}<span class="modal-evolution">${effect.evolution.stage} • ${effect.evolution.summary}</span>${pairingText}`;
+                } else {
+                    this.description.textContent = effect.description;
+                }
+                const tagList = [...effect.tags];
+                if (effect.evolution) {
+                    tagList.push(effect.evolution.stage);
+                }
+                this.tags.innerHTML = tagList.map(tag => `<span>${tag}</span>`).join('');
+                this.groupLabel.textContent = effect.evolution
+                    ? `${effect.groupName} • ${effect.evolution.stage}`
+                    : effect.groupName;
+                this.typeLabel.textContent = effect.type.toUpperCase();
+
+                [...this.track.children].forEach((item) => {
+                    item.classList.toggle('active', Number(item.dataset.index) === index);
+                });
+            }
+        }
+
+// BACKGROUND VISUALIZER THEMES
         const backgroundThemes = [
             { name: 'Hypercube Genesis', geometry: 'hypercube', chaos: 0.15, speed: 0.3 },
             { name: 'Plasma Emergence', geometry: 'plasma', chaos: 0.35, speed: 0.5 },
@@ -407,7 +878,8 @@
             { name: 'Crystal Resonance', geometry: 'crystal', chaos: 0.65, speed: 0.9 },
             { name: 'Quantum Chaos', geometry: 'quantum', chaos: 0.80, speed: 1.2 },
             { name: 'Fractal Storm', geometry: 'fractal', chaos: 0.90, speed: 1.5 },
-            { name: 'Dimensional Collapse', geometry: 'matrix', chaos: 1.0, speed: 2.0 }
+            { name: 'Dimensional Collapse', geometry: 'matrix', chaos: 1.0, speed: 2.0 },
+            { name: 'Evolution Flux', geometry: 'evolution', chaos: 1.05, speed: 2.2 }
         ];
         
         // ADVANCED HOLOGRAPHIC BACKGROUND VISUALIZER
@@ -713,129 +1185,198 @@
         // PARALLAX SCROLL SYSTEM MANAGER
         class ParallaxScrollSystemManager {
             constructor() {
+                this.sections = visualEffectsGrouped;
+                this.flatEffects = [];
                 this.currentSection = 0;
                 this.scrollProgress = 0;
                 this.backgroundVisualizers = [];
                 this.isScrolling = false;
-                this.loadedPreviews = new Set();
-                
+                this.cardSections = [];
+
+                this.sections.forEach((group, sectionIndex) => {
+                    group.effects = group.effects.map((effect) => {
+                        const enriched = {
+                            ...effect,
+                            sectionIndex,
+                            groupName: group.name,
+                            groupDescription: group.description,
+                            globalIndex: this.flatEffects.length
+                        };
+                        enriched.tags = enriched.tags || [];
+                        this.flatEffects.push(enriched);
+                        return enriched;
+                    });
+                });
+
+                this.modal = new ParallaxModal(this.flatEffects);
+
                 this.initialize();
             }
-            
+
             initialize() {
                 console.log('🎨 Initializing Parallax Scroll System...');
-                
+
                 this.createBackgroundVisualizers();
                 this.createCardSections();
                 this.createScrollIndicators();
+                this.setupMouseParallax();
                 this.setupScrollPhysics();
                 this.updateUI();
-                
-                console.log('✅ Parallax System ready - 7 sections with smart canvas loading');
+
+                console.log('✅ Parallax System ready - 8 sections with smart canvas loading');
             }
-            
+
             createBackgroundVisualizers() {
                 const container = document.getElementById('backgroundContainer');
-                
+
                 backgroundThemes.forEach((theme, index) => {
                     const visualizerDiv = document.createElement('div');
                     visualizerDiv.className = 'background-visualizer';
                     visualizerDiv.id = `bg-visualizer-${index}`;
-                    
+
                     const canvas = document.createElement('canvas');
                     canvas.id = `bg-canvas-${index}`;
                     visualizerDiv.appendChild(canvas);
-                    
+
                     container.appendChild(visualizerDiv);
-                    
-                    // Create visualizer with delay
+
                     setTimeout(() => {
                         const visualizer = new HolographicBackgroundVisualizer(canvas, theme, index);
                         this.backgroundVisualizers.push(visualizer);
                     }, index * 200);
                 });
             }
-            
+
             createCardSections() {
                 const container = document.getElementById('floatingCards');
-                
-                visualEffectsGrouped.forEach((group, sectionIndex) => {
+                container.innerHTML = '';
+                this.cardSections = [];
+
+                this.sections.forEach((group, sectionIndex) => {
                     const section = document.createElement('div');
                     section.className = 'card-section';
                     section.id = `card-section-${sectionIndex}`;
-                    
-                    group.forEach((effect, cardIndex) => {
+                    section.dataset.cardCount = group.effects.length;
+
+                    group.effects.forEach((effect, cardIndex) => {
                         const card = this.createCard(effect, sectionIndex, cardIndex);
                         section.appendChild(card);
                     });
-                    
+
                     container.appendChild(section);
+                    this.cardSections.push(section);
                 });
             }
-            
+
             createCard(effect, sectionIndex, cardIndex) {
                 const card = document.createElement('div');
                 card.className = 'floating-card';
-                
+                card.setAttribute('role', 'button');
+                card.setAttribute('tabindex', '0');
+                const groupDepth = this.sections[sectionIndex].depth || 0.2;
+                card.dataset.depth = groupDepth + (cardIndex + 1) * 0.12;
+                card._parallaxState = { scroll: 0, mouseX: 0, mouseY: 0, hovered: false };
+
+                const tagsMarkup = effect.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+                const evolutionCallout = effect.evolution
+                    ? `<div class="evolution-callout"><strong>${effect.evolution.stage}</strong> ${effect.evolution.summary}</div>`
+                    : '';
                 card.innerHTML = `
                     <h3>${effect.title}</h3>
                     <p>${effect.description}</p>
-                    <div class="preview-area" data-file="${effect.file}" data-has-canvas="${effect.hasCanvas}" data-heavy="${effect.isHeavy || false}">
-                        <span>${effect.hasCanvas ? 'Click to load WebGL preview' : 'Click to load preview'}</span>
-                    </div>
-                    <div class="tags">
-                        ${effect.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    <div class="tags">${tagsMarkup}</div>
+                    ${evolutionCallout}
+                    <div class="card-footer">
+                        <span>${effect.groupName}</span>
+                        <span class="card-cta">Open</span>
                     </div>
                 `;
-                
-                // Add click handler for smart preview loading
-                const previewArea = card.querySelector('.preview-area');
-                previewArea.addEventListener('click', () => {
-                    this.loadPreview(previewArea, effect, sectionIndex);
+
+                const openModal = () => this.modal.open(effect.globalIndex);
+                card.addEventListener('click', openModal);
+                card.addEventListener('keyup', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        openModal();
+                    }
                 });
-                
+
+                card.addEventListener('mouseenter', () => {
+                    card._parallaxState.hovered = true;
+                    this.updateCardTransform(card);
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card._parallaxState.hovered = false;
+                    card._parallaxState.mouseX = 0;
+                    card._parallaxState.mouseY = 0;
+                    this.updateCardTransform(card);
+                });
+
+                this.updateCardTransform(card);
                 return card;
             }
-            
-            loadPreview(previewArea, effect, sectionIndex) {
-                const previewId = `${sectionIndex}-${effect.file}`;
-                
-                if (this.loadedPreviews.has(previewId)) return;
-                
-                // Special handling for heavy canvas effects
-                if (effect.isHeavy) {
-                    previewArea.innerHTML = `
-                        <div style="padding: 20px; text-align: center;">
-                            <div style="color: var(--hot-pink); margin-bottom: 10px;">⚠️ HEAVY WEBGL SYSTEM</div>
-                            <div style="font-size: 0.7em; line-height: 1.4;">
-                                125 WebGL visualizers<br>
-                                <button onclick="window.open('${effect.file}', '_blank')" 
-                                        style="margin-top: 8px; padding: 6px 12px; background: var(--card-bg); 
-                                               border: 1px solid var(--neon-magenta); color: var(--neon-magenta); 
-                                               border-radius: 4px; cursor: pointer;">
-                                    Open in New Tab
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    previewArea.innerHTML = `
-                        <iframe src="${effect.file}" 
-                                width="100%" 
-                                height="100%" 
-                                frameborder="0"
-                                loading="lazy">
-                        </iframe>
-                    `;
-                }
-                
-                this.loadedPreviews.add(previewId);
+
+            setupMouseParallax() {
+                const container = document.getElementById('floatingCards');
+
+                container.addEventListener('mousemove', (event) => {
+                    const rect = container.getBoundingClientRect();
+                    const offsetX = (event.clientX - rect.left) / rect.width - 0.5;
+                    const offsetY = (event.clientY - rect.top) / rect.height - 0.5;
+                    const activeSection = this.cardSections[this.currentSection];
+                    if (!activeSection) return;
+
+                    [...activeSection.children].forEach((card) => {
+                        const state = card._parallaxState;
+                        if (!state) return;
+                        state.mouseX = offsetX;
+                        state.mouseY = offsetY;
+                        this.updateCardTransform(card);
+                    });
+                });
+
+                container.addEventListener('mouseleave', () => {
+                    this.cardSections.forEach((section) => {
+                        [...section.children].forEach((card) => {
+                            const state = card._parallaxState;
+                            if (!state) return;
+                            state.mouseX = 0;
+                            state.mouseY = 0;
+                            this.updateCardTransform(card);
+                        });
+                    });
+                });
             }
-            
+
+            updateCardTransform(card) {
+                const state = card._parallaxState;
+                if (!state) return;
+                const depth = Number(card.dataset.depth || 0.4);
+                const scrollOffset = state.scroll * 90;
+                const mouseX = state.mouseX * 32 * depth;
+                const mouseY = state.mouseY * 26 * depth;
+                const scale = state.hovered ? 1.05 : 1;
+                card.style.transform = `translate3d(${mouseX}px, ${scrollOffset + mouseY}px, 0) scale(${scale})`;
+            }
+
+            applyScrollParallax(progress) {
+                const section = this.cardSections[this.currentSection];
+                if (!section) return;
+                const normalized = progress - 0.5;
+                [...section.children].forEach((card) => {
+                    const state = card._parallaxState;
+                    if (!state) return;
+                    const depth = Number(card.dataset.depth || 0.4);
+                    state.scroll = normalized * depth;
+                    this.updateCardTransform(card);
+                });
+            }
+
             createScrollIndicators() {
                 const container = document.getElementById('scrollIndicator');
-                
-                for (let i = 0; i < 7; i++) {
+                container.innerHTML = '';
+
+                for (let i = 0; i < this.sections.length; i++) {
                     const dot = document.createElement('div');
                     dot.className = 'scroll-dot';
                     dot.addEventListener('click', () => {
@@ -844,10 +1385,10 @@
                     container.appendChild(dot);
                 }
             }
-            
+
             setupScrollPhysics() {
                 let ticking = false;
-                
+
                 window.addEventListener('scroll', () => {
                     if (!ticking) {
                         requestAnimationFrame(() => {
@@ -857,36 +1398,30 @@
                         ticking = true;
                     }
                 });
-                
-                // Smooth scroll behavior
+
                 window.addEventListener('wheel', (e) => {
                     e.preventDefault();
-                    
                     const delta = e.deltaY;
                     const sensitivity = 1.5;
                     const scrollAmount = delta * sensitivity;
-                    
                     window.scrollBy(0, scrollAmount);
                 }, { passive: false });
             }
-            
+
             updateScrollState() {
                 const scrollTop = window.pageYOffset;
                 const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
                 const globalProgress = scrollTop / maxScroll;
-                
-                // Calculate current section (0-6)
-                const sectionProgress = globalProgress * 7;
+
+                const sectionProgress = globalProgress * this.sections.length;
                 const newSection = Math.floor(sectionProgress);
                 const sectionLocalProgress = sectionProgress - newSection;
-                
-                // Update if section changed
-                if (newSection !== this.currentSection && newSection >= 0 && newSection < 7) {
-                    this.currentSection = Math.max(0, Math.min(6, newSection));
+
+                if (newSection !== this.currentSection && newSection >= 0 && newSection < this.sections.length) {
+                    this.currentSection = Math.max(0, Math.min(this.sections.length - 1, newSection));
                     this.updateUI();
                 }
-                
-                // Update background visualizers with scroll progress
+
                 this.backgroundVisualizers.forEach((viz, index) => {
                     if (viz) {
                         if (index === this.currentSection) {
@@ -896,17 +1431,13 @@
                         }
                     }
                 });
-                
-                // Update background visibility
+
                 this.updateBackgroundVisibility();
-                
-                // Update card section visibility
                 this.updateCardVisibility();
-                
-                // Update chaos meter
+                this.applyScrollParallax(sectionLocalProgress);
                 this.updateChaosMeter();
             }
-            
+
             updateBackgroundVisibility() {
                 const backgrounds = document.querySelectorAll('.background-visualizer');
                 backgrounds.forEach((bg, index) => {
@@ -914,43 +1445,52 @@
                     bg.classList.toggle('inactive', index !== this.currentSection);
                 });
             }
-            
+
             updateCardVisibility() {
-                const sections = document.querySelectorAll('.card-section');
-                sections.forEach((section, index) => {
+                this.cardSections.forEach((section, index) => {
                     section.classList.toggle('active', index === this.currentSection);
                 });
             }
-            
+
             updateUI() {
-                // Update section info
                 const theme = backgroundThemes[this.currentSection];
-                document.getElementById('sectionTitle').textContent = theme.name;
-                document.getElementById('sectionSubtitle').textContent = `Section ${this.currentSection + 1} of 7 • Visual Codex Gallery`;
-                
-                // Update scroll dots
+                const group = this.sections[this.currentSection];
+                document.getElementById('sectionTitle').textContent = group ? group.name : theme.name;
+                const sectionDescriptor = group && group.evolutionSummary
+                    ? `${theme.name} • ${group.evolutionSummary}`
+                    : theme.name;
+                document.getElementById('sectionSubtitle').textContent = `Section ${this.currentSection + 1} of ${this.sections.length} • ${sectionDescriptor}`;
+
                 const dots = document.querySelectorAll('.scroll-dot');
                 dots.forEach((dot, index) => {
                     dot.classList.toggle('active', index === this.currentSection);
                 });
             }
-            
+
             updateChaosMeter() {
                 const theme = backgroundThemes[this.currentSection];
-                const chaosPercentage = (theme.chaos * 100).toFixed(0);
+                const group = this.sections[this.currentSection];
+                const bonus = group && group.evolutionIntensity ? group.evolutionIntensity : 0;
+                const chaosPercentage = Math.min(100, ((theme.chaos + bonus) * 100).toFixed(0));
                 const chaosFill = document.getElementById('chaosFill');
                 chaosFill.style.width = `${chaosPercentage}%`;
+                const chaosTitle = document.querySelector('.chaos-meter-title');
+                if (chaosTitle) {
+                    chaosTitle.textContent = group && group.evolutionSummary
+                        ? `Chaos Intensity • ${group.evolutionSummary}`
+                        : 'Chaos Intensity';
+                }
             }
-            
+
             scrollToSection(sectionIndex) {
-                const targetScroll = (sectionIndex / 7) * (document.documentElement.scrollHeight - window.innerHeight);
-                
+                const targetScroll = (sectionIndex / this.sections.length) * (document.documentElement.scrollHeight - window.innerHeight);
+
                 window.scrollTo({
                     top: targetScroll,
                     behavior: 'smooth'
                 });
             }
-            
+
             startRenderLoop() {
                 const render = () => {
                     this.backgroundVisualizers.forEach(viz => {
@@ -958,12 +1498,12 @@
                     });
                     requestAnimationFrame(render);
                 };
-                
+
                 render();
                 console.log('🎬 Parallax background render loop started');
             }
         }
-        
+
         // Initialize when page loads
         window.addEventListener('load', () => {
             console.log('🚀 Starting Visual Codex Parallax System...');

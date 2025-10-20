@@ -50,11 +50,136 @@
         .slider-label { margin-bottom: 5px; }
         input[type="range"] { width: 100%; }
         .btn { 
-            background: rgba(0,255,255,0.2); border: 1px solid #00ffff; color: #00ffff; 
+            background: rgba(0,255,255,0.2); border: 1px solid #00ffff; color: #00ffff;
             padding: 8px 16px; margin: 5px; cursor: pointer; border-radius: 5px;
         }
         .btn:hover { background: rgba(0,255,255,0.4); box-shadow: 0 0 10px #00ffff; }
         .info { position: fixed; bottom: 20px; left: 20px; color: #ff00ff; font-size: 14px; }
+        .export-tools {
+            margin-top: 14px;
+            border-top: 1px solid rgba(0,255,255,0.25);
+            padding-top: 12px;
+        }
+        .export-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .export-grid .btn {
+            flex: 1 1 140px;
+            min-height: 38px;
+            margin: 0;
+        }
+        .export-meta {
+            font-size: 11px;
+            color: rgba(0,255,255,0.75);
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            border: 1px solid rgba(0,255,255,0.45);
+            border-radius: 8px;
+            padding: 12px 18px;
+            color: #00ffff;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 9999;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .scene-group {
+            margin-top: 16px;
+            padding: 12px 10px;
+            border: 1px solid rgba(255,0,255,0.25);
+            border-radius: 8px;
+            background: rgba(10,0,30,0.35);
+        }
+        .scene-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .scene-btn {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 8px 6px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(0,0,0,0.35);
+            color: #ffe6ff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .scene-btn:hover {
+            background: rgba(255,0,255,0.3);
+            color: white;
+            box-shadow: 0 0 12px rgba(255,0,255,0.35);
+        }
+        .scene-btn.active {
+            background: linear-gradient(135deg, rgba(0,255,255,0.35), rgba(255,0,255,0.35));
+            border-color: rgba(255,255,255,0.65);
+            color: white;
+        }
+        .scene-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .scene-log {
+            margin-top: 10px;
+            font-size: 10px;
+            color: rgba(200,255,255,0.75);
+            line-height: 1.5;
+            max-height: 70px;
+            overflow: hidden;
+        }
+        .fusion-group {
+            margin-top: 16px;
+            padding: 12px 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(0, 12, 24, 0.35);
+        }
+        .fusion-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .fusion-btn {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 8px 6px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 255, 255, 0.35);
+            background: rgba(0, 0, 0, 0.35);
+            color: #e6ffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .fusion-btn:hover {
+            background: rgba(0, 255, 255, 0.25);
+            color: white;
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.3);
+        }
+        .fusion-btn.active {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.35), rgba(0, 120, 255, 0.35));
+            border-color: rgba(255,255,255,0.65);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -84,14 +209,66 @@
             <div class="slider-label">Moiré Intensity: <span id="moireValue">0.3</span></div>
             <input type="range" id="moire" min="0.0" max="1.0" step="0.1" value="0.3">
         </div>
+        <div class="slider">
+            <div class="slider-label">Flux Field: <span id="fluxValue">0.4</span></div>
+            <input type="range" id="flux" min="0.0" max="1.5" step="0.05" value="0.4">
+        </div>
+        <div class="slider">
+            <div class="slider-label">Phase Drift: <span id="phaseValue">0.0</span></div>
+            <input type="range" id="phase" min="0.0" max="1.0" step="0.01" value="0.0">
+        </div>
         <button class="btn" onclick="randomizeParams()">Randomize</button>
         <button class="btn" onclick="resetParams()">Reset</button>
+
+        <div class="scene-group">
+            <strong>Resonant Scene Evolutions</strong>
+            <div style="font-size: 10px; opacity: 0.75; margin-top: 6px;">Toggle between lattice evolutions—each alters projection physics, palette resonance, and feedback maths.</div>
+            <div class="scene-grid">
+                <button class="scene-btn active" data-scene="resonant" onclick="setScene('resonant')">Resonant Axis</button>
+                <button class="scene-btn" data-scene="quantum" onclick="setScene('quantum')">Quantum Bloom</button>
+                <button class="scene-btn" data-scene="singularity" onclick="setScene('singularity')">Singularity Fold</button>
+                <button class="scene-btn" data-scene="echo" onclick="setScene('echo')">Echo Strata</button>
+                <button class="scene-btn" data-scene="helix" onclick="setScene('helix')">Helix Chorus</button>
+                <button class="scene-btn" data-scene="vault" onclick="setScene('vault')">Vault Resonance</button>
+            </div>
+            <div class="scene-actions">
+                <button class="btn" id="traversalBtn">Run Traversal</button>
+                <button class="btn" id="scenePulseBtn">Phase Pulse</button>
+                <button class="btn" id="stopTraversalBtn">Stop Cycle</button>
+            </div>
+            <div class="scene-log" id="sceneLog">Scene: Resonant Axis primed.</div>
+        </div>
+
+        <div class="fusion-group">
+            <strong>Fusion Weaves</strong>
+            <div style="font-size: 10px; opacity: 0.75; margin-top: 6px;">Blend two scene families to birth hybrid lattice behaviours.</div>
+            <div class="fusion-grid">
+                <button class="fusion-btn active" data-fusion="auroraBridge">Aurora Bridge</button>
+                <button class="fusion-btn" data-fusion="chaosDrift">Chaos Drift</button>
+                <button class="fusion-btn" data-fusion="memoryEcho">Memory Echo</button>
+                <button class="fusion-btn" data-fusion="prismPulse">Prism Pulse</button>
+                <button class="fusion-btn" data-fusion="abyssRelic">Abyss Relic</button>
+                <button class="fusion-btn" data-fusion="celestialSpan">Celestial Span</button>
+            </div>
+        </div>
+
+        <div class="export-tools">
+            <strong>Export &amp; Capture</strong>
+            <div class="export-grid">
+                <button class="btn" id="exportLatticeBtn">Export JSON State</button>
+                <button class="btn" id="captureLatticePngBtn">Capture PNG</button>
+                <button class="btn" id="copyLatticeBtn">Copy Settings</button>
+            </div>
+            <div class="export-meta" id="latticeExportMeta">No exports yet</div>
+        </div>
         </div>
     </div>
 
     <div class="info">
         Click and drag to rotate • Mouse wheel to zoom • R to randomize
     </div>
+
+    <div class="toast" id="latticeToast"></div>
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -106,12 +283,219 @@
             morph: 0.5,
             glitch: 0.2,
             speed: 1.0,
-            moire: 0.3
+            moire: 0.3,
+            flux: 0.4,
+            phase: 0.0
         };
+
+        const STORAGE_KEY = 'hypercube-lattice-phase3-state';
+        let storageAvailable = false;
+        try {
+            const testKey = `${STORAGE_KEY}-test`;
+            localStorage.setItem(testKey, '1');
+            localStorage.removeItem(testKey);
+            storageAvailable = true;
+        } catch (error) {
+            console.warn('Lattice persistence unavailable', error);
+        }
 
         let mouse = { x: 0, y: 0, down: false };
         let rotation = { x: 0, y: 0 };
         let zoom = 1.0;
+        let lastAction = 'init';
+        const exportHistory = [];
+        const latticeToast = document.getElementById('latticeToast');
+        const sessionId = `lattice-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+        const sceneLog = document.getElementById('sceneLog');
+
+        const sceneModes = {
+            resonant: {
+                label: 'Resonant Axis',
+                density: 0.5,
+                morph: 0.6,
+                glitch: 0.25,
+                speed: 1.2,
+                moire: 0.35,
+                flux: 0.4,
+                phase: 0.05,
+                palette: [0.8, 1.0, 1.0],
+                morphBoost: 0.1,
+                intensity: 0.25
+            },
+            quantum: {
+                label: 'Quantum Bloom',
+                density: 0.9,
+                morph: 1.4,
+                glitch: 0.45,
+                speed: 1.8,
+                moire: 0.55,
+                flux: 0.85,
+                phase: 0.35,
+                palette: [1.2, 0.6, 1.3],
+                morphBoost: 0.35,
+                intensity: 0.5
+            },
+            singularity: {
+                label: 'Singularity Fold',
+                density: 1.4,
+                morph: 2.2,
+                glitch: 0.3,
+                speed: 2.2,
+                moire: 0.65,
+                flux: 1.1,
+                phase: 0.6,
+                palette: [1.3, 0.9, 0.55],
+                morphBoost: 0.6,
+                intensity: 0.7
+            },
+            echo: {
+                label: 'Echo Strata',
+                density: 0.35,
+                morph: 0.8,
+                glitch: 0.15,
+                speed: 0.9,
+                moire: 0.45,
+                flux: 0.55,
+                phase: 0.18,
+                palette: [0.6, 1.2, 0.9],
+                morphBoost: 0.2,
+                intensity: 0.3
+            },
+            helix: {
+                label: 'Helix Chorus',
+                density: 0.78,
+                morph: 1.6,
+                glitch: 0.22,
+                speed: 1.6,
+                moire: 0.58,
+                flux: 0.95,
+                phase: 0.42,
+                palette: [1.05, 0.7, 1.25],
+                morphBoost: 0.4,
+                intensity: 0.55
+            },
+            vault: {
+                label: 'Vault Resonance',
+                density: 1.1,
+                morph: 1.9,
+                glitch: 0.35,
+                speed: 2.0,
+                moire: 0.62,
+                flux: 1.25,
+                phase: 0.72,
+                palette: [0.48, 1.25, 1.05],
+                morphBoost: 0.7,
+                intensity: 0.82
+            }
+        };
+
+        let currentScene = 'resonant';
+        let traversalTimer = null;
+        let scenePhase = 0.0;
+        const fusionModes = {
+            auroraBridge: {
+                label: 'Aurora Bridge',
+                blend: 0.32,
+                pulse: 0.25,
+                palette: [0.55, 0.95, 1.2],
+                chaos: 0.18
+            },
+            chaosDrift: {
+                label: 'Chaos Drift',
+                blend: 0.48,
+                pulse: 0.4,
+                palette: [1.2, 0.45, 0.9],
+                chaos: 0.35
+            },
+            memoryEcho: {
+                label: 'Memory Echo',
+                blend: 0.28,
+                pulse: 0.18,
+                palette: [0.45, 1.25, 0.95],
+                chaos: 0.22
+            },
+            prismPulse: {
+                label: 'Prism Pulse',
+                blend: 0.36,
+                pulse: 0.52,
+                palette: [1.15, 0.7, 1.25],
+                chaos: 0.26
+            },
+            abyssRelic: {
+                label: 'Abyss Relic',
+                blend: 0.58,
+                pulse: 0.62,
+                palette: [0.35, 0.65, 1.35],
+                chaos: 0.42
+            },
+            celestialSpan: {
+                label: 'Celestial Span',
+                blend: 0.24,
+                pulse: 0.34,
+                palette: [0.9, 1.15, 1.35],
+                chaos: 0.28
+            }
+        };
+
+        let currentFusion = 'auroraBridge';
+        let fusionWeight = fusionModes[currentFusion].blend;
+        let fusionPulse = fusionModes[currentFusion].pulse;
+
+        function showToast(message) {
+            if (!latticeToast) return;
+            latticeToast.textContent = message;
+            latticeToast.classList.add('show');
+            clearTimeout(showToast.timeout);
+            showToast.timeout = setTimeout(() => latticeToast.classList.remove('show'), 2200);
+        }
+
+        function updateExportMeta(text) {
+            const meta = document.getElementById('latticeExportMeta');
+            if (!meta) return;
+            const now = new Date();
+            meta.textContent = `${text} • ${now.toLocaleTimeString()}`;
+        }
+
+        function persistState() {
+            if (!storageAvailable) return;
+            const payload = {
+                params,
+                rotation,
+                zoom,
+                currentScene,
+                currentFusion,
+                scenePhase,
+                fusionWeight,
+                fusionPulse,
+                lastAction
+            };
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+            } catch (error) {
+                console.warn('Unable to persist lattice state', error);
+            }
+        }
+
+        function logSnapshot(source, extra = {}) {
+            const snapshot = {
+                timestamp: new Date().toISOString(),
+                source,
+                params: { ...params },
+                rotation: { ...rotation },
+                zoom,
+                mouse: { ...mouse },
+                scene: currentScene,
+                scenePhase,
+                fusion: currentFusion,
+                fusionWeight,
+                ...extra
+            };
+            exportHistory.push(snapshot);
+            if (exportHistory.length > 40) {
+                exportHistory.shift();
+            }
+            persistState();
+        }
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -140,7 +524,17 @@
             uniform float u_moire;
             uniform vec2 u_rotation;
             uniform float u_zoom;
-            
+            uniform float u_flux;
+            uniform float u_phase;
+            uniform float u_scenePhase;
+            uniform vec3 u_scenePalette;
+            uniform float u_sceneIntensity;
+            uniform float u_morphBoost;
+            uniform float u_fusionWeight;
+            uniform float u_fusionPulse;
+            uniform vec3 u_fusionPalette;
+            uniform float u_fusionChaos;
+
             // 4D rotation matrices
             mat4 rotateXY(float theta) {
                 float c = cos(theta);
@@ -178,8 +572,9 @@
             // 4D hypercube lattice
             float hypercubeLattice(vec4 p, float gridSize) {
                 vec4 grid = abs(fract(p / gridSize) - 0.5);
-                float thickness = 0.02 * (1.0 + u_morph * 2.0);
-                
+                float fluxWarp = sin(u_scenePhase * 6.283 + p.x * 4.0 + p.y * 4.0) * u_flux * 0.02;
+                float thickness = 0.02 * (1.0 + u_morph * 2.0 + u_morphBoost) + fluxWarp;
+
                 // Calculate distance to grid lines in all 4 dimensions
                 float minDist = min(min(min(grid.x, grid.y), grid.z), grid.w);
                 return smoothstep(thickness, thickness * 0.5, minDist);
@@ -213,58 +608,72 @@
                            sin(u_rotation.x), cos(u_rotation.x)) * coord;
                 
                 // Create 4D space coordinates
-                vec4 p4d = vec4(coord, sin(u_time * u_speed * 0.5), cos(u_time * u_speed * 0.3));
-                
+                vec4 p4d = vec4(coord, sin(u_time * u_speed * 0.5 + u_phase * 6.283), cos(u_time * u_speed * 0.3 + u_phase * 3.141));
+
                 // Apply 4D rotations
-                p4d = rotateXY(u_time * u_speed * 0.2) * p4d;
-                p4d = rotateZW(u_time * u_speed * 0.15) * p4d;
-                p4d = rotateXW(u_time * u_speed * 0.1) * p4d;
-                
+                float sceneSpin = u_time * u_speed * (0.2 + u_sceneIntensity * 0.15);
+                p4d = rotateXY(sceneSpin) * p4d;
+                p4d = rotateZW(u_time * u_speed * 0.15 + u_scenePhase * 3.141) * p4d;
+                p4d = rotateXW(u_time * u_speed * 0.1 + u_scenePhase * 6.283) * p4d;
+
                 // Morphing effect
                 p4d += vec4(
-                    sin(p4d.y * 3.0 + u_time * u_speed) * u_morph * 0.2,
-                    cos(p4d.x * 3.0 + u_time * u_speed) * u_morph * 0.2,
-                    sin(p4d.z * 2.0 + u_time * u_speed * 0.7) * u_morph * 0.3,
-                    cos(p4d.w * 2.0 + u_time * u_speed * 0.9) * u_morph * 0.3
+                    sin(p4d.y * 3.0 + u_time * u_speed + u_scenePhase * 2.0) * (u_morph + u_morphBoost) * 0.22,
+                    cos(p4d.x * 3.0 + u_time * u_speed + u_phase * 2.5) * (u_morph + u_morphBoost) * 0.22,
+                    sin(p4d.z * 2.0 + u_time * u_speed * 0.7 + u_flux) * (u_morph + u_morphBoost) * 0.34,
+                    cos(p4d.w * 2.0 + u_time * u_speed * 0.9 + u_flux * 1.3) * (u_morph + u_morphBoost) * 0.34
                 );
-                
+
                 // Generate hypercube lattice
                 float lattice = hypercubeLattice(p4d, u_density);
-                
+
                 // Create base colors
-                vec3 color1 = vec3(0.0, 1.0, 1.0); // Cyan
-                vec3 color2 = vec3(1.0, 0.0, 1.0); // Magenta
-                vec3 color3 = vec3(1.0, 1.0, 0.0); // Yellow
-                
+                vec3 color1 = vec3(0.0, 1.0, 1.0) * (0.8 + u_sceneIntensity * 0.4);
+                vec3 color2 = vec3(1.0, 0.0, 1.0) * (0.6 + u_sceneIntensity * 0.6);
+                vec3 color3 = vec3(1.0, 1.0, 0.0) * (0.5 + u_sceneIntensity * 0.5);
+                vec3 paletteWarp = mix(color1, u_scenePalette, 0.5 + 0.5 * sin(u_scenePhase * 6.283 + p4d.z));
+
                 // Mix colors based on 4D position
                 vec3 color = mix(
-                    mix(color1, color2, sin(p4d.z + u_time * u_speed) * 0.5 + 0.5),
-                    color3,
-                    sin(p4d.w + u_time * u_speed * 0.7) * 0.5 + 0.5
+                    mix(color1, color2, sin(p4d.z + u_time * u_speed + u_scenePhase) * 0.5 + 0.5),
+                    mix(color3, paletteWarp, 0.5 + 0.5 * cos(p4d.w + u_time * u_speed * 0.7 + u_phase)),
+                    sin(p4d.w + u_time * u_speed * 0.7 + u_flux) * 0.5 + 0.5
                 );
-                
+
+                float fusionInfluence = sin(u_scenePhase * 6.283 + u_time * u_speed * 0.35) * 0.5 + 0.5;
+                float fusionPulseWave = sin(u_time * u_speed * 0.8 + u_phase * 6.283) * 0.5 + 0.5;
+                vec3 fusionColor = mix(u_scenePalette, u_fusionPalette, fusionInfluence);
+                color = mix(color, fusionColor, clamp(u_fusionWeight, 0.0, 1.0));
+                color += fusionColor * (fusionPulseWave * u_fusionPulse * 0.35);
+
                 // Apply lattice
                 color *= lattice;
-                
+
                 // Add moiré pattern
-                float moire = moirePattern(uv + p4d.xy * 0.1, u_moire);
-                color += vec3(moire * 0.3);
-                
+                float moire = moirePattern(uv + p4d.xy * 0.1, u_moire + u_sceneIntensity * 0.2 + u_fusionChaos * 0.15);
+                moire += sin(fusionInfluence * 6.283 + u_time * 0.0015) * u_fusionChaos * 0.05;
+                color += vec3(moire * (0.2 + u_sceneIntensity * 0.25));
+
                 // Apply RGB glitch
                 color = rgbGlitch(color, uv, u_glitch);
-                
+
                 // Mouse interaction glow
                 vec2 mousePos = u_mouse / u_resolution;
                 float mouseDist = length(uv - mousePos);
-                color += exp(-mouseDist * 8.0) * 0.2;
-                
+                color += exp(-mouseDist * 8.0) * (0.18 + u_sceneIntensity * 0.18);
+
                 // Add depth-based intensity variation
-                float depth = (sin(p4d.z * 2.0) + sin(p4d.w * 2.0)) * 0.25 + 0.5;
-                color *= depth;
-                
+                float depth = (sin(p4d.z * (2.0 + u_sceneIntensity)) + sin(p4d.w * (2.0 + u_flux * 0.6))) * 0.25 + 0.5;
+                color *= depth + u_sceneIntensity * 0.2;
+                color *= 1.0 + u_fusionChaos * 0.35;
+
                 // Final brightness adjustment
-                color *= 0.3 + lattice * 0.7;
-                
+                color *= 0.25 + lattice * (0.6 + u_sceneIntensity * 0.5 + u_fusionWeight * 0.3);
+
+                // Scene phase glow overlay
+                float halo = exp(-length(coord) * (1.8 + u_sceneIntensity)) * (0.1 + 0.2 * sin(u_scenePhase * 6.283));
+                color += halo * mix(u_scenePalette, u_fusionPalette, u_fusionWeight * 0.6);
+
                 gl_FragColor = vec4(color, 1.0);
             }
         `;
@@ -315,7 +724,17 @@
             speed: gl.getUniformLocation(program, 'u_speed'),
             moire: gl.getUniformLocation(program, 'u_moire'),
             rotation: gl.getUniformLocation(program, 'u_rotation'),
-            zoom: gl.getUniformLocation(program, 'u_zoom')
+            zoom: gl.getUniformLocation(program, 'u_zoom'),
+            flux: gl.getUniformLocation(program, 'u_flux'),
+            phase: gl.getUniformLocation(program, 'u_phase'),
+            scenePhase: gl.getUniformLocation(program, 'u_scenePhase'),
+            scenePalette: gl.getUniformLocation(program, 'u_scenePalette'),
+            sceneIntensity: gl.getUniformLocation(program, 'u_sceneIntensity'),
+            morphBoost: gl.getUniformLocation(program, 'u_morphBoost'),
+            fusionWeight: gl.getUniformLocation(program, 'u_fusionWeight'),
+            fusionPulse: gl.getUniformLocation(program, 'u_fusionPulse'),
+            fusionPalette: gl.getUniformLocation(program, 'u_fusionPalette'),
+            fusionChaos: gl.getUniformLocation(program, 'u_fusionChaos')
         };
 
         // Mouse and touch interactions
@@ -323,12 +742,15 @@
             mouse.down = true;
             mouse.x = e.clientX;
             mouse.y = e.clientY;
+            lastAction = 'drag-start';
+            logSnapshot('drag-start');
         });
 
         canvas.addEventListener('mousemove', (e) => {
             if (mouse.down) {
                 rotation.x += (e.clientX - mouse.x) * 0.01;
                 rotation.y += (e.clientY - mouse.y) * 0.01;
+                lastAction = 'dragging';
             }
             mouse.x = e.clientX;
             mouse.y = e.clientY;
@@ -336,22 +758,34 @@
 
         canvas.addEventListener('mouseup', () => {
             mouse.down = false;
+            lastAction = 'drag-end';
+            logSnapshot('drag-end');
         });
 
         canvas.addEventListener('wheel', (e) => {
             zoom *= e.deltaY > 0 ? 1.1 : 0.9;
             zoom = Math.max(0.1, Math.min(5.0, zoom));
             e.preventDefault();
+            lastAction = 'zoom';
+            logSnapshot('zoom');
         });
 
         // Control panel interactions
         function setupSlider(id, param, valueId) {
             const slider = document.getElementById(id);
             const valueDisplay = document.getElementById(valueId);
-            
+
             slider.addEventListener('input', (e) => {
                 params[param] = parseFloat(e.target.value);
-                valueDisplay.textContent = params[param].toFixed(1);
+                const formatted = param === 'phase'
+                    ? (Math.round(params[param] * 10) / 10).toFixed(1)
+                    : params[param].toFixed(1);
+                valueDisplay.textContent = formatted;
+                lastAction = `slider:${param}`;
+            });
+
+            slider.addEventListener('change', () => {
+                logSnapshot(`slider:${param}`, { value: params[param] });
             });
         }
 
@@ -360,15 +794,34 @@
         setupSlider('glitch', 'glitch', 'glitchValue');
         setupSlider('speed', 'speed', 'speedValue');
         setupSlider('moire', 'moire', 'moireValue');
+        setupSlider('flux', 'flux', 'fluxValue');
+        setupSlider('phase', 'phase', 'phaseValue');
 
         function randomizeParams() {
-            params.density = Math.random() * 1.9 + 0.1;
-            params.morph = Math.random();
-            params.glitch = Math.random() * 0.8;
-            params.speed = Math.random() * 2.9 + 0.1;
-            params.moire = Math.random();
-            
+            const randomValues = {
+                density: Math.random() * 1.9 + 0.1,
+                morph: Math.random(),
+                glitch: Math.random() * 0.8,
+                speed: Math.random() * 2.9 + 0.1,
+                moire: Math.random(),
+                flux: Math.random() * 1.5,
+                phase: Math.random()
+            };
+
+            Object.assign(params, randomValues);
+
+            const sceneKeys = Object.keys(sceneModes);
+            const fusionKeys = Object.keys(fusionModes);
+            const randomScene = sceneKeys[Math.floor(Math.random() * sceneKeys.length)];
+            const randomFusion = fusionKeys[Math.floor(Math.random() * fusionKeys.length)];
+            setSceneInternal(randomScene, { silent: true });
+            setFusion(randomFusion, { silent: true });
+
             updateSliders();
+            lastAction = 'randomize';
+            showToast('Hypercube lattice randomized');
+            appendSceneLog(`randomized scene ${sceneModes[randomScene].label} + ${fusionModes[randomFusion].label}`);
+            logSnapshot('randomize', { randomValues, randomScene, randomFusion });
         }
 
         function resetParams() {
@@ -377,8 +830,73 @@
             params.glitch = 0.2;
             params.speed = 1.0;
             params.moire = 0.3;
-            
+            params.flux = 0.4;
+            params.phase = 0.0;
+
             updateSliders();
+            setSceneInternal('resonant', { silent: true });
+            setFusion('auroraBridge', { silent: true });
+            lastAction = 'reset';
+            showToast('Lattice parameters reset');
+            logSnapshot('reset');
+        }
+
+        function restoreState() {
+            updateSliders();
+            updateSceneButtons(currentScene);
+            updateFusionButtons(currentFusion);
+            if (!storageAvailable) {
+                return false;
+            }
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) {
+                return false;
+            }
+            try {
+                const saved = JSON.parse(raw);
+                if (saved.params) {
+                    params = { ...params, ...saved.params };
+                }
+                if (saved.rotation) {
+                    rotation = { ...rotation, ...saved.rotation };
+                }
+                if (typeof saved.zoom === 'number') {
+                    zoom = saved.zoom;
+                }
+                if (typeof saved.scenePhase === 'number') {
+                    scenePhase = saved.scenePhase;
+                }
+                if (saved.currentScene && sceneModes[saved.currentScene]) {
+                    currentScene = saved.currentScene;
+                }
+                if (saved.currentFusion && fusionModes[saved.currentFusion]) {
+                    currentFusion = saved.currentFusion;
+                }
+                if (typeof saved.fusionWeight === 'number') {
+                    fusionWeight = saved.fusionWeight;
+                }
+                if (typeof saved.fusionPulse === 'number') {
+                    fusionPulse = saved.fusionPulse;
+                }
+                if (saved.lastAction) {
+                    lastAction = saved.lastAction;
+                }
+                updateSliders();
+                setSceneInternal(currentScene, { silent: true });
+                setFusion(currentFusion, { silent: true });
+                if (typeof saved.fusionWeight === 'number') {
+                    fusionWeight = saved.fusionWeight;
+                }
+                if (typeof saved.fusionPulse === 'number') {
+                    fusionPulse = saved.fusionPulse;
+                }
+                appendSceneLog('↺ Lattice state restored from resonance memory.');
+                showToast('Lattice memory recall engaged');
+                return true;
+            } catch (error) {
+                console.warn('Failed to restore lattice state', error);
+                return false;
+            }
         }
 
         function updateSliders() {
@@ -392,6 +910,105 @@
             document.getElementById('speedValue').textContent = params.speed.toFixed(1);
             document.getElementById('moire').value = params.moire;
             document.getElementById('moireValue').textContent = params.moire.toFixed(1);
+            document.getElementById('flux').value = params.flux;
+            document.getElementById('fluxValue').textContent = params.flux.toFixed(1);
+            document.getElementById('phase').value = params.phase;
+            document.getElementById('phaseValue').textContent = (Math.round(params.phase * 10) / 10).toFixed(1);
+        }
+
+        function appendSceneLog(message) {
+            if (!sceneLog) return;
+            const now = new Date();
+            const stamp = now.toLocaleTimeString();
+            sceneLog.textContent = `${stamp} ${message}\n${sceneLog.textContent}`.slice(0, 260);
+        }
+
+        function updateSceneButtons(scene) {
+            document.querySelectorAll('.scene-btn').forEach((btn) => {
+                btn.classList.toggle('active', btn.dataset.scene === scene);
+            });
+        }
+
+        function updateFusionButtons(fusion) {
+            document.querySelectorAll('.fusion-btn').forEach((btn) => {
+                btn.classList.toggle('active', btn.dataset.fusion === fusion);
+            });
+        }
+
+        function setFusion(mode, { silent = false } = {}) {
+            if (!fusionModes[mode]) return;
+            currentFusion = mode;
+            const config = fusionModes[mode];
+            fusionWeight = config.blend;
+            fusionPulse = config.pulse;
+            updateFusionButtons(mode);
+            if (!silent) {
+                appendSceneLog(`fusion weave → ${config.label}`);
+                showToast(`${config.label} fusion engaged`);
+                logSnapshot('fusion-change', { fusion: mode });
+            }
+            persistState();
+        }
+
+        function applySceneConfig(config) {
+            Object.assign(params, {
+                density: config.density,
+                morph: config.morph,
+                glitch: config.glitch,
+                speed: config.speed,
+                moire: config.moire,
+                flux: config.flux,
+                phase: config.phase
+            });
+            updateSliders();
+        }
+
+        function setSceneInternal(scene, { silent = false } = {}) {
+            if (!sceneModes[scene]) return;
+            currentScene = scene;
+            const config = sceneModes[scene];
+            applySceneConfig(config);
+            updateSceneButtons(scene);
+            if (!silent) {
+                appendSceneLog(`scene tuned → ${config.label}`);
+                showToast(`${config.label} activated`);
+                logSnapshot('scene-change', { scene, config });
+            }
+            persistState();
+        }
+
+        window.setScene = setSceneInternal;
+
+        function startTraversal() {
+            stopTraversal();
+            appendSceneLog('Traversal sequence initiated.');
+            traversalTimer = setInterval(() => {
+                const keys = Object.keys(sceneModes);
+                const index = keys.indexOf(currentScene);
+                const next = keys[(index + 1) % keys.length];
+                scenePhase = (scenePhase + 0.21) % 1.0;
+                params.phase = (params.phase + 0.17) % 1.0;
+                setSceneInternal(next);
+                logSnapshot('scene-traverse', { next });
+            }, 5200);
+        }
+
+        function stopTraversal() {
+            if (traversalTimer) {
+                clearInterval(traversalTimer);
+                traversalTimer = null;
+                appendSceneLog('Traversal halted.');
+            }
+        }
+
+        function triggerScenePulse() {
+            scenePhase = Math.random();
+            params.flux = 0.3 + Math.random() * 1.2;
+            params.phase = Math.random();
+            updateSliders();
+            appendSceneLog('Phase pulse injected into lattice.');
+            showToast('Phase pulse triggered');
+            logSnapshot('scene-pulse', { scenePhase, flux: params.flux });
         }
 
         // Keyboard shortcuts
@@ -399,6 +1016,13 @@
             if (e.key === 'r' || e.key === 'R') {
                 randomizeParams();
             }
+        });
+
+        document.getElementById('traversalBtn')?.addEventListener('click', startTraversal);
+        document.getElementById('stopTraversalBtn')?.addEventListener('click', stopTraversal);
+        document.getElementById('scenePulseBtn')?.addEventListener('click', triggerScenePulse);
+        document.querySelectorAll('.fusion-btn').forEach((btn) => {
+            btn.addEventListener('click', () => setFusion(btn.dataset.fusion));
         });
         
         // Controls toggle function
@@ -421,31 +1045,64 @@
             gl.uniform1f(uniforms.moire, params.moire);
             gl.uniform2f(uniforms.rotation, rotation.x, rotation.y);
             gl.uniform1f(uniforms.zoom, zoom);
-            
+            gl.uniform1f(uniforms.flux, params.flux);
+            gl.uniform1f(uniforms.phase, params.phase);
+            const fusionConfig = fusionModes[currentFusion] || fusionModes.auroraBridge;
+            fusionWeight = fusionWeight * 0.92 + fusionConfig.blend * 0.08;
+            fusionPulse = fusionPulse * 0.9 + fusionConfig.pulse * 0.1;
+            scenePhase = (scenePhase + 0.00035 * (1.0 + params.speed) + fusionPulse * 0.00022) % 1.0;
+            gl.uniform1f(uniforms.scenePhase, scenePhase);
+            const palette = sceneModes[currentScene]?.palette || [1.0, 1.0, 1.0];
+            const intensity = sceneModes[currentScene]?.intensity ?? 0.3;
+            const morphBoost = sceneModes[currentScene]?.morphBoost ?? 0.0;
+            gl.uniform3f(uniforms.scenePalette, palette[0], palette[1], palette[2]);
+            gl.uniform1f(uniforms.sceneIntensity, intensity);
+            gl.uniform1f(uniforms.morphBoost, morphBoost);
+            gl.uniform1f(uniforms.fusionWeight, fusionWeight);
+            gl.uniform1f(uniforms.fusionPulse, fusionPulse);
+            gl.uniform3f(uniforms.fusionPalette, fusionConfig.palette[0], fusionConfig.palette[1], fusionConfig.palette[2]);
+            gl.uniform1f(uniforms.fusionChaos, fusionConfig.chaos);
+
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
             requestAnimationFrame(animate);
         }
-        
-        animate(0);
 
-        // Export function for Lattice Visualizer
+        animate(0);
+        const restored = restoreState();
+        if (!restored) {
+            setSceneInternal('resonant', { silent: true });
+            setFusion('auroraBridge', { silent: true });
+            appendSceneLog('Scene: Resonant Axis primed.');
+            updateExportMeta('Session initialized');
+        } else {
+            updateExportMeta('State recalled from resonance memory');
+        }
+        logSnapshot(restored ? 'init-restored' : 'init-seeded', {
+            restored,
+            fusion: currentFusion,
+            scene: currentScene
+        });
+
+        // Export & capture utilities
         function exportLatticeData() {
             const exportData = {
                 timestamp: new Date().toISOString(),
+                sessionId,
+                lastAction,
                 latticeParams: { ...params },
                 mousePosition: { x: mouse.x, y: mouse.y },
                 rotationState: { x: rotation.x, y: rotation.y },
                 zoomLevel: zoom,
+                fusionState: { currentFusion, fusionWeight, fusionPulse },
                 canvasSize: { width: canvas.width, height: canvas.height },
-                visualizerType: 'Hypercube Lattice System',
-                version: '1.0'
+                interactionHistory: [...exportHistory.slice(-15)],
+                version: '1.2'
             };
-            
-            // Create downloadable JSON
+
             const dataStr = JSON.stringify(exportData, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(dataBlob);
-            
+
             const link = document.createElement('a');
             link.href = url;
             link.download = `lattice-visualizer-export-${Date.now()}.json`;
@@ -453,19 +1110,46 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            
+
             console.log('🔬 Lattice Visualizer data exported successfully');
+            showToast('Lattice JSON export ready');
+            updateExportMeta('JSON export ready');
         }
-        
-        // Add export button to controls
-        const controlsContent = document.querySelector('.controls-content');
-        if (controlsContent) {
-            const exportBtn = document.createElement('button');
-            exportBtn.textContent = 'Export Lattice';
-            exportBtn.className = 'btn';
-            exportBtn.onclick = exportLatticeData;
-            controlsContent.appendChild(exportBtn);
+
+        function captureLatticePng() {
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `lattice-visualizer-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('PNG snapshot captured');
+            updateExportMeta('PNG snapshot saved');
         }
+
+        async function copyLatticeSettings() {
+            const payload = {
+                params: { ...params },
+                rotation: { ...rotation },
+                zoom,
+                lastAction
+            };
+
+            try {
+                await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+                showToast('Lattice settings copied');
+                updateExportMeta('Settings copied');
+            } catch (error) {
+                console.warn('Clipboard copy failed', error);
+                showToast('Clipboard unavailable');
+            }
+        }
+
+        document.getElementById('exportLatticeBtn')?.addEventListener('click', exportLatticeData);
+        document.getElementById('captureLatticePngBtn')?.addEventListener('click', captureLatticePng);
+        document.getElementById('copyLatticeBtn')?.addEventListener('click', copyLatticeSettings);
     </script>
     
     <!-- Add collapsible menu system -->

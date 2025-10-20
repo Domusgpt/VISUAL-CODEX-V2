@@ -30,8 +30,118 @@
             color: #ffff00; padding: 6px 10px; margin: 3px;
             cursor: pointer; border-radius: 3px; font-size: 11px;
         }
-        .toggle-btn.active { 
-            background: rgba(255,255,0,0.4); box-shadow: 0 0 8px #ffff00; 
+        .toggle-btn.active {
+            background: rgba(255,255,0,0.4); box-shadow: 0 0 8px #ffff00;
+        }
+        .export-group {
+            margin-top: 18px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,255,255,0.2);
+        }
+        .export-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .export-btn {
+            flex: 1 1 120px;
+            min-height: 36px;
+            background: linear-gradient(135deg, rgba(0,255,255,0.15), rgba(255,0,255,0.15));
+            border: 1px solid rgba(0,255,255,0.4);
+            color: #00ffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        .evolution-group {
+            margin: 18px 0 10px;
+            padding: 12px 10px;
+            border: 1px solid rgba(255,0,255,0.25);
+            border-radius: 8px;
+            background: rgba(10,0,30,0.35);
+        }
+        .evolution-badges {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .evolution-badges.wide {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        .evolution-btn {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.25);
+            background: rgba(0,0,0,0.35);
+            color: #ffe6ff;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .evolution-btn:hover {
+            background: rgba(255,0,255,0.3);
+            color: white;
+            box-shadow: 0 0 12px rgba(255,0,255,0.35);
+        }
+        .evolution-btn.active {
+            background: linear-gradient(135deg, rgba(0,255,255,0.35), rgba(255,0,255,0.35));
+            border-color: rgba(255,255,255,0.65);
+            color: #ffffff;
+        }
+        .sequence-controls {
+            margin-top: 12px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+        .evolution-memo {
+            margin-top: 10px;
+            font-size: 10px;
+            line-height: 1.5;
+            color: rgba(255, 200, 255, 0.75);
+        }
+        .sequence-log {
+            margin-top: 10px;
+            font-size: 10px;
+            line-height: 1.5;
+            max-height: 70px;
+            overflow: hidden;
+            color: rgba(200, 255, 255, 0.75);
+        }
+        .export-btn:hover {
+            background: linear-gradient(135deg, rgba(0,255,255,0.35), rgba(255,0,255,0.35));
+            box-shadow: 0 0 12px rgba(0,255,255,0.4);
+        }
+        .export-meta {
+            font-size: 10px;
+            opacity: 0.75;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: #00ffff;
+            padding: 12px 20px;
+            border: 1px solid rgba(0,255,255,0.5);
+            border-radius: 8px;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .toast.show {
+            opacity: 1;
         }
         .status { 
             position: fixed; bottom: 20px; right: 20px; 
@@ -100,12 +210,42 @@
             <button class="preset-btn" onclick="setPreset('minimal')">Minimal</button>
             <button class="preset-btn" onclick="setPreset('extreme')">Extreme</button>
         </div>
-        
+
         <div style="margin: 15px 0;">
             <strong>EFFECTS:</strong><br>
             <button class="toggle-btn" id="rgbToggle" onclick="toggleEffect('rgb')">RGB GLITCH</button>
             <button class="toggle-btn active" id="moireToggle" onclick="toggleEffect('moire')">MOIRÉ</button>
             <button class="toggle-btn" id="pulseToggle" onclick="toggleEffect('pulse')">PULSE</button>
+        </div>
+
+        <div class="evolution-group">
+            <div style="font-weight: 600; letter-spacing: 0.08em;">CODex EVOLUTIONS</div>
+            <div style="font-size: 10px; opacity: 0.75; margin-top: 6px;">Each evolution shifts the shader mathematics, color atlas, and dimensional feedback loop.</div>
+            <div class="evolution-badges wide">
+                <button class="evolution-btn active" data-evolution="luminous" onclick="setEvolution('luminous')">Luminous Weave</button>
+                <button class="evolution-btn" data-evolution="entropic" onclick="setEvolution('entropic')">Entropic Cascade</button>
+                <button class="evolution-btn" data-evolution="prismatic" onclick="setEvolution('prismatic')">Prismatic Relay</button>
+                <button class="evolution-btn" data-evolution="abyssal" onclick="setEvolution('abyssal')">Abyssal Bloom</button>
+                <button class="evolution-btn" data-evolution="celestial" onclick="setEvolution('celestial')">Celestial Archive</button>
+                <button class="evolution-btn" data-evolution="memetic" onclick="setEvolution('memetic')">Memetic Lattice</button>
+            </div>
+            <div class="sequence-controls">
+                <button class="export-btn" id="sequenceBtn">Run Evolution Cycle</button>
+                <button class="export-btn" id="pulseSequenceBtn">Pulse Burst</button>
+                <button class="export-btn" id="resetEvolutionBtn">Reset Evolution</button>
+            </div>
+            <div class="sequence-log" id="evolutionLog">Evolution sequence idle.</div>
+            <div class="evolution-memo" id="evolutionMemo">Memory imprint: dormant</div>
+        </div>
+
+        <div class="export-group">
+            <strong>EXPORT &amp; CAPTURE</strong>
+            <div class="export-actions">
+                <button class="export-btn" id="exportCodexBtn">Export JSON Codex</button>
+                <button class="export-btn" id="capturePngBtn">Capture PNG Snapshot</button>
+                <button class="export-btn" id="copyCodexBtn">Copy Settings</button>
+            </div>
+            <div class="export-meta" id="exportMeta">Last export: never</div>
         </div>
     </div>
 
@@ -115,6 +255,8 @@
         <div>RGB SPLIT ACTIVE</div>
         <div>MOIRÉ INTERFERENCE</div>
     </div>
+
+    <div class="toast" id="toast"></div>
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -131,7 +273,9 @@
             moireIntensity: 0.4,
             glitch: 0.2,
             speed: 1.0,
-            layer2Opacity: 0.5
+            layer2Opacity: 0.5,
+            feedback: 0.35,
+            dimensionWarp: 0.6
         };
 
         let effects = {
@@ -140,9 +284,139 @@
             pulse: false
         };
 
+        const STORAGE_KEY = 'moire-hypercube-codex-phase3-state';
+        let storageAvailable = false;
+        try {
+            const testKey = `${STORAGE_KEY}-test`;
+            localStorage.setItem(testKey, '1');
+            localStorage.removeItem(testKey);
+            storageAvailable = true;
+        } catch (error) {
+            console.warn('Storage unavailable for codex persistence', error);
+        }
+
+        const evolutionModes = {
+            luminous: {
+                label: 'Luminous Weave',
+                paletteShift: [1.0, 0.3, 0.8],
+                morphBias: 0.6,
+                feedback: 0.35,
+                dimensionWarp: 0.45,
+                vector: [0.25, 0.45, 0.9],
+                memoryBias: 0.12
+            },
+            entropic: {
+                label: 'Entropic Cascade',
+                paletteShift: [1.4, 1.0, 0.4],
+                morphBias: 1.8,
+                feedback: 0.65,
+                dimensionWarp: 0.85,
+                vector: [0.8, 0.55, 0.25],
+                memoryBias: 0.18
+            },
+            prismatic: {
+                label: 'Prismatic Relay',
+                paletteShift: [0.6, 1.2, 1.2],
+                morphBias: 1.1,
+                feedback: 0.5,
+                dimensionWarp: 0.7,
+                vector: [0.45, 0.8, 0.65],
+                memoryBias: 0.14
+            },
+            abyssal: {
+                label: 'Abyssal Bloom',
+                paletteShift: [0.35, 0.65, 1.4],
+                morphBias: 2.4,
+                feedback: 0.8,
+                dimensionWarp: 1.05,
+                vector: [0.2, 0.45, 1.35],
+                memoryBias: 0.22
+            },
+            celestial: {
+                label: 'Celestial Archive',
+                paletteShift: [1.2, 0.8, 1.5],
+                morphBias: 1.65,
+                feedback: 0.58,
+                dimensionWarp: 0.9,
+                vector: [0.65, 0.7, 1.25],
+                memoryBias: 0.2
+            },
+            memetic: {
+                label: 'Memetic Lattice',
+                paletteShift: [0.55, 1.35, 0.95],
+                morphBias: 2.1,
+                feedback: 0.72,
+                dimensionWarp: 1.15,
+                vector: [0.35, 1.15, 0.85],
+                memoryBias: 0.26
+            }
+        };
+
+        let currentEvolution = 'luminous';
+        let currentPreset = 'custom';
+        const exportHistory = [];
+        let sequenceTimer = null;
+        let sequenceIndex = 0;
+        let evolutionPhase = 0;
+        let evolutionMemory = 0.18;
+
+        const toastEl = document.getElementById('toast');
+        const evolutionLog = document.getElementById('evolutionLog');
+        const evolutionMemoEl = document.getElementById('evolutionMemo');
+
         let mouse = { x: 0, y: 0 };
         let frameCount = 0;
         let lastTime = 0;
+
+        function persistState() {
+            if (!storageAvailable) return;
+            const payload = {
+                params,
+                effects,
+                currentEvolution,
+                currentPreset,
+                evolutionPhase,
+                evolutionMemory,
+                sequenceIndex
+            };
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+            } catch (error) {
+                console.warn('Failed to persist codex state', error);
+            }
+        }
+
+        function syncEffectButtons() {
+            Object.keys(effects).forEach((key) => {
+                const toggle = document.getElementById(`${key}Toggle`);
+                if (toggle) {
+                    toggle.classList.toggle('active', effects[key]);
+                }
+            });
+            const overlay = document.getElementById('moireOverlay');
+            if (overlay) {
+                overlay.style.opacity = effects.moire ? '0.1' : '0';
+            }
+        }
+
+        function renderEvolutionMemo(context = 'active') {
+            if (!evolutionMemoEl) return;
+            const mode = evolutionModes[currentEvolution];
+            const label = mode ? mode.label : 'Unknown Evolution';
+            const imprint = evolutionMemory.toFixed(2);
+            const prefix = context === 'restored' ? 'Memory imprint restored' : 'Memory imprint';
+            evolutionMemoEl.textContent = `${prefix}: ${label} (${imprint})`;
+        }
+
+        function showToast(message) {
+            if (!toastEl) return;
+            toastEl.textContent = message;
+            toastEl.classList.add('show');
+            clearTimeout(showToast.timeout);
+            showToast.timeout = setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 2200);
+        }
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -174,7 +448,13 @@
             uniform float u_moireEnabled;
             uniform float u_pulseEnabled;
             uniform float u_layer2Opacity;
-            
+            uniform float u_feedback;
+            uniform float u_dimensionWarp;
+            uniform vec3 u_paletteShift;
+            uniform float u_evolutionPhase;
+            uniform vec3 u_evolutionVector;
+            uniform float u_memoryDrive;
+
             // 4D rotation matrices
             mat4 rotateXY(float theta) {
                 float c = cos(theta);
@@ -198,7 +478,7 @@
             float morphingHypercubeLattice(vec4 p, float gridSize, float morphFactor) {
                 // Base grid
                 vec4 grid = abs(fract(p / gridSize) - 0.5);
-                
+
                 // Morphing distortion
                 vec4 morph = vec4(
                     sin(p.y * 3.0 + u_time * u_speed) * morphFactor * 0.1,
@@ -219,9 +499,9 @@
             // Advanced RGB color separation
             vec3 advancedRGBSplit(vec3 baseColor, vec2 uv, float intensity) {
                 if (u_rgbEnabled < 0.5) return baseColor;
-                
+
                 vec2 offset1 = vec2(intensity * 0.02 * sin(u_time * u_speed * 8.0), 0.0);
-                vec2 offset2 = vec2(-intensity * 0.015 * cos(u_time * u_speed * 6.0), 
+                vec2 offset2 = vec2(-intensity * 0.015 * cos(u_time * u_speed * 6.0),
                                    intensity * 0.01 * sin(u_time * u_speed * 12.0));
                 
                 // Separate RGB channels with different offsets
@@ -239,9 +519,9 @@
             // Complex moiré interference patterns
             float complexMoirePattern(vec2 uv, vec4 p4d, float intensity) {
                 if (u_moireEnabled < 0.5) return 0.0;
-                
+
                 // Multiple overlapping patterns
-                float pattern1 = sin(uv.x * 60.0 * (1.0 + intensity)) * 
+                float pattern1 = sin(uv.x * 60.0 * (1.0 + intensity)) *
                                sin(uv.y * 60.0 * (1.0 + intensity));
                                
                 float pattern2 = sin((uv.x + uv.y) * 40.0 * (1.0 + intensity * 0.7)) *
@@ -261,7 +541,7 @@
             vec3 glitchDistortion(vec3 color, vec2 uv, float intensity) {
                 // Digital noise
                 float noise = fract(sin(dot(uv + u_time * u_speed * 0.1, vec2(12.9898, 78.233))) * 43758.5453);
-                
+
                 // Scanline effects
                 float scanline = sin(uv.y * 800.0 + u_time * u_speed * 10.0) * intensity * 0.1;
                 
@@ -277,53 +557,56 @@
 
             vec3 renderLayer(vec2 uv, float time_offset) {
                 vec2 coord = (uv - 0.5) * 2.0;
-                
+
                 // Mouse influence
                 vec2 mouse = u_mouse / u_resolution;
                 float mouseInfluence = length(mouse - 0.5) * 2.0;
                 coord += (mouse - 0.5) * 0.3;
-                
+
                 // Create 4D space with enhanced time evolution
                 vec4 p4d = vec4(
-                    coord, 
-                    sin(u_time * u_speed * 0.4 + mouseInfluence + time_offset) + cos(u_time * u_speed * 0.6 + time_offset),
-                    cos(u_time * u_speed * 0.3 + mouseInfluence * 0.7 + time_offset) + sin(u_time * u_speed * 0.8 + time_offset)
+                    coord,
+                    sin(u_time * u_speed * 0.4 + mouseInfluence + time_offset) + cos(u_time * u_speed * 0.6 + time_offset) + u_feedback * 0.35,
+                    cos(u_time * u_speed * 0.3 + mouseInfluence * 0.7 + time_offset) + sin(u_time * u_speed * 0.8 + time_offset) + u_dimensionWarp * 0.28
                 );
-                
+
                 // Apply complex 4D rotations
-                p4d = rotateXY(u_time * u_speed * 0.15 + mouseInfluence * 0.5) * p4d;
-                p4d = rotateZW(u_time * u_speed * 0.12 + sin(u_time * u_speed * 0.3)) * p4d;
-                p4d = rotateXW(u_time * u_speed * 0.08 + cos(u_time * u_speed * 0.4)) * p4d;
-                
+                float evolutionSpin = u_time * u_speed * mix(0.12, 0.35, u_evolutionPhase);
+                p4d = rotateXY(evolutionSpin + mouseInfluence * 0.5) * p4d;
+                p4d = rotateZW(u_time * u_speed * 0.12 + sin(u_time * u_speed * 0.3 + u_evolutionPhase * 6.283)) * p4d;
+                p4d = rotateXW(u_time * u_speed * 0.08 + cos(u_time * u_speed * 0.4 + u_evolutionPhase * 4.712)) * p4d;
+
                 // Generate morphing hypercube lattice
-                float lattice = morphingHypercubeLattice(p4d, u_density, u_morph);
-                
+                float lattice = morphingHypercubeLattice(p4d, u_density, u_morph + u_evolutionPhase * 0.8 + u_memoryDrive * 0.6);
+
                 // Enhanced color palette
-                vec3 color1 = vec3(0.0, 1.0, 1.0);   // Cyan
-                vec3 color2 = vec3(1.0, 0.0, 1.0);   // Magenta  
-                vec3 color3 = vec3(1.0, 1.0, 0.0);   // Yellow
-                vec3 color4 = vec3(0.5, 0.0, 1.0);   // Purple
-                
+                vec3 color1 = vec3(0.0, 1.0, 1.0) * u_paletteShift.r;
+                vec3 color2 = vec3(1.0, 0.0, 1.0) * u_paletteShift.g;
+                vec3 color3 = vec3(1.0, 1.0, 0.0) * (0.6 + u_evolutionPhase * 0.6 + u_memoryDrive * 0.3);
+                vec3 color4 = vec3(0.5, 0.0, 1.0) * (0.7 + u_paletteShift.b * 0.4 + u_evolutionVector.z * 0.2);
+
                 // Dynamic color mixing based on 4D position and time
-                float colorMix1 = sin(p4d.z + u_time * u_speed * 0.7) * 0.5 + 0.5;
-                float colorMix2 = cos(p4d.w + u_time * u_speed * 0.5) * 0.5 + 0.5;
-                float colorMix3 = sin(mouseInfluence + u_time * u_speed) * 0.5 + 0.5;
-                
+                float colorMix1 = sin(p4d.z + u_time * u_speed * (0.7 + u_evolutionPhase)) * 0.5 + 0.5;
+                float colorMix2 = cos(p4d.w + u_time * u_speed * (0.5 + u_evolutionPhase * 0.5)) * 0.5 + 0.5;
+                float colorMix3 = sin(mouseInfluence + u_time * u_speed + u_evolutionPhase * 1.5 + u_memoryDrive * 1.2) * 0.5 + 0.5;
+                float colorMix4 = sin(dot(p4d.xy, u_evolutionVector.xy) * 3.2 + u_time * u_speed * 0.6) * 0.5 + 0.5;
+
                 vec3 baseColor = mix(
                     mix(color1, color2, colorMix1),
                     mix(color3, color4, colorMix2),
                     colorMix3
                 );
-                
+                baseColor = mix(baseColor, vec3(u_evolutionVector), colorMix4 * (0.25 + u_memoryDrive * 0.3));
+
                 // Apply lattice
                 baseColor *= lattice;
-                
+
                 // Pulse effect
                 if (u_pulseEnabled > 0.5) {
-                    float pulse = sin(u_time * u_speed * 3.0) * 0.3 + 0.7;
+                    float pulse = sin(u_time * u_speed * 3.0 + u_evolutionPhase * 6.283) * 0.3 + 0.7 + u_feedback * 0.2;
                     baseColor *= pulse;
                 }
-                
+
                 // Add moiré patterns
                 float moire = complexMoirePattern(uv, p4d, u_moireIntensity);
                 baseColor += vec3(moire);
@@ -336,15 +619,15 @@
                 
                 // Mouse interaction glow
                 float mouseDist = length(uv - mouse);
-                baseColor += exp(-mouseDist * 6.0) * 0.2 * vec3(1.0, 0.5, 1.0);
-                
+                baseColor += exp(-mouseDist * 6.0) * (0.2 + u_feedback * 0.1) * vec3(1.0, 0.5, 1.0);
+
                 // Depth-based intensity variation
-                float depth4d = (sin(p4d.z * 1.5) + cos(p4d.w * 1.2)) * 0.25 + 0.75;
+                float depth4d = (sin(p4d.z * (1.5 + u_dimensionWarp)) + cos(p4d.w * (1.2 + u_dimensionWarp * 0.5))) * 0.25 + 0.75;
                 baseColor *= depth4d;
-                
+
                 // Final intensity adjustment
-                baseColor *= 0.2 + lattice * 0.8;
-                
+                baseColor *= 0.2 + lattice * (0.6 + u_evolutionPhase * 0.4);
+
                 // Subtle vignette
                 float vignette = 1.0 - length(coord) * 0.3;
                 baseColor *= vignette;
@@ -403,7 +686,13 @@
             rgbEnabled: gl.getUniformLocation(program, 'u_rgbEnabled'),
             moireEnabled: gl.getUniformLocation(program, 'u_moireEnabled'),
             pulseEnabled: gl.getUniformLocation(program, 'u_pulseEnabled'),
-            layer2Opacity: gl.getUniformLocation(program, 'u_layer2Opacity')
+            layer2Opacity: gl.getUniformLocation(program, 'u_layer2Opacity'),
+            feedback: gl.getUniformLocation(program, 'u_feedback'),
+            dimensionWarp: gl.getUniformLocation(program, 'u_dimensionWarp'),
+            paletteShift: gl.getUniformLocation(program, 'u_paletteShift'),
+            evolutionPhase: gl.getUniformLocation(program, 'u_evolutionPhase'),
+            evolutionVector: gl.getUniformLocation(program, 'u_evolutionVector'),
+            memoryDrive: gl.getUniformLocation(program, 'u_memoryDrive')
         };
 
         // Event handlers
@@ -413,13 +702,31 @@
         });
 
         // Slider setup
+        function logSnapshot(source, detail = {}) {
+            const snapshot = {
+                timestamp: new Date().toISOString(),
+                source,
+                preset: currentPreset,
+                params: { ...params },
+                effects: { ...effects },
+                detail
+            };
+            exportHistory.push(snapshot);
+            if (exportHistory.length > 30) {
+                exportHistory.shift();
+            }
+            persistState();
+        }
+
         function setupSlider(id, param, valueId) {
             const slider = document.getElementById(id);
             const valueDisplay = document.getElementById(valueId);
-            
+
             slider.addEventListener('input', (e) => {
                 params[param] = parseFloat(e.target.value);
                 valueDisplay.textContent = params[param].toFixed(1);
+                currentPreset = 'custom';
+                logSnapshot(`slider:${param}`, { value: params[param] });
             });
         }
 
@@ -433,21 +740,25 @@
 
         // Preset configurations
         window.setPreset = function(preset) {
+            const base = { feedback: params.feedback, dimensionWarp: params.dimensionWarp };
             switch(preset) {
                 case 'hypercube':
-                    params = {density: 1.0, morph: 0.5, rgb: 0.3, moireIntensity: 0.4, glitch: 0.2, speed: 1.0, layer2Opacity: 0.5};
+                    params = { ...params, ...base, density: 1.0, morph: 0.5, rgb: 0.3, moireIntensity: 0.4, glitch: 0.2, speed: 1.0, layer2Opacity: 0.5 };
                     break;
                 case 'chaos':
-                    params = {density: 2.5, morph: 1.8, rgb: 0.8, moireIntensity: 0.9, glitch: 0.7, speed: 2.5, layer2Opacity: 0.7};
+                    params = { ...params, ...base, density: 2.5, morph: 1.8, rgb: 0.8, moireIntensity: 0.9, glitch: 0.7, speed: 2.5, layer2Opacity: 0.7 };
                     break;
                 case 'minimal':
-                    params = {density: 0.5, morph: 0.1, rgb: 0.1, moireIntensity: 0.2, glitch: 0.0, speed: 0.5, layer2Opacity: 0.3};
+                    params = { ...params, ...base, density: 0.5, morph: 0.1, rgb: 0.1, moireIntensity: 0.2, glitch: 0.0, speed: 0.5, layer2Opacity: 0.3 };
                     break;
                 case 'extreme':
-                    params = {density: 3.0, morph: 2.0, rgb: 1.0, moireIntensity: 1.0, glitch: 1.0, speed: 4.0, layer2Opacity: 1.0};
+                    params = { ...params, ...base, density: 3.0, morph: 2.0, rgb: 1.0, moireIntensity: 1.0, glitch: 1.0, speed: 4.0, layer2Opacity: 1.0 };
                     break;
             }
+            currentPreset = preset;
             updateSliders();
+            logSnapshot(`preset:${preset}`, { density: params.density, morph: params.morph });
+            renderEvolutionMemo();
         };
 
         function updateSliders() {
@@ -465,10 +776,12 @@
         window.toggleEffect = function(effect) {
             effects[effect] = !effects[effect];
             document.getElementById(effect + 'Toggle').classList.toggle('active', effects[effect]);
-            
+
             if (effect === 'moire') {
                 document.getElementById('moireOverlay').style.opacity = effects[effect] ? '0.1' : '0';
             }
+            logSnapshot(`toggle:${effect}`, { active: effects[effect] });
+            syncEffectButtons();
         };
 
         // FPS counter
@@ -484,7 +797,9 @@
 
         function animate(time) {
             updateFPS(time);
-            
+
+            evolutionMemory = Math.max(0.05, evolutionMemory * 0.995 + (effects.pulse ? 0.0025 : 0.0008));
+
             gl.uniform1f(uniforms.time, time * 0.001);
             gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
             gl.uniform2f(uniforms.mouse, mouse.x, mouse.y);
@@ -498,13 +813,29 @@
             gl.uniform1f(uniforms.moireEnabled, effects.moire ? 1.0 : 0.0);
             gl.uniform1f(uniforms.pulseEnabled, effects.pulse ? 1.0 : 0.0);
             gl.uniform1f(uniforms.layer2Opacity, params.layer2Opacity);
-            
+            gl.uniform1f(uniforms.feedback, params.feedback);
+            gl.uniform1f(uniforms.dimensionWarp, params.dimensionWarp);
+            gl.uniform3f(uniforms.paletteShift, ...activePaletteShift());
+            gl.uniform1f(uniforms.evolutionPhase, evolutionPhase);
+            gl.uniform3f(uniforms.evolutionVector, ...activeEvolutionVector());
+            gl.uniform1f(uniforms.memoryDrive, evolutionMemory);
+
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
             requestAnimationFrame(animate);
         }
-        
+
         animate(0);
-        
+
+        function activePaletteShift() {
+            const mode = evolutionModes[currentEvolution];
+            return mode ? mode.paletteShift : [1, 1, 1];
+        }
+
+        function activeEvolutionVector() {
+            const mode = evolutionModes[currentEvolution];
+            return mode && mode.vector ? mode.vector : [0.5, 0.5, 0.5];
+        }
+
         // Export function for Hypercube Codex
         function exportCodex() {
             const exportData = {
@@ -513,9 +844,13 @@
                 activeEffects: { ...effects },
                 canvasSize: { width: canvas.width, height: canvas.height },
                 hypercubeType: 'Moire Pattern System',
-                version: '1.0'
+                preset: currentPreset,
+                currentEvolution,
+                evolutionMemory,
+                history: [...exportHistory.slice(-10)],
+                version: '1.2'
             };
-            
+
             // Create downloadable JSON
             const dataStr = JSON.stringify(exportData, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -528,27 +863,219 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            
+
             console.log('🎯 Hypercube Codex exported successfully');
+            showToast('Hypercube Codex exported as JSON');
+            updateExportMeta('JSON export ready');
         }
-        
-        // Add export button to any existing controls
-        if (document.querySelector('.control-panel')) {
-            const exportBtn = document.createElement('button');
-            exportBtn.textContent = 'Export Codex';
-            exportBtn.onclick = exportCodex;
-            exportBtn.style.cssText = `
-                background: linear-gradient(45deg, #ff0080, #00ffff);
-                border: none;
-                color: white;
-                padding: 10px 20px;
-                margin: 5px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-family: 'Orbitron', monospace;
-            `;
-            document.querySelector('.control-panel').appendChild(exportBtn);
+        function captureSnapshot() {
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `hypercube-codex-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('PNG snapshot captured');
+            updateExportMeta('PNG snapshot saved');
         }
+
+        async function copyCodexToClipboard() {
+            const payload = {
+                params: { ...params },
+                effects: { ...effects },
+                preset: currentPreset,
+                currentEvolution,
+                evolutionMemory
+            };
+            try {
+                await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+                showToast('Codex settings copied to clipboard');
+                updateExportMeta('Settings copied');
+            } catch (error) {
+                console.warn('Clipboard copy failed', error);
+                showToast('Clipboard copy unavailable');
+            }
+        }
+
+        function updateExportMeta(message) {
+            const meta = document.getElementById('exportMeta');
+            if (!meta) return;
+            const now = new Date();
+            meta.textContent = `${message} • ${now.toLocaleTimeString()}`;
+        }
+
+        function setEvolution(mode, options = {}) {
+            if (!evolutionModes[mode]) return;
+            const { silent = false, phase = null } = options;
+            currentEvolution = mode;
+            const config = evolutionModes[mode];
+            params.feedback = config.feedback;
+            params.dimensionWarp = config.dimensionWarp;
+            params.morph = Math.min(5, config.morphBias);
+            document.getElementById('morph').value = params.morph;
+            document.getElementById('morphVal').textContent = params.morph.toFixed(1);
+            document.querySelectorAll('.evolution-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.evolution === mode);
+            });
+            if (phase !== null) {
+                evolutionPhase = phase;
+            } else if (!silent) {
+                evolutionPhase = (evolutionPhase + 0.12) % 1.0;
+            }
+            if (!silent) {
+                evolutionMemory = Math.min(1, evolutionMemory + (config.memoryBias || 0.1));
+                logSnapshot(`evolution:${mode}`, { memory: evolutionMemory });
+                appendEvolutionLog(`→ ${config.label} loaded`);
+                renderEvolutionMemo();
+            } else {
+                renderEvolutionMemo('restored');
+            }
+            persistState();
+        }
+
+        function appendEvolutionLog(message) {
+            const now = new Date();
+            const stamp = now.toLocaleTimeString();
+            evolutionLog.textContent = `${stamp} ${message}\n${evolutionLog.textContent}`.slice(0, 220);
+        }
+
+        function runSequenceStep() {
+            const modes = Object.keys(evolutionModes);
+            const nextMode = modes[sequenceIndex % modes.length];
+            setEvolution(nextMode);
+            params.speed = 1.4 + Math.sin(sequenceIndex * 0.6) * 0.4;
+            document.getElementById('speed').value = params.speed;
+            document.getElementById('speedVal').textContent = params.speed.toFixed(1);
+            params.layer2Opacity = 0.4 + ((sequenceIndex % 3) * 0.2);
+            document.getElementById('layer2Opacity').value = params.layer2Opacity;
+            document.getElementById('layer2OpacityVal').textContent = params.layer2Opacity.toFixed(1);
+            evolutionPhase = (sequenceIndex * 0.17) % 1.0;
+            logSnapshot('sequence-step', { evolution: nextMode, index: sequenceIndex });
+            appendEvolutionLog(`cycling ${evolutionModes[nextMode].label}`);
+            sequenceIndex += 1;
+        }
+
+        function startEvolutionCycle() {
+            stopEvolutionCycle();
+            appendEvolutionLog('Evolution cycle initiated.');
+            runSequenceStep();
+            sequenceTimer = setInterval(() => {
+                evolutionPhase = (evolutionPhase + 0.12) % 1.0;
+                runSequenceStep();
+            }, 4200);
+        }
+
+        function stopEvolutionCycle() {
+            if (sequenceTimer) {
+                clearInterval(sequenceTimer);
+                sequenceTimer = null;
+            }
+        }
+
+        function triggerPulseBurst() {
+            evolutionPhase = Math.random();
+            params.feedback = 0.45 + Math.random() * 0.35;
+            params.dimensionWarp = 0.4 + Math.random() * 0.7;
+            document.getElementById('density').value = params.density = 0.7 + Math.random() * 1.2;
+            document.getElementById('densityVal').textContent = params.density.toFixed(1);
+            evolutionMemory = Math.min(1, evolutionMemory + 0.1);
+            renderEvolutionMemo();
+            logSnapshot('pulse-burst', { evolutionPhase, memory: evolutionMemory });
+            appendEvolutionLog('Pulse burst triggered.');
+            showToast('Pulse burst injected into lattice');
+        }
+
+        function resetEvolution() {
+            stopEvolutionCycle();
+            currentEvolution = 'luminous';
+            params.feedback = 0.35;
+            params.dimensionWarp = 0.6;
+            document.getElementById('density').value = params.density = 1.0;
+            document.getElementById('densityVal').textContent = params.density.toFixed(1);
+            document.getElementById('layer2Opacity').value = params.layer2Opacity = 0.5;
+            document.getElementById('layer2OpacityVal').textContent = params.layer2Opacity.toFixed(1);
+            document.querySelectorAll('.evolution-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.evolution === 'luminous');
+            });
+            evolutionLog.textContent = 'Evolution reset to luminous weave.';
+            evolutionMemory = 0.2;
+            renderEvolutionMemo();
+            logSnapshot('evolution-reset');
+        }
+
+        function restoreState() {
+            updateSliders();
+            syncEffectButtons();
+            if (!storageAvailable) {
+                renderEvolutionMemo('active');
+                return false;
+            }
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) {
+                renderEvolutionMemo('active');
+                return false;
+            }
+            try {
+                const saved = JSON.parse(raw);
+                if (saved.params) {
+                    params = { ...params, ...saved.params };
+                }
+                if (saved.effects) {
+                    effects = { ...effects, ...saved.effects };
+                }
+                if (saved.currentPreset) {
+                    currentPreset = saved.currentPreset;
+                }
+                if (typeof saved.evolutionPhase === 'number') {
+                    evolutionPhase = saved.evolutionPhase;
+                }
+                if (typeof saved.evolutionMemory === 'number') {
+                    evolutionMemory = saved.evolutionMemory;
+                }
+                if (typeof saved.sequenceIndex === 'number') {
+                    sequenceIndex = saved.sequenceIndex;
+                }
+                if (saved.currentEvolution && evolutionModes[saved.currentEvolution]) {
+                    currentEvolution = saved.currentEvolution;
+                }
+                updateSliders();
+                syncEffectButtons();
+                setEvolution(currentEvolution, { silent: true, phase: evolutionPhase });
+                appendEvolutionLog('↺ Codex state restored from quantum memory.');
+                renderEvolutionMemo('restored');
+                return true;
+            } catch (error) {
+                console.warn('Failed to restore codex state', error);
+                renderEvolutionMemo('active');
+                return false;
+            }
+        }
+
+        const exportCodexBtn = document.getElementById('exportCodexBtn');
+        const capturePngBtn = document.getElementById('capturePngBtn');
+        const copyCodexBtn = document.getElementById('copyCodexBtn');
+        const sequenceBtn = document.getElementById('sequenceBtn');
+        const pulseSequenceBtn = document.getElementById('pulseSequenceBtn');
+        const resetEvolutionBtn = document.getElementById('resetEvolutionBtn');
+
+        exportCodexBtn?.addEventListener('click', exportCodex);
+        capturePngBtn?.addEventListener('click', captureSnapshot);
+        copyCodexBtn?.addEventListener('click', copyCodexToClipboard);
+        sequenceBtn?.addEventListener('click', startEvolutionCycle);
+        pulseSequenceBtn?.addEventListener('click', triggerPulseBurst);
+        resetEvolutionBtn?.addEventListener('click', resetEvolution);
+
+        const stateRestored = restoreState();
+        if (!stateRestored) {
+            setEvolution('luminous', { silent: true, phase: evolutionPhase });
+            appendEvolutionLog('Luminous weave primed.');
+            renderEvolutionMemo();
+            persistState();
+        }
+        const initSource = stateRestored ? 'init-restored' : 'init-seeded';
+        logSnapshot(initSource, { restored: stateRestored, memory: evolutionMemory });
     </script>
     
     <!-- Add collapsible menu system -->
