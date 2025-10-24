@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Board Overlay - Cousin of Grid Overlay</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a2e0a;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            padding: 40px 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* PCB TEXTURE BACKGROUND */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                repeating-linear-gradient(0deg, transparent, transparent 9px, rgba(0, 255, 100, 0.03) 9px, rgba(0, 255, 100, 0.03) 10px),
+                repeating-linear-gradient(90deg, transparent, transparent 9px, rgba(0, 255, 100, 0.03) 9px, rgba(0, 255, 100, 0.03) 10px);
+            z-index: -2;
+        }
+
+        .container {
+            max-width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Rajdhani', sans-serif;
+            color: #00ff66;
+            font-size: 3rem;
+            text-align: center;
+            margin: 0;
+            text-shadow:
+                0 0 20px rgba(0, 255, 102, 0.8),
+                0 0 40px rgba(0, 255, 102, 0.4);
+            letter-spacing: 8px;
+            z-index: 100;
+        }
+
+        .subtitle {
+            position: fixed;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: rgba(0, 255, 102, 0.7);
+            font-size: 0.9rem;
+            margin: 0;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            z-index: 100;
+        }
+
+        /* PCB BOARD */
+        .pcb-board {
+            position: relative;
+            width: 90vw;
+            height: 70vh;
+            max-width: 1200px;
+            background:
+                radial-gradient(circle at 30% 40%, rgba(0, 100, 50, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(0, 80, 40, 0.2) 0%, transparent 50%),
+                linear-gradient(135deg, #0a3a0a 0%, #0a2e0a 100%);
+            border: 4px solid #00ff66;
+            box-shadow:
+                0 0 40px rgba(0, 255, 102, 0.3),
+                inset 0 0 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        /* CIRCUIT TRACES */
+        .trace {
+            position: absolute;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                #00ff66 20%,
+                #00ff66 80%,
+                transparent 100%);
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.6);
+            animation: currentFlow 3s ease-in-out infinite;
+        }
+
+        .trace-horizontal {
+            height: 3px;
+        }
+
+        .trace-vertical {
+            width: 3px;
+        }
+
+        @keyframes currentFlow {
+            0%, 100% {
+                opacity: 0.6;
+                filter: brightness(1);
+            }
+            50% {
+                opacity: 1;
+                filter: brightness(1.5);
+            }
+        }
+
+        /* SOLDER PADS */
+        .solder-pad {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(circle, #00ff66 0%, #00cc52 70%, #008833 100%);
+            border-radius: 50%;
+            border: 2px solid #00ff66;
+            box-shadow:
+                0 0 15px rgba(0, 255, 102, 0.8),
+                inset 0 2px 5px rgba(255, 255, 255, 0.3);
+            animation: padGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes padGlow {
+            0%, 100% {
+                box-shadow:
+                    0 0 15px rgba(0, 255, 102, 0.8),
+                    inset 0 2px 5px rgba(255, 255, 255, 0.3);
+            }
+            50% {
+                box-shadow:
+                    0 0 25px rgba(0, 255, 102, 1),
+                    0 0 40px rgba(0, 255, 102, 0.5),
+                    inset 0 2px 5px rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        /* INTEGRATED CIRCUITS (IC CHIPS) */
+        .ic-chip {
+            position: absolute;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            border: 3px solid #00ff66;
+            box-shadow:
+                0 0 20px rgba(0, 255, 102, 0.4),
+                inset 0 0 20px rgba(0, 255, 102, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .ic-label {
+            color: #00ff66;
+            font-size: 0.7rem;
+            text-align: center;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .ic-pins {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .ic-pin {
+            width: 3px;
+            height: 12px;
+            background: #00ff66;
+            box-shadow: 0 0 5px rgba(0, 255, 102, 0.8);
+        }
+
+        /* RESISTORS */
+        .resistor {
+            position: absolute;
+            width: 40px;
+            height: 15px;
+            background:
+                repeating-linear-gradient(90deg,
+                    #ff6600 0px, #ff6600 5px,
+                    #ffaa00 5px, #ffaa00 10px,
+                    #ff6600 10px, #ff6600 15px,
+                    #884400 15px, #884400 20px);
+            border: 2px solid #663300;
+            border-radius: 3px;
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+        }
+
+        .resistor::before,
+        .resistor::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 2px;
+            background: #00ff66;
+            box-shadow: 0 0 5px rgba(0, 255, 102, 0.8);
+        }
+
+        .resistor::before {
+            left: -10px;
+        }
+
+        .resistor::after {
+            right: -10px;
+        }
+
+        /* CAPACITORS */
+        .capacitor {
+            position: absolute;
+            width: 25px;
+            height: 35px;
+            background: radial-gradient(circle, #3366ff 0%, #1144cc 100%);
+            border: 2px solid #0044aa;
+            border-radius: 3px 3px 12px 12px;
+            box-shadow: 0 0 15px rgba(51, 102, 255, 0.6);
+        }
+
+        .capacitor::before {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 10px;
+            background: #00ff66;
+            box-shadow: 0 0 5px rgba(0, 255, 102, 0.8);
+        }
+
+        .capacitor-label {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #3366ff;
+            font-size: 0.6rem;
+            white-space: nowrap;
+        }
+
+        /* LEDS */
+        .led {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #ff0066 0%, #cc0044 100%);
+            border-radius: 50%;
+            border: 2px solid #990033;
+            animation: ledBlink 1.5s ease-in-out infinite;
+        }
+
+        @keyframes ledBlink {
+            0%, 100% {
+                box-shadow:
+                    0 0 10px rgba(255, 0, 102, 0.5),
+                    inset 0 2px 5px rgba(255, 255, 255, 0.2);
+            }
+            50% {
+                box-shadow:
+                    0 0 30px rgba(255, 0, 102, 1),
+                    0 0 50px rgba(255, 0, 102, 0.6),
+                    inset 0 2px 5px rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        /* VIA HOLES */
+        .via {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, #666 0%, #333 100%);
+            border: 2px solid #00ff66;
+            border-radius: 50%;
+            box-shadow:
+                inset 0 2px 3px rgba(0, 0, 0, 0.8),
+                0 0 10px rgba(0, 255, 102, 0.4);
+        }
+
+        /* COMPONENT LABELS */
+        .component-label {
+            position: absolute;
+            color: #00ff66;
+            font-size: 0.7rem;
+            text-shadow: 0 0 5px rgba(0, 255, 102, 0.8);
+            pointer-events: none;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* GROUND PLANE AREA */
+        .ground-plane {
+            position: absolute;
+            background:
+                repeating-linear-gradient(45deg,
+                    transparent 0px,
+                    transparent 5px,
+                    rgba(0, 255, 102, 0.05) 5px,
+                    rgba(0, 255, 102, 0.05) 10px);
+            border: 2px dashed rgba(0, 255, 102, 0.3);
+            opacity: 0.5;
+        }
+
+        /* SIGNAL PULSES */
+        .signal-pulse {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle, rgba(0, 255, 255, 1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: signalMove 3s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes signalMove {
+            0% {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(200px) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* INFO BADGE */
+        .info-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 30, 0, 0.9);
+            border: 3px solid #00ff66;
+            border-radius: 8px;
+            padding: 12px 20px;
+            color: #00ff66;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.3);
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        /* POWER INDICATOR */
+        .power-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 30, 0, 0.9);
+            border: 3px solid #00ff66;
+            border-radius: 8px;
+            padding: 15px 20px;
+            color: #00ff66;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.3);
+        }
+
+        .power-led {
+            width: 12px;
+            height: 12px;
+            background: #00ff66;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 1);
+            animation: powerPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes powerPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            .pcb-board {
+                width: 95vw;
+                height: 80vh;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .info-badge,
+            .power-indicator {
+                font-size: 0.7rem;
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="info-badge">
+        ⚡ COUSIN OF: GRID OVERLAY ⚡
+    </div>
+
+    <div class="power-indicator">
+        <span class="power-led"></span>
+        SYSTEM POWERED • 5V DC • 2.4A
+    </div>
+
+    <h1>⚡ CIRCUIT BOARD ⚡</h1>
+    <div class="subtitle">PCB Design • Electronic Pathways • Signal Flow</div>
+
+    <div class="container">
+        <div class="pcb-board" id="pcbBoard">
+            <!-- Components will be generated by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        const board = document.getElementById('pcbBoard');
+        const boardWidth = board.offsetWidth;
+        const boardHeight = board.offsetHeight;
+
+        // Generate horizontal traces
+        for (let i = 0; i < 12; i++) {
+            const trace = document.createElement('div');
+            trace.className = 'trace trace-horizontal';
+            trace.style.top = (i * (boardHeight / 12)) + 'px';
+            trace.style.left = '0';
+            trace.style.width = '100%';
+            trace.style.animationDelay = (i * 0.2) + 's';
+            board.appendChild(trace);
+        }
+
+        // Generate vertical traces
+        for (let i = 0; i < 15; i++) {
+            const trace = document.createElement('div');
+            trace.className = 'trace trace-vertical';
+            trace.style.left = (i * (boardWidth / 15)) + 'px';
+            trace.style.top = '0';
+            trace.style.height = '100%';
+            trace.style.animationDelay = (i * 0.15) + 's';
+            board.appendChild(trace);
+        }
+
+        // Generate solder pads at intersections
+        for (let i = 1; i < 12; i += 2) {
+            for (let j = 1; j < 15; j += 2) {
+                const pad = document.createElement('div');
+                pad.className = 'solder-pad';
+                pad.style.top = (i * (boardHeight / 12) - 7.5) + 'px';
+                pad.style.left = (j * (boardWidth / 15) - 7.5) + 'px';
+                pad.style.animationDelay = ((i + j) * 0.1) + 's';
+                board.appendChild(pad);
+            }
+        }
+
+        // Generate IC chips
+        const icPositions = [
+            {x: 20, y: 15, label: 'ATmega328P'},
+            {x: 60, y: 40, label: 'ESP8266'},
+            {x: 25, y: 70, label: 'STM32F4'}
+        ];
+
+        icPositions.forEach(pos => {
+            const ic = document.createElement('div');
+            ic.className = 'ic-chip';
+            ic.style.left = pos.x + '%';
+            ic.style.top = pos.y + '%';
+
+            const label = document.createElement('div');
+            label.className = 'ic-label';
+            label.textContent = pos.label;
+
+            const pins = document.createElement('div');
+            pins.className = 'ic-pins';
+
+            for (let i = 0; i < 8; i++) {
+                const pin = document.createElement('div');
+                pin.className = 'ic-pin';
+                pins.appendChild(pin);
+            }
+
+            ic.appendChild(label);
+            ic.appendChild(pins);
+            board.appendChild(ic);
+        });
+
+        // Generate resistors
+        for (let i = 0; i < 15; i++) {
+            const resistor = document.createElement('div');
+            resistor.className = 'resistor';
+            resistor.style.left = (Math.random() * 90 + 5) + '%';
+            resistor.style.top = (Math.random() * 90 + 5) + '%';
+            resistor.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+            const label = document.createElement('div');
+            label.className = 'component-label';
+            label.textContent = `R${i + 1}`;
+            label.style.left = resistor.style.left;
+            label.style.top = `calc(${resistor.style.top} - 15px)`;
+
+            board.appendChild(resistor);
+            board.appendChild(label);
+        }
+
+        // Generate capacitors
+        for (let i = 0; i < 10; i++) {
+            const capacitor = document.createElement('div');
+            capacitor.className = 'capacitor';
+            capacitor.style.left = (Math.random() * 90 + 5) + '%';
+            capacitor.style.top = (Math.random() * 90 + 5) + '%';
+
+            const label = document.createElement('div');
+            label.className = 'capacitor-label';
+            label.textContent = `C${i + 1}`;
+            capacitor.appendChild(label);
+
+            board.appendChild(capacitor);
+        }
+
+        // Generate LEDs
+        const ledColors = ['#ff0066', '#00ff66', '#ff6600', '#0066ff', '#ffff00'];
+        for (let i = 0; i < 8; i++) {
+            const led = document.createElement('div');
+            led.className = 'led';
+            led.style.left = (Math.random() * 90 + 5) + '%';
+            led.style.top = (Math.random() * 90 + 5) + '%';
+            led.style.background = `radial-gradient(circle, ${ledColors[i % ledColors.length]} 0%, ${ledColors[i % ledColors.length]}aa 100%)`;
+            led.style.animationDelay = (i * 0.2) + 's';
+
+            const label = document.createElement('div');
+            label.className = 'component-label';
+            label.textContent = `LED${i + 1}`;
+            label.style.left = led.style.left;
+            label.style.top = `calc(${led.style.top} + 25px)`;
+
+            board.appendChild(led);
+            board.appendChild(label);
+        }
+
+        // Generate vias
+        for (let i = 0; i < 40; i++) {
+            const via = document.createElement('div');
+            via.className = 'via';
+            via.style.left = (Math.random() * 95 + 2) + '%';
+            via.style.top = (Math.random() * 95 + 2) + '%';
+            board.appendChild(via);
+        }
+
+        // Generate ground planes
+        const groundPlanes = [
+            {x: 5, y: 5, w: 35, h: 25},
+            {x: 65, y: 60, w: 30, h: 30}
+        ];
+
+        groundPlanes.forEach((plane, idx) => {
+            const gnd = document.createElement('div');
+            gnd.className = 'ground-plane';
+            gnd.style.left = plane.x + '%';
+            gnd.style.top = plane.y + '%';
+            gnd.style.width = plane.w + '%';
+            gnd.style.height = plane.h + '%';
+            board.appendChild(gnd);
+
+            const label = document.createElement('div');
+            label.className = 'component-label';
+            label.textContent = 'GND';
+            label.style.left = `calc(${plane.x}% + 10px)`;
+            label.style.top = `calc(${plane.y}% + 10px)`;
+            board.appendChild(label);
+        });
+
+        // Generate signal pulses
+        setInterval(() => {
+            const pulse = document.createElement('div');
+            pulse.className = 'signal-pulse';
+            pulse.style.left = (Math.random() * 90) + '%';
+            pulse.style.top = (Math.random() * 90) + '%';
+            board.appendChild(pulse);
+
+            setTimeout(() => pulse.remove(), 3000);
+        }, 500);
+
+        // Component label positioning
+        const labels = ['VCC', '+5V', 'GND', 'SCL', 'SDA', 'TX', 'RX', 'RESET'];
+        labels.forEach((text, idx) => {
+            const label = document.createElement('div');
+            label.className = 'component-label';
+            label.textContent = text;
+            label.style.left = ((idx % 4) * 25 + 10) + '%';
+            label.style.top = (Math.floor(idx / 4) * 50 + 5) + '%';
+            board.appendChild(label);
+        });
+    </script>
+</body>
+</html>

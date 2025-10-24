@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dieselpunk Aesthetics - Cousin of Vaporwave</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Special+Elite&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background:
+                linear-gradient(rgba(20, 15, 10, 0.8), rgba(40, 30, 20, 0.9)),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.2) 2px, rgba(0, 0, 0, 0.2) 4px);
+            background-color: #1a1510;
+            font-family: 'Special Elite', monospace;
+            min-height: 100vh;
+            padding: 40px 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* STEAM/SMOKE EFFECTS */
+        .steam {
+            position: fixed;
+            bottom: -100px;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(200, 180, 150, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: rise linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rise {
+            0% {
+                bottom: -100px;
+                opacity: 0.7;
+                transform: translateX(0) scale(1);
+            }
+            100% {
+                bottom: 100vh;
+                opacity: 0;
+                transform: translateX(50px) scale(2);
+            }
+        }
+
+        /* GEAR DECORATIONS */
+        .gear {
+            position: fixed;
+            width: 100px;
+            height: 100px;
+            border: 8px solid #8b6f47;
+            border-radius: 50%;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .gear::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 60%;
+            border: 4px solid #8b6f47;
+            border-radius: 50%;
+        }
+
+        .gear::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20%;
+            height: 20%;
+            background: #8b6f47;
+            border-radius: 50%;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: #d4af37;
+            font-size: 5rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            text-shadow:
+                3px 3px 0 #8b6f47,
+                6px 6px 0 rgba(0, 0, 0, 0.5);
+            letter-spacing: 8px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #c9a961;
+            font-size: 1.3rem;
+            margin-bottom: 3rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+        }
+
+        /* INDUSTRIAL CARD */
+        .industrial-card {
+            background:
+                linear-gradient(135deg, rgba(70, 50, 30, 0.9), rgba(40, 30, 20, 0.9));
+            border: 6px solid #8b6f47;
+            border-radius: 0;
+            padding: 30px;
+            position: relative;
+            box-shadow:
+                inset 0 0 30px rgba(212, 175, 55, 0.1),
+                10px 10px 0 rgba(0, 0, 0, 0.3),
+                0 0 50px rgba(0, 0, 0, 0.5);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* RIVETS/BOLTS */
+        .industrial-card::before,
+        .industrial-card::after {
+            content: '⬤';
+            position: absolute;
+            color: #5a4a3a;
+            font-size: 1rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .industrial-card::before {
+            top: 15px;
+            left: 15px;
+        }
+
+        .industrial-card::after {
+            top: 15px;
+            right: 15px;
+        }
+
+        .rivet-bottom-left,
+        .rivet-bottom-right {
+            position: absolute;
+            bottom: 15px;
+            color: #5a4a3a;
+            font-size: 1rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .rivet-bottom-left {
+            left: 15px;
+        }
+
+        .rivet-bottom-right {
+            right: 15px;
+        }
+
+        .industrial-card:hover {
+            transform: translateY(-10px);
+            box-shadow:
+                inset 0 0 40px rgba(212, 175, 55, 0.2),
+                15px 15px 0 rgba(0, 0, 0, 0.4),
+                0 0 60px rgba(212, 175, 55, 0.3);
+            border-color: #d4af37;
+        }
+
+        /* BRASS PLATE HEADER */
+        .card-header {
+            background:
+                linear-gradient(135deg, #d4af37, #c9a961, #8b6f47);
+            padding: 20px;
+            margin: -30px -30px 25px -30px;
+            border-bottom: 4px solid #8b6f47;
+            text-align: center;
+            box-shadow:
+                inset 0 2px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .card-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            color: #2a1f15;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: #2a1f15;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .card-body {
+            padding: 20px 0;
+        }
+
+        .card-description {
+            color: #c9a961;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            font-size: 1rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+
+        /* STEAM PRESSURE GAUGE */
+        .pressure-gauge {
+            width: 150px;
+            height: 150px;
+            margin: 25px auto;
+            position: relative;
+            border: 8px solid #8b6f47;
+            border-radius: 50%;
+            background:
+                radial-gradient(circle, #3a2a1a 0%, #2a1f15 100%);
+            box-shadow:
+                inset 0 0 20px rgba(0, 0, 0, 0.7),
+                0 5px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .gauge-needle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 40%;
+            background: #d4af37;
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%) rotate(var(--angle, -45deg));
+            box-shadow: 0 0 5px #d4af37;
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .gauge-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #d4af37 0%, #8b6f47 100%);
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .gauge-numbers {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+        }
+
+        .gauge-number {
+            position: absolute;
+            color: #8b6f47;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        /* PIPE DECORATIONS */
+        .pipe-decoration {
+            height: 4px;
+            background:
+                linear-gradient(90deg,
+                    #8b6f47 0%,
+                    #d4af37 50%,
+                    #8b6f47 100%);
+            margin: 20px 0;
+            position: relative;
+            box-shadow:
+                0 2px 5px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .pipe-decoration::before,
+        .pipe-decoration::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #8b6f47;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .pipe-decoration::before {
+            left: -5px;
+        }
+
+        .pipe-decoration::after {
+            right: -5px;
+        }
+
+        /* MACHINERY STATS */
+        .machinery-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .stat-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border: 3px solid #8b6f47;
+            padding: 15px;
+            text-align: center;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .stat-label {
+            color: #8b6f47;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        .stat-value {
+            color: #d4af37;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        /* INDUSTRIAL BUTTON */
+        .industrial-btn {
+            width: 100%;
+            background:
+                linear-gradient(135deg, #8b6f47, #6a5537, #4a3a27);
+            border: 4px solid #d4af37;
+            padding: 18px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #d4af37;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow:
+                inset 0 2px 0 rgba(255, 255, 255, 0.2),
+                0 5px 10px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .industrial-btn::before {
+            content: '⚙';
+            position: absolute;
+            left: 20px;
+            font-size: 1.5rem;
+            animation: spin 4s linear infinite;
+        }
+
+        .industrial-btn::after {
+            content: '⚙';
+            position: absolute;
+            right: 20px;
+            font-size: 1.5rem;
+            animation: spin 4s linear infinite reverse;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .industrial-btn:hover {
+            background: linear-gradient(135deg, #a68a5a, #8b6f47, #6a5537);
+            box-shadow:
+                inset 0 2px 0 rgba(255, 255, 255, 0.3),
+                0 8px 15px rgba(212, 175, 55, 0.4);
+            transform: translateY(-3px);
+        }
+
+        .industrial-btn:active {
+            transform: translateY(0);
+            box-shadow:
+                inset 0 2px 0 rgba(0, 0, 0, 0.3),
+                0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* INFO PLATE */
+        .info-plate {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #d4af37, #c9a961);
+            border: 5px solid #8b6f47;
+            padding: 15px 30px;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #2a1f15;
+            letter-spacing: 2px;
+            box-shadow:
+                5px 5px 0 rgba(0, 0, 0, 0.3),
+                inset 0 2px 0 rgba(255, 255, 255, 0.3);
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 3rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .info-plate {
+                position: static;
+                margin-bottom: 20px;
+            }
+        }
+
+        /* VINTAGE PAPER TEXTURE */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.03) 2px, rgba(255, 255, 255, 0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255, 255, 255, 0.03) 2px, rgba(255, 255, 255, 0.03) 4px);
+            pointer-events: none;
+            opacity: 0.3;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Generate steam puffs -->
+    <script>
+        for (let i = 0; i < 10; i++) {
+            const steam = document.createElement('div');
+            steam.className = 'steam';
+            steam.style.left = Math.random() * 100 + '%';
+            steam.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            steam.style.animationDelay = Math.random() * 5 + 's';
+            document.body.appendChild(steam);
+        }
+
+        // Generate gears
+        for (let i = 0; i < 8; i++) {
+            const gear = document.createElement('div');
+            gear.className = 'gear';
+            gear.style.top = Math.random() * 100 + '%';
+            gear.style.left = Math.random() * 100 + '%';
+            gear.style.transform = `rotate(${Math.random() * 360}deg)`;
+            document.body.appendChild(gear);
+        }
+    </script>
+
+    <div class="info-plate">
+        ⚙ COUSIN OF: VAPORWAVE ⚙
+    </div>
+
+    <div class="container">
+        <h1>⚙ DIESELPUNK ⚙</h1>
+        <div class="subtitle">Industrial Revolution • Steam Power • Brass Age</div>
+
+        <div class="grid">
+            <!-- Card 1 -->
+            <div class="industrial-card">
+                <span class="rivet-bottom-left">⬤</span>
+                <span class="rivet-bottom-right">⬤</span>
+
+                <div class="card-header">
+                    <div class="card-number">I</div>
+                    <div class="card-title">Steam Engine</div>
+                </div>
+
+                <div class="card-body">
+                    <div class="card-description">
+                        Powered by pressurized steam and mechanical ingenuity. Bronze pistons drive copper gears in perpetual industrial motion.
+                    </div>
+
+                    <div class="pressure-gauge">
+                        <div class="gauge-needle" style="--angle: 45deg;"></div>
+                        <div class="gauge-center"></div>
+                    </div>
+
+                    <div class="pipe-decoration"></div>
+
+                    <div class="machinery-stats">
+                        <div class="stat-panel">
+                            <div class="stat-label">Pressure</div>
+                            <div class="stat-value">125 PSI</div>
+                        </div>
+                        <div class="stat-panel">
+                            <div class="stat-label">Temperature</div>
+                            <div class="stat-value">450°F</div>
+                        </div>
+                    </div>
+
+                    <button class="industrial-btn">ENGAGE</button>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="industrial-card">
+                <span class="rivet-bottom-left">⬤</span>
+                <span class="rivet-bottom-right">⬤</span>
+
+                <div class="card-header">
+                    <div class="card-number">II</div>
+                    <div class="card-title">Brass Automaton</div>
+                </div>
+
+                <div class="card-body">
+                    <div class="card-description">
+                        Clockwork precision meets industrial power. Burnished bronze mechanisms tick with mechanical perfection.
+                    </div>
+
+                    <div class="pressure-gauge">
+                        <div class="gauge-needle" style="--angle: 90deg;"></div>
+                        <div class="gauge-center"></div>
+                    </div>
+
+                    <div class="pipe-decoration"></div>
+
+                    <div class="machinery-stats">
+                        <div class="stat-panel">
+                            <div class="stat-label">Gears</div>
+                            <div class="stat-value">∞</div>
+                        </div>
+                        <div class="stat-panel">
+                            <div class="stat-label">RPM</div>
+                            <div class="stat-value">3,600</div>
+                        </div>
+                    </div>
+
+                    <button class="industrial-btn">ENGAGE</button>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="industrial-card">
+                <span class="rivet-bottom-left">⬤</span>
+                <span class="rivet-bottom-right">⬤</span>
+
+                <div class="card-header">
+                    <div class="card-number">III</div>
+                    <div class="card-title">Iron Foundry</div>
+                </div>
+
+                <div class="card-body">
+                    <div class="card-description">
+                        Molten metal flows through cast iron channels. Industrial furnaces glow with ancient forge fire.
+                    </div>
+
+                    <div class="pressure-gauge">
+                        <div class="gauge-needle" style="--angle: 135deg;"></div>
+                        <div class="gauge-center"></div>
+                    </div>
+
+                    <div class="pipe-decoration"></div>
+
+                    <div class="machinery-stats">
+                        <div class="stat-panel">
+                            <div class="stat-label">Heat</div>
+                            <div class="stat-value">2,800°F</div>
+                        </div>
+                        <div class="stat-panel">
+                            <div class="stat-label">Output</div>
+                            <div class="stat-value">MAX</div>
+                        </div>
+                    </div>
+
+                    <button class="industrial-btn">ENGAGE</button>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="industrial-card">
+                <span class="rivet-bottom-left">⬤</span>
+                <span class="rivet-bottom-right">⬤</span>
+
+                <div class="card-header">
+                    <div class="card-number">IV</div>
+                    <div class="card-title">Copper Pipeline</div>
+                </div>
+
+                <div class="card-body">
+                    <div class="card-description">
+                        Burnished copper arteries carry vital steam throughout the industrial complex. Pressure valves regulate the flow.
+                    </div>
+
+                    <div class="pressure-gauge">
+                        <div class="gauge-needle" style="--angle: -30deg;"></div>
+                        <div class="gauge-center"></div>
+                    </div>
+
+                    <div class="pipe-decoration"></div>
+
+                    <div class="machinery-stats">
+                        <div class="stat-panel">
+                            <div class="stat-label">Flow Rate</div>
+                            <div class="stat-value">850 GPM</div>
+                        </div>
+                        <div class="stat-panel">
+                            <div class="stat-label">Material</div>
+                            <div class="stat-value">Cu</div>
+                        </div>
+                    </div>
+
+                    <button class="industrial-btn">ENGAGE</button>
+                </div>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="industrial-card">
+                <span class="rivet-bottom-left">⬤</span>
+                <span class="rivet-bottom-right">⬤</span>
+
+                <div class="card-header">
+                    <div class="card-number">V</div>
+                    <div class="card-title">Mechanical Mind</div>
+                </div>
+
+                <div class="card-body">
+                    <div class="card-description">
+                        Analytical engine of brass and bronze. Mechanical computation through difference engines and logic gates.
+                    </div>
+
+                    <div class="pressure-gauge">
+                        <div class="gauge-needle" style="--angle: 180deg;"></div>
+                        <div class="gauge-center"></div>
+                    </div>
+
+                    <div class="pipe-decoration"></div>
+
+                    <div class="machinery-stats">
+                        <div class="stat-panel">
+                            <div class="stat-label">Logic Gates</div>
+                            <div class="stat-value">10K</div>
+                        </div>
+                        <div class="stat-panel">
+                            <div class="stat-label">Precision</div>
+                            <div class="stat-value">±0.01</div>
+                        </div>
+                    </div>
+
+                    <button class="industrial-btn">ENGAGE</button>
+                </div>
+            </div>
+
+            <!-- Card 6 -->
+            <div class="industrial-card">
+                <span class="rivet-bottom-left">⬤</span>
+                <span class="rivet-bottom-right">⬤</span>
+
+                <div class="card-header">
+                    <div class="card-number">VI</div>
+                    <div class="card-title">Diesel Generator</div>
+                </div>
+
+                <div class="card-body">
+                    <div class="card-description">
+                        Combustion-driven electrical generation. Industrial power for the age of mechanical enlightenment.
+                    </div>
+
+                    <div class="pressure-gauge">
+                        <div class="gauge-needle" style="--angle: 60deg;"></div>
+                        <div class="gauge-center"></div>
+                    </div>
+
+                    <div class="pipe-decoration"></div>
+
+                    <div class="machinery-stats">
+                        <div class="stat-panel">
+                            <div class="stat-label">Output</div>
+                            <div class="stat-value">500 kW</div>
+                        </div>
+                        <div class="stat-panel">
+                            <div class="stat-label">Efficiency</div>
+                            <div class="stat-value">92%</div>
+                        </div>
+                    </div>
+
+                    <button class="industrial-btn">ENGAGE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animate gauges randomly
+        setInterval(() => {
+            const needles = document.querySelectorAll('.gauge-needle');
+            needles.forEach(needle => {
+                const randomAngle = Math.random() * 270 - 45; // -45 to 225 degrees
+                needle.style.setProperty('--angle', randomAngle + 'deg');
+            });
+        }, 3000);
+
+        // Button interactions
+        document.querySelectorAll('.industrial-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.textContent = 'ENGAGED';
+                this.style.background = 'linear-gradient(135deg, #d4af37, #c9a961, #8b6f47)';
+
+                setTimeout(() => {
+                    this.textContent = 'ENGAGE';
+                    this.style.background = '';
+                }, 2000);
+            });
+        });
+
+        // Add steam puff on button click
+        document.querySelectorAll('.industrial-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const steam = document.createElement('div');
+                steam.className = 'steam';
+                steam.style.left = e.clientX + 'px';
+                steam.style.bottom = '-50px';
+                steam.style.animationDuration = '3s';
+                document.body.appendChild(steam);
+
+                setTimeout(() => steam.remove(), 3000);
+            });
+        });
+    </script>
+</body>
+</html>
