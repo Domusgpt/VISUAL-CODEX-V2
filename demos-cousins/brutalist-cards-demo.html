@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brutalist Cards - Cousin of Neoskeuomorphic</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;900&family=IBM+Plex+Mono:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 4rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            margin-bottom: 1rem;
+            border: 8px solid #fff;
+            padding: 20px;
+            background: #ff0000;
+            transform: rotate(-2deg);
+        }
+
+        .subtitle {
+            color: #fff;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            text-transform: uppercase;
+            background: #000;
+            border: 4px solid #00ff00;
+            padding: 15px;
+            display: inline-block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+        }
+
+        .brutalist-card {
+            background: #fff;
+            border: 8px solid #000;
+            padding: 0;
+            position: relative;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        /* NO SHADOWS - PURE BRUTALISM */
+        .brutalist-card::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: 8px;
+            bottom: 8px;
+            background: #000;
+            z-index: -1;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .brutalist-card::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: -8px;
+            bottom: -8px;
+            border: 8px solid #ff0000;
+            z-index: -2;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .brutalist-card:hover {
+            transform: translate(-4px, -4px);
+        }
+
+        .brutalist-card:hover::before {
+            transform: translate(8px, 8px);
+            background: #ff0000;
+        }
+
+        .brutalist-card:hover::after {
+            transform: translate(-8px, -8px);
+            border-color: #00ff00;
+        }
+
+        .brutalist-card:active {
+            transform: translate(0, 0);
+        }
+
+        .card-header {
+            background: #000;
+            color: #fff;
+            padding: 20px;
+            border-bottom: 8px solid #ff0000;
+        }
+
+        .card-number {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 10px;
+            color: #00ff00;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            margin-bottom: 5px;
+        }
+
+        .card-body {
+            padding: 30px;
+            background: #fff;
+        }
+
+        .card-description {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #000;
+            margin-bottom: 20px;
+        }
+
+        .card-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat {
+            border: 4px solid #000;
+            padding: 15px;
+            text-align: center;
+            background: #f0f0f0;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #000;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            margin-top: 5px;
+            color: #666;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #000;
+            color: #fff;
+            padding: 8px 16px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            border: 3px solid #000;
+            transition: all 0.1s;
+        }
+
+        .tag:hover {
+            background: #ff0000;
+            transform: translate(-2px, -2px);
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        .card-footer {
+            padding: 20px;
+            background: #000;
+            border-top: 8px solid #00ff00;
+        }
+
+        .action-btn {
+            width: 100%;
+            background: #fff;
+            color: #000;
+            border: 4px solid #000;
+            padding: 15px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: -4px;
+            bottom: -4px;
+            background: #ff0000;
+            z-index: -1;
+            transition: all 0.1s;
+        }
+
+        .action-btn:hover {
+            transform: translate(-4px, -4px);
+        }
+
+        .action-btn:hover::before {
+            background: #00ff00;
+        }
+
+        .action-btn:active {
+            transform: translate(0, 0);
+        }
+
+        /* RANDOM ROTATION FOR EACH CARD */
+        .brutalist-card:nth-child(odd) {
+            transform: rotate(-1deg);
+        }
+
+        .brutalist-card:nth-child(even) {
+            transform: rotate(1deg);
+        }
+
+        .brutalist-card:nth-child(3n) {
+            transform: rotate(-2deg);
+        }
+
+        .brutalist-card:hover {
+            transform: rotate(0deg) translate(-4px, -4px) !important;
+        }
+
+        /* INFO BANNER */
+        .info-banner {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #00ff00;
+            border: 6px solid #000;
+            padding: 15px 25px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+            z-index: 1000;
+            box-shadow: 8px 8px 0 #000;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .info-banner {
+                position: static;
+                margin-bottom: 20px;
+            }
+        }
+
+        /* MOUSE TRACKING GLITCH */
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-2px, -2px); }
+            80% { transform: translate(2px, 2px); }
+            100% { transform: translate(0); }
+        }
+
+        .brutalist-card:active {
+            animation: glitch 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-banner">
+        COUSIN OF: NEOSKEUOMORPHIC CARDS
+    </div>
+
+    <div class="container">
+        <h1>BRUTALIST CARDS</h1>
+        <div class="subtitle">◼ NO SHADOWS ◼ HARD EDGES ◼ BOLD BORDERS ◼</div>
+
+        <div class="grid">
+            <!-- Card 1 -->
+            <div class="brutalist-card">
+                <div class="card-header">
+                    <div class="card-number">[001]</div>
+                    <div class="card-title">STARK CONTRAST</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-description">
+                        PURE BRUTALISM. NO GRADIENTS. NO SHADOWS. ONLY STRUCTURE AND FUNCTION. BLACK AND WHITE WITH AGGRESSIVE ACCENT COLORS.
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">100%</div>
+                            <div class="stat-label">CONTRAST</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">0px</div>
+                            <div class="stat-label">SHADOW</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">8px</div>
+                            <div class="stat-label">BORDER</div>
+                        </div>
+                    </div>
+                    <div class="card-tags">
+                        <div class="tag">BRUTAL</div>
+                        <div class="tag">MINIMAL</div>
+                        <div class="tag">SWISS</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="action-btn">→ ACTIVATE</button>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="brutalist-card">
+                <div class="card-header">
+                    <div class="card-number">[002]</div>
+                    <div class="card-title">GEOMETRIC RIGID</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-description">
+                        ANGULAR PERFECTION. EVERY ELEMENT ALIGNED TO A STRICT GRID. MATHEMATICAL PRECISION OVER ORGANIC CURVES.
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">90°</div>
+                            <div class="stat-label">ANGLES</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">0%</div>
+                            <div class="stat-label">ROUND</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">∞</div>
+                            <div class="stat-label">IMPACT</div>
+                        </div>
+                    </div>
+                    <div class="card-tags">
+                        <div class="tag">GRID</div>
+                        <div class="tag">ANGLES</div>
+                        <div class="tag">STRICT</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="action-btn">→ ACTIVATE</button>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="brutalist-card">
+                <div class="card-header">
+                    <div class="card-number">[003]</div>
+                    <div class="card-title">TYPE FOCUSED</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-description">
+                        TYPOGRAPHY AS PRIMARY VISUAL ELEMENT. BOLD WEIGHTS. AGGRESSIVE SPACING. MONOSPACE DATA PRECISION.
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">900</div>
+                            <div class="stat-label">WEIGHT</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">-2px</div>
+                            <div class="stat-label">TRACKING</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">MAX</div>
+                            <div class="stat-label">IMPACT</div>
+                        </div>
+                    </div>
+                    <div class="card-tags">
+                        <div class="tag">TYPE</div>
+                        <div class="tag">BOLD</div>
+                        <div class="tag">MONO</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="action-btn">→ ACTIVATE</button>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="brutalist-card">
+                <div class="card-header">
+                    <div class="card-number">[004]</div>
+                    <div class="card-title">COLOR BLOCK</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-description">
+                        PRIMARY COLORS ONLY. RED. GREEN. BLACK. WHITE. NO BLENDING. NO GRADIENTS. PURE COLOR THEORY.
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">4</div>
+                            <div class="stat-label">COLORS</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">0%</div>
+                            <div class="stat-label">BLEND</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">RGB</div>
+                            <div class="stat-label">MODE</div>
+                        </div>
+                    </div>
+                    <div class="card-tags">
+                        <div class="tag">PRIMARY</div>
+                        <div class="tag">SOLID</div>
+                        <div class="tag">PURE</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="action-btn">→ ACTIVATE</button>
+                </div>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="brutalist-card">
+                <div class="card-header">
+                    <div class="card-number">[005]</div>
+                    <div class="card-title">FUNCTION FIRST</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-description">
+                        FORM FOLLOWS FUNCTION. EVERY ELEMENT SERVES A PURPOSE. NO DECORATION FOR DECORATION'S SAKE.
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">100%</div>
+                            <div class="stat-label">FUNCTION</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">0%</div>
+                            <div class="stat-label">ORNAMENT</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">MAX</div>
+                            <div class="stat-label">UTILITY</div>
+                        </div>
+                    </div>
+                    <div class="card-tags">
+                        <div class="tag">UTILITY</div>
+                        <div class="tag">HONEST</div>
+                        <div class="tag">RAW</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="action-btn">→ ACTIVATE</button>
+                </div>
+            </div>
+
+            <!-- Card 6 -->
+            <div class="brutalist-card">
+                <div class="card-header">
+                    <div class="card-number">[006]</div>
+                    <div class="card-title">CONCRETE DIGITAL</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-description">
+                        DIGITAL BRUTALISM. RAW HTML. EXPOSED STRUCTURE. EMBRACING THE MEDIUM'S INHERENT PROPERTIES.
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">RAW</div>
+                            <div class="stat-label">MARKUP</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">0ms</div>
+                            <div class="stat-label">FANCY</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">MAX</div>
+                            <div class="stat-label">HONEST</div>
+                        </div>
+                    </div>
+                    <div class="card-tags">
+                        <div class="tag">RAW</div>
+                        <div class="tag">HONEST</div>
+                        <div class="tag">DIRECT</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="action-btn">→ ACTIVATE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add interaction sound simulation
+        const cards = document.querySelectorAll('.brutalist-card');
+        const buttons = document.querySelectorAll('.action-btn');
+
+        cards.forEach((card, index) => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('action-btn')) {
+                    console.log(`[BRUTALIST CARD ${index + 1}] CLICKED`);
+                }
+            });
+        });
+
+        buttons.forEach((btn, index) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                console.log(`[ACTION ${index + 1}] ACTIVATED`);
+                btn.textContent = '✓ ACTIVATED';
+                setTimeout(() => {
+                    btn.textContent = '→ ACTIVATE';
+                }, 1000);
+            });
+        });
+
+        // Random rotation on load
+        cards.forEach((card) => {
+            const randomRotation = (Math.random() - 0.5) * 3;
+            card.style.setProperty('--random-rotation', `${randomRotation}deg`);
+        });
+    </script>
+</body>
+</html>

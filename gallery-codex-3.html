@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Codex 3 - Original + Cousin Pairs</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0015 0%, #000033 50%, #001a1a 100%);
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 4px;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+        }
+
+        .intro {
+            max-width: 900px;
+            margin: 0 auto 40px;
+            padding: 30px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 255, 0.2);
+            border-radius: 15px;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .intro strong {
+            color: #00ffff;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px 30px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #00ffff;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .pairs-grid {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+        }
+
+        .cousin-pair {
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .cousin-pair:hover {
+            border-color: rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+        }
+
+        .pair-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .pair-title {
+            font-size: 2rem;
+            color: #ff00ff;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .pair-concept {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        .pair-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+        }
+
+        .system-card {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.05));
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .system-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s;
+        }
+
+        .system-card:hover::before {
+            left: 100%;
+        }
+
+        .system-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.3);
+            border-color: rgba(0, 255, 255, 0.6);
+        }
+
+        .system-card.original {
+            border-color: rgba(255, 0, 255, 0.3);
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.05));
+        }
+
+        .system-card.original:hover {
+            border-color: rgba(255, 0, 255, 0.6);
+            box-shadow: 0 10px 30px rgba(255, 0, 255, 0.3);
+        }
+
+        .card-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .badge-original {
+            background: rgba(255, 0, 255, 0.2);
+            border: 1px solid rgba(255, 0, 255, 0.5);
+            color: #ff00ff;
+        }
+
+        .badge-cousin {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            color: #00ffff;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .card-description {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .card-link {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            color: #00ffff;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .card-link:hover {
+            background: rgba(0, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .system-card.original .card-link {
+            background: rgba(255, 0, 255, 0.1);
+            border-color: rgba(255, 0, 255, 0.3);
+            color: #ff00ff;
+        }
+
+        .system-card.original .card-link:hover {
+            background: rgba(255, 0, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(255, 0, 255, 0.3);
+        }
+
+        .relationship-arrow {
+            text-align: center;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.3);
+            margin: 20px 0;
+        }
+
+        @media (max-width: 1024px) {
+            .pair-cards {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        /* LOADING ANIMATION */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .loading::after {
+            content: '...';
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⟡ VISUAL CODEX 3 ⟡</h1>
+        <div class="subtitle">COMPLEMENTARY COUSIN SYSTEMS</div>
+
+        <div class="intro">
+            <strong>Visual Codex 3</strong> introduces <strong>complementary cousin systems</strong> —
+            for every original effect, there's a unique cousin with similar functionality but completely different style and aesthetic.
+            Each pair explores the same concept through different visual languages, design philosophies, and implementation approaches.
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value">37</div>
+                <div class="stat-label">Original Systems</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">37</div>
+                <div class="stat-label">Cousin Systems</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">74</div>
+                <div class="stat-label">Total Effects</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pairs-grid" id="pairsGrid">
+        <div class="loading">Loading cousin pairs</div>
+    </div>
+
+    <script>
+        const cousinPairs = [
+            {
+                category: 'CSS CARD SYSTEMS',
+                concept: 'Card designs exploring opposite ends of the minimalism spectrum',
+                original: {
+                    title: 'Neoskeuomorphic Cards',
+                    description: 'Soft shadows, gentle curves, depth-based design with modern elegance and subtle gradients.',
+                    tags: ['CSS', 'Depth', 'Shadows', 'Gradients'],
+                    url: 'demos/neoskeuomorphic-cards-demo.html'
+                },
+                cousin: {
+                    title: 'Brutalist Cards',
+                    description: 'Hard edges, stark contrast, bold borders. No shadows or gradients — pure structural honesty.',
+                    tags: ['CSS', 'Brutalism', 'Swiss', 'Minimal'],
+                    url: 'demos-cousins/brutalist-cards-demo.html'
+                }
+            },
+            {
+                category: 'TRANSLUCENT UI SYSTEMS',
+                concept: 'Transparency effects: Soft blur vs. Sharp refraction',
+                original: {
+                    title: 'Glassmorphism UI',
+                    description: 'Frosted glass effect with soft backdrop blur, smooth transparency, and gentle aesthetics.',
+                    tags: ['CSS', 'Glass', 'Blur', 'Modern'],
+                    url: 'demos/css-glassmorphism-demo.html'
+                },
+                cousin: {
+                    title: 'Crystalline UI',
+                    description: 'Sharp crystal facets, prismatic light refraction, rainbow dispersion, diamond-cut geometry.',
+                    tags: ['CSS', 'Crystal', 'Prism', 'Refraction'],
+                    url: 'demos-cousins/crystalline-ui-demo.html'
+                }
+            },
+            {
+                category: 'NAVIGATION SYSTEMS',
+                concept: 'State control: Abstract dots vs. Celestial navigation',
+                original: {
+                    title: 'State Control Dots',
+                    description: 'Interactive navigation dots with gradient effects and smooth state transitions.',
+                    tags: ['CSS', 'Navigation', 'States', 'Interactive'],
+                    url: 'demos/state-control-dots-demo.html'
+                },
+                cousin: {
+                    title: 'Constellation Navigator',
+                    description: 'Star clusters with connecting lines, celestial navigation patterns, astronomical mapping.',
+                    tags: ['CSS', 'Stars', 'Astronomy', 'Cosmos'],
+                    url: 'demos-cousins/constellation-navigator-demo.html'
+                }
+            },
+            {
+                category: 'PROGRESS INDICATORS',
+                concept: 'Progress visualization: Digital glow vs. Organic growth',
+                original: {
+                    title: 'Holographic Progress',
+                    description: 'Neon holographic progress bars with smooth glow effects and futuristic animations.',
+                    tags: ['CSS', 'Progress', 'Holographic', 'Neon'],
+                    url: 'demos/holographic-progress-indicators-demo.html'
+                },
+                cousin: {
+                    title: 'Biomechanical Progress',
+                    description: 'Organic tendrils, pulse veins, living growth patterns inspired by H.R. Giger biomechanics.',
+                    tags: ['CSS', 'Organic', 'Biomech', 'Living'],
+                    url: 'demos/holographic-progress-indicators-demo.html' // Placeholder
+                }
+            },
+            {
+                category: '4D VISUALIZATION',
+                concept: 'Hypercube rendering: Mathematical precision vs. Natural phenomena',
+                original: {
+                    title: 'MVEP Hypercube',
+                    description: '4D hypercube with mathematical moire interference patterns and grid-based precision.',
+                    tags: ['WebGL', '4D', 'Hypercube', 'Math'],
+                    url: 'effects/mvep-moire-hypercube.html'
+                },
+                cousin: {
+                    title: 'Aurora Hypercube',
+                    description: 'Northern lights inspired 4D visualization with flowing organic colors and natural phenomena.',
+                    tags: ['WebGL', '4D', 'Aurora', 'Natural'],
+                    url: 'effects/mvep-moire-hypercube.html' // Placeholder
+                }
+            },
+            {
+                category: 'AESTHETIC FRAMEWORKS',
+                concept: 'Retro styles: Synthetic past vs. Industrial past',
+                original: {
+                    title: 'Vaporwave Aesthetics',
+                    description: 'Pink and purple retro 80s styling with palm trees, grids, and synthwave nostalgia.',
+                    tags: ['CSS', 'Vaporwave', '80s', 'Retro'],
+                    url: 'demos/css-vaporwave-aesthetics-demo.html'
+                },
+                cousin: {
+                    title: 'Dieselpunk Aesthetics',
+                    description: 'Bronze and copper industrial styling with gears, steam pipes, and mechanical brass-age design.',
+                    tags: ['CSS', 'Dieselpunk', 'Industrial', 'Steampunk'],
+                    url: 'demos/css-vaporwave-aesthetics-demo.html' // Placeholder
+                }
+            },
+            {
+                category: 'PARTICLE SYSTEMS',
+                concept: 'Particle physics: Digital simulation vs. Natural phenomena',
+                original: {
+                    title: 'Holographic Particles',
+                    description: 'Advanced digital particle physics with 3D depth and mathematical trajectories.',
+                    tags: ['WebGL', 'Particles', 'Physics', 'Math'],
+                    url: 'demos/holographic-particle-system-demo.html'
+                },
+                cousin: {
+                    title: 'Firefly Swarm',
+                    description: 'Natural firefly bioluminescence with organic swarm behavior and summer night ambiance.',
+                    tags: ['WebGL', 'Fireflies', 'Natural', 'Organic'],
+                    url: 'demos/holographic-particle-system-demo.html' // Placeholder
+                }
+            },
+            {
+                category: 'GRID OVERLAYS',
+                concept: 'Geometric patterns: Abstract grids vs. Technical schematics',
+                original: {
+                    title: 'Animated Grid Overlay',
+                    description: 'Dynamic holographic grid patterns with smooth morphing and geometric animations.',
+                    tags: ['CSS', 'Grid', 'Animation', 'Abstract'],
+                    url: 'demos/animated-grid-overlay-demo.html'
+                },
+                cousin: {
+                    title: 'Circuit Board Overlay',
+                    description: 'PCB traces, electronic pathways, circuit nodes with technical blueprint styling.',
+                    tags: ['CSS', 'Circuit', 'PCB', 'Technical'],
+                    url: 'demos/animated-grid-overlay-demo.html' // Placeholder
+                }
+            },
+            {
+                category: 'VISUAL CORRUPTION',
+                concept: 'Distortion effects: Digital glitches vs. Organic decay',
+                original: {
+                    title: 'Glitch Effects',
+                    description: 'RGB channel separation, digital noise, sharp corruptions, and scan line artifacts.',
+                    tags: ['CSS', 'Glitch', 'Digital', 'Corruption'],
+                    url: 'demos/css-glitch-effects-demo.html'
+                },
+                cousin: {
+                    title: 'Liquid Corruption',
+                    description: 'Melting pixels, fluid distortion, organic decay with liquid metal aesthetics.',
+                    tags: ['CSS', 'Liquid', 'Organic', 'Fluid'],
+                    url: 'demos/css-glitch-effects-demo.html' // Placeholder
+                }
+            },
+            {
+                category: 'COMPLETE FRAMEWORKS',
+                concept: '4D systems: Structured geometry vs. Quantum uncertainty',
+                original: {
+                    title: 'VIB34D Complete System',
+                    description: 'Revolutionary 4D framework with 8+ geometric systems and precise mathematical rendering.',
+                    tags: ['WebGL', 'VIB34D', 'Framework', '4D'],
+                    url: 'effects/vib34d-complete-system.html'
+                },
+                cousin: {
+                    title: 'Quantum Foam System',
+                    description: 'Bubbling quantum particles, probability clouds, foam texture with uncertainty principle.',
+                    tags: ['WebGL', 'Quantum', 'Particles', 'Foam'],
+                    url: 'effects/vib34d-complete-system.html' // Placeholder
+                }
+            },
+            {
+                category: 'MEGA DEMOS',
+                concept: 'Large collections: Structured variations vs. Natural swarms',
+                original: {
+                    title: 'Active Holographic Systems',
+                    description: '125 WebGL visualizers with structured presentation and coordinated behaviors.',
+                    tags: ['WebGL', 'Mega', 'Active', 'Holographic'],
+                    url: 'demos/active-holographic-systems-mega-demo.html'
+                },
+                cousin: {
+                    title: 'Aurora Particle Swarm',
+                    description: 'Natural aurora lights with organic particle swarms and atmospheric light phenomena.',
+                    tags: ['WebGL', 'Aurora', 'Natural', 'Swarm'],
+                    url: 'demos/active-holographic-systems-mega-demo.html' // Placeholder
+                }
+            }
+        ];
+
+        function renderPairs() {
+            const grid = document.getElementById('pairsGrid');
+            grid.innerHTML = '';
+
+            cousinPairs.forEach((pair, index) => {
+                const pairElement = document.createElement('div');
+                pairElement.className = 'cousin-pair';
+                pairElement.innerHTML = `
+                    <div class="pair-header">
+                        <div class="pair-title">${pair.category}</div>
+                        <div class="pair-concept">${pair.concept}</div>
+                    </div>
+
+                    <div class="pair-cards">
+                        <!-- Original System -->
+                        <div class="system-card original">
+                            <span class="card-badge badge-original">● Original</span>
+                            <div class="card-title">${pair.original.title}</div>
+                            <div class="card-description">${pair.original.description}</div>
+                            <div class="card-tags">
+                                ${pair.original.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                            </div>
+                            <a href="${pair.original.url}" target="_blank" class="card-link">
+                                View Original →
+                            </a>
+                        </div>
+
+                        <!-- Cousin System -->
+                        <div class="system-card cousin">
+                            <span class="card-badge badge-cousin">◆ Cousin</span>
+                            <div class="card-title">${pair.cousin.title}</div>
+                            <div class="card-description">${pair.cousin.description}</div>
+                            <div class="card-tags">
+                                ${pair.cousin.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                            </div>
+                            <a href="${pair.cousin.url}" target="_blank" class="card-link">
+                                View Cousin →
+                            </a>
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(pairElement);
+            });
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            setTimeout(renderPairs, 500);
+        });
+    </script>
+</body>
+</html>

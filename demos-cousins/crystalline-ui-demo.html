@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crystalline UI - Cousin of Glassmorphism</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a0033 0%, #000033 50%, #001a33 100%);
+            font-family: 'Orbitron', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* CRYSTAL BACKGROUND PATTERN */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255, 255, 255, 0.03) 35px, rgba(255, 255, 255, 0.03) 70px),
+                repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(100, 200, 255, 0.02) 35px, rgba(100, 200, 255, 0.02) 70px);
+            animation: crystalRotate 60s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes crystalRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* FLOATING LIGHT PARTICLES */
+        .light-particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float linear infinite;
+            opacity: 0.6;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 4rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 1rem;
+            text-shadow:
+                0 0 10px rgba(100, 200, 255, 0.5),
+                0 0 20px rgba(100, 200, 255, 0.3),
+                0 0 30px rgba(100, 200, 255, 0.2);
+            letter-spacing: 4px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+            letter-spacing: 2px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        /* CRYSTAL CARD - Sharp facets like cut diamond */
+        .crystal-card {
+            position: relative;
+            background: linear-gradient(135deg,
+                rgba(255, 255, 255, 0.1) 0%,
+                rgba(100, 200, 255, 0.05) 50%,
+                rgba(255, 255, 255, 0.1) 100%);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            clip-path: polygon(
+                10% 0%, 90% 0%,
+                100% 10%, 100% 90%,
+                90% 100%, 10% 100%,
+                0% 90%, 0% 10%
+            );
+            padding: 30px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        /* PRISM LIGHT REFRACTION EFFECT */
+        .crystal-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg,
+                transparent 0%,
+                rgba(255, 0, 100, 0.1) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(0, 255, 255, 0.1) 75%,
+                transparent 75%,
+                transparent 100%);
+            background-size: 50px 50px;
+            animation: prismShift 3s linear infinite;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .crystal-card:hover::before {
+            opacity: 1;
+        }
+
+        @keyframes prismShift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* CRYSTAL FACETS - Inner geometric cuts */
+        .crystal-card::after {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            right: 10%;
+            bottom: 10%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            clip-path: polygon(
+                15% 0%, 85% 0%,
+                100% 15%, 100% 85%,
+                85% 100%, 15% 100%,
+                0% 85%, 0% 15%
+            );
+            pointer-events: none;
+        }
+
+        .crystal-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(100, 200, 255, 0.5);
+            box-shadow:
+                0 0 30px rgba(100, 200, 255, 0.3),
+                0 0 60px rgba(100, 200, 255, 0.1),
+                inset 0 0 30px rgba(255, 255, 255, 0.05);
+        }
+
+        /* RAINBOW LIGHT SEPARATION */
+        .crystal-card:hover {
+            background: linear-gradient(135deg,
+                rgba(255, 0, 100, 0.1) 0%,
+                rgba(100, 200, 255, 0.1) 25%,
+                rgba(0, 255, 100, 0.1) 50%,
+                rgba(255, 200, 0, 0.1) 75%,
+                rgba(255, 0, 255, 0.1) 100%);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px rgba(100, 200, 255, 0.5));
+        }
+
+        .card-title {
+            color: #fff;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(100, 200, 255, 0.3);
+        }
+
+        .card-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* CRYSTAL FACET DIVIDER */
+        .facet-divider {
+            height: 2px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(100, 200, 255, 0.5) 20%,
+                rgba(255, 255, 255, 0.8) 50%,
+                rgba(100, 200, 255, 0.5) 80%,
+                transparent 100%);
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .facet-divider::before {
+            content: '◆';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(100, 200, 255, 0.8);
+            font-size: 0.8rem;
+            background: #1a0033;
+            padding: 0 10px;
+        }
+
+        .crystal-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .crystal-stat {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+            transition: all 0.3s;
+        }
+
+        .crystal-stat:hover {
+            background: rgba(100, 200, 255, 0.1);
+            transform: scale(1.05);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #64c8ff;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* CRYSTAL BUTTON */
+        .crystal-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg,
+                rgba(100, 200, 255, 0.2) 0%,
+                rgba(255, 255, 255, 0.1) 50%,
+                rgba(100, 200, 255, 0.2) 100%);
+            border: 2px solid rgba(100, 200, 255, 0.3);
+            clip-path: polygon(5% 0%, 95% 0%, 100% 50%, 95% 100%, 5% 100%, 0% 50%);
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .crystal-btn:hover {
+            background: linear-gradient(135deg,
+                rgba(100, 200, 255, 0.4) 0%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(100, 200, 255, 0.4) 100%);
+            box-shadow: 0 0 20px rgba(100, 200, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* INFO BADGE */
+        .info-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: rgba(100, 200, 255, 0.1);
+            border: 2px solid rgba(100, 200, 255, 0.3);
+            clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+            color: #64c8ff;
+            font-weight: 700;
+            letter-spacing: 2px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .info-badge {
+                position: static;
+                margin: 20px auto;
+                display: block;
+                width: fit-content;
+            }
+        }
+
+        /* LIGHT BEAM ANIMATION */
+        @keyframes lightBeam {
+            0% {
+                transform: translateX(-100%) rotate(45deg);
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateX(200%) rotate(45deg);
+                opacity: 0;
+            }
+        }
+
+        .crystal-card {
+            overflow: hidden;
+        }
+
+        .light-beam {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 100%);
+            animation: lightBeam 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-badge">
+        ◆ COUSIN OF: GLASSMORPHISM ◆
+    </div>
+
+    <div class="container">
+        <h1>◇ CRYSTALLINE UI ◇</h1>
+        <div class="subtitle">SHARP FACETS • PRISM REFRACTION • RAINBOW LIGHT</div>
+
+        <div class="grid">
+            <!-- Crystal Card 1 -->
+            <div class="crystal-card">
+                <div class="light-beam"></div>
+                <div class="card-icon">💎</div>
+                <div class="card-title">DIAMOND CUT</div>
+                <div class="card-description">
+                    Sharp geometric facets create prismatic light refraction. Each angle reveals different rainbow spectra.
+                </div>
+                <div class="facet-divider"></div>
+                <div class="crystal-stats">
+                    <div class="crystal-stat">
+                        <span class="stat-value">58</span>
+                        <span class="stat-label">Facets</span>
+                    </div>
+                    <div class="crystal-stat">
+                        <span class="stat-value">2.42</span>
+                        <span class="stat-label">Index</span>
+                    </div>
+                    <div class="crystal-stat">
+                        <span class="stat-value">10</span>
+                        <span class="stat-label">Hardness</span>
+                    </div>
+                </div>
+                <button class="crystal-btn">◆ Activate ◆</button>
+            </div>
+
+            <!-- Crystal Card 2 -->
+            <div class="crystal-card">
+                <div class="light-beam"></div>
+                <div class="card-icon">🔷</div>
+                <div class="card-title">SAPPHIRE PRISM</div>
+                <div class="card-description">
+                    Blue crystal structure separates white light into full spectrum. Optical dispersion creates rainbow effects.
+                </div>
+                <div class="facet-divider"></div>
+                <div class="crystal-stats">
+                    <div class="crystal-stat">
+                        <span class="stat-value">42</span>
+                        <span class="stat-label">Facets</span>
+                    </div>
+                    <div class="crystal-stat">
+                        <span class="stat-value">1.76</span>
+                        <span class="stat-label">Index</span>
+                    </div>
+                    <div class="crystal-stat">
+                        <span class="stat-value">9</span>
+                        <span class="stat-label">Hardness</span>
+                    </div>
+                </div>
+                <button class="crystal-btn">◆ Activate ◆</button>
+            </div>
+
+            <!-- Crystal Card 3 -->
+            <div class="crystal-card">
+                <div class="light-beam"></div>
+                <div class="card-icon">💠</div>
+                <div class="card-title">QUARTZ MATRIX</div>
+                <div class="card-description">
+                    Hexagonal crystal system with six-sided symmetry. Perfect internal reflection creates brilliant sparkle.
+                </div>
+                <div class="facet-divider"></div>
+                <div class="crystal-stats">
+                    <div class="crystal-stat">
+                        <span class="stat-value">36</span>
+                        <span class="stat-label">Facets</span>
+                    </div>
+                    <div class="crystal-stat">
+                        <span class="stat-value">1.54</span>
+                        <span class="stat-label">Index</span>
+                    </div>
+                    <div class="crystal-stat">
+                        <span class="stat-value">7</span>
+                        <span class="stat-label">Hardness</span>
+                    </div>
+                </div>
+                <button class="crystal-btn">◆ Activate ◆</button>
+            </div>
+
+            <!-- Crystal Card 4 -->
+            <div class="crystal-card">
+                <div class="light-beam"></div>
+                <div class="card-icon">🔶</div>
+                <div class="card-title">AMBER PRISM</div>
+                <div class="card-description">
+                    Warm golden crystal with organic inclusions. Light scatters through ancient trapped particles.
+                </div>
+                <div class="facet-divider"></div>
+                <div class="crystal-stats">
+                    <div class="crystal-stat">
+                        <span class="stat-value">24</span>
+                        <span class="stat-label">Facets</span>
+                    </div>
+                    <div class="crystal-stat">
+                        <span class="stat-value">1.54</span>
+                        <span class="stat-label">Index</span>
+                    </div>
+                    <div class="crystal-stat">
+                        <span class="stat-value">2.5</span>
+                        <span class="stat-label">Hardness</span>
+                    </div>
+                </div>
+                <button class="crystal-btn">◆ Activate ◆</button>
+            </div>
+
+            <!-- Crystal Card 5 -->
+            <div class="crystal-card">
+                <div class="light-beam"></div>
+                <div class="card-icon">💠</div>
+                <div class="card-title">EMERALD FACET</div>
+                <div class="card-description">
+                    Green beryl crystal with step-cut facets. Classic emerald cut maximizes brilliance and color depth.
+                </div>
+                <div class="facet-divider"></div>
+                <div class="crystal-stats">
+                    <div class="crystal-stat">
+                        <span class="stat-value">48</span>
+                        <span class="stat-label">Facets</span>
+                    </div>
+                    <div class="crystal-stat">
+                        <span class="stat-value">1.58</span>
+                        <span class="stat-label">Index</span>
+                    </div>
+                    <div class="crystal-stat">
+                        <span class="stat-value">8</span>
+                        <span class="stat-label">Hardness</span>
+                    </div>
+                </div>
+                <button class="crystal-btn">◆ Activate ◆</button>
+            </div>
+
+            <!-- Crystal Card 6 -->
+            <div class="crystal-card">
+                <div class="light-beam"></div>
+                <div class="card-icon">💎</div>
+                <div class="card-title">RAINBOW CRYSTAL</div>
+                <div class="card-description">
+                    Perfect prismatic dispersion separates all wavelengths. Full visible spectrum revealed through facets.
+                </div>
+                <div class="facet-divider"></div>
+                <div class="crystal-stats">
+                    <div class="crystal-stat">
+                        <span class="stat-value">64</span>
+                        <span class="stat-label">Facets</span>
+                    </div>
+                    <div class="crystal-stat">
+                        <span class="stat-value">2.65</span>
+                        <span class="stat-label">Index</span>
+                    </div>
+                    <div class="crystal-stat">
+                        <span class="stat-value">MAX</span>
+                        <span class="stat-label">Dispersion</span>
+                    </div>
+                </div>
+                <button class="crystal-btn">◆ Activate ◆</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create floating light particles
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'light-particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 5 + 3) + 's';
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            document.body.appendChild(particle);
+        }
+
+        // Crystal card interactions
+        const cards = document.querySelectorAll('.crystal-card');
+        const buttons = document.querySelectorAll('.crystal-btn');
+
+        buttons.forEach((btn, index) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                btn.textContent = '◇ ACTIVATED ◇';
+                btn.style.background = 'linear-gradient(135deg, rgba(100, 200, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(100, 200, 255, 0.6) 100%)';
+
+                setTimeout(() => {
+                    btn.textContent = '◆ Activate ◆';
+                    btn.style.background = '';
+                }, 2000);
+            });
+        });
+
+        // Mouse tracking for light refraction effect
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            cards.forEach((card) => {
+                const rect = card.getBoundingClientRect();
+                const cardX = (e.clientX - rect.left) / rect.width - 0.5;
+                const cardY = (e.clientY - rect.top) / rect.height - 0.5;
+
+                if (Math.abs(cardX) < 0.5 && Math.abs(cardY) < 0.5) {
+                    card.style.transform = `
+                        translateY(-10px)
+                        scale(1.02)
+                        rotateY(${cardX * 10}deg)
+                        rotateX(${-cardY * 10}deg)
+                    `;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

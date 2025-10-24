@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constellation Navigator - Cousin of State Control Dots</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            font-family: 'Space Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* STAR FIELD BACKGROUND */
+        #stars, #stars2, #stars3 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #stars {
+            background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="3" height="3"><circle cx="1" cy="1" r="1" fill="white"/></svg>') repeat;
+            animation: animateStars 100s linear infinite;
+        }
+
+        #stars2 {
+            background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="2" height="2"><circle cx="1" cy="1" r="0.5" fill="white"/></svg>') repeat;
+            animation: animateStars 150s linear infinite;
+            opacity: 0.5;
+        }
+
+        #stars3 {
+            background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><circle cx="2" cy="2" r="1.5" fill="white"/></svg>') repeat;
+            animation: animateStars 200s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes animateStars {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-2000px); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #fff;
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 3rem;
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+        }
+
+        /* CONSTELLATION MAP */
+        .constellation-map {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: radial-gradient(circle at center, rgba(25, 50, 100, 0.1) 0%, transparent 70%);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(5px);
+        }
+
+        /* STAR (replacing dot) */
+        .star {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .star::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            border-radius: 50%;
+            animation: starPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes starPulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .star.active {
+            width: 24px;
+            height: 24px;
+            background: radial-gradient(circle, rgba(100, 200, 255, 1) 0%, rgba(100, 200, 255, 0) 70%);
+            box-shadow: 0 0 20px rgba(100, 200, 255, 1);
+            animation: activeStar 1s ease-in-out;
+        }
+
+        @keyframes activeStar {
+            0% { transform: scale(0.5) rotate(0deg); }
+            50% { transform: scale(1.3) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+
+        /* CONSTELLATION LINES */
+        .constellation-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg,
+                rgba(100, 200, 255, 0) 0%,
+                rgba(100, 200, 255, 0.6) 50%,
+                rgba(100, 200, 255, 0) 100%);
+            transform-origin: left center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .constellation-line.visible {
+            opacity: 1;
+            animation: lineGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes lineGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.5); }
+        }
+
+        /* CONSTELLATION INFO PANEL */
+        .info-panel {
+            background: rgba(10, 20, 40, 0.8);
+            border: 2px solid rgba(100, 200, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .info-panel h2 {
+            color: #64c8ff;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(100, 200, 255, 0.5);
+        }
+
+        .info-panel p {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .star-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .data-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(100, 200, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .data-value {
+            font-size: 1.5rem;
+            color: #64c8ff;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .data-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+        }
+
+        /* CELESTIAL BADGE */
+        .celestial-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(10, 20, 40, 0.9);
+            border: 2px solid rgba(100, 200, 255, 0.3);
+            border-radius: 10px;
+            padding: 15px 25px;
+            color: #64c8ff;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .constellation-map {
+                aspect-ratio: 1;
+            }
+
+            .celestial-badge {
+                position: static;
+                margin: 20px auto;
+                display: block;
+                width: fit-content;
+            }
+        }
+
+        /* SHOOTING STAR */
+        .shooting-star {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px white;
+            animation: shoot 3s linear;
+            pointer-events: none;
+        }
+
+        @keyframes shoot {
+            0% {
+                transform: translateX(0) translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(300px) translateY(300px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="stars"></div>
+    <div id="stars2"></div>
+    <div id="stars3"></div>
+
+    <div class="celestial-badge">
+        ★ COUSIN OF: STATE CONTROL DOTS ★
+    </div>
+
+    <div class="container">
+        <h1>✦ CONSTELLATION NAVIGATOR ✦</h1>
+        <div class="subtitle">CELESTIAL NAVIGATION • STAR MAPPING • COSMIC PATTERNS</div>
+
+        <div class="constellation-map" id="constellationMap">
+            <!-- Stars and lines will be added dynamically -->
+        </div>
+
+        <div class="info-panel">
+            <h2 id="constellationName">Ursa Major</h2>
+            <p id="constellationDescription">
+                The Great Bear constellation, one of the most recognizable patterns in the northern sky.
+                Contains the famous Big Dipper asterism used for navigation throughout history.
+            </p>
+
+            <div class="star-data">
+                <div class="data-item">
+                    <div class="data-value" id="starCount">7</div>
+                    <div class="data-label">Main Stars</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-value" id="magnitude">+2.4</div>
+                    <div class="data-label">Magnitude</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-value" id="distance">124 ly</div>
+                    <div class="data-label">Distance</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-value" id="visibility">Year-round</div>
+                    <div class="data-label">Visibility</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const constellations = [
+            {
+                name: 'Ursa Major',
+                description: 'The Great Bear constellation, one of the most recognizable patterns in the northern sky. Contains the famous Big Dipper asterism.',
+                stars: 7,
+                magnitude: '+2.4',
+                distance: '124 ly',
+                visibility: 'Year-round',
+                pattern: [
+                    {x: 15, y: 20}, {x: 25, y: 25}, {x: 40, y: 30}, {x: 55, y: 28},
+                    {x: 60, y: 40}, {x: 50, y: 50}, {x: 35, y: 45}
+                ]
+            },
+            {
+                name: 'Orion',
+                description: 'The Hunter constellation, featuring the distinctive Belt of Orion. One of the most prominent and recognizable constellations.',
+                stars: 10,
+                magnitude: '+0.5',
+                distance: '1,500 ly',
+                visibility: 'Winter',
+                pattern: [
+                    {x: 30, y: 15}, {x: 70, y: 20}, {x: 35, y: 40}, {x: 50, y: 45}, {x: 65, y: 40},
+                    {x: 40, y: 60}, {x: 60, y: 58}, {x: 35, y: 75}, {x: 50, y: 80}, {x: 65, y: 75}
+                ]
+            },
+            {
+                name: 'Cassiopeia',
+                description: 'The Queen constellation, forming a distinctive W or M shape. Named after the vain queen in Greek mythology.',
+                stars: 5,
+                magnitude: '+2.2',
+                distance: '550 ly',
+                visibility: 'Year-round',
+                pattern: [
+                    {x: 20, y: 35}, {x: 35, y: 20}, {x: 50, y: 40}, {x: 65, y: 25}, {x: 80, y: 38}
+                ]
+            },
+            {
+                name: 'Cygnus',
+                description: 'The Swan constellation, also known as the Northern Cross. Flies along the Milky Way through summer and autumn skies.',
+                stars: 9,
+                magnitude: '+1.3',
+                distance: '1,400 ly',
+                visibility: 'Summer',
+                pattern: [
+                    {x: 50, y: 15}, {x: 50, y: 35}, {x: 50, y: 55}, {x: 50, y: 75},
+                    {x: 30, y: 40}, {x: 70, y: 40}, {x: 45, y: 65}, {x: 55, y: 65}, {x: 50, y: 85}
+                ]
+            }
+        ];
+
+        let currentConstellation = 0;
+        let activeStarIndex = -1;
+
+        function createConstellation(constellation) {
+            const map = document.getElementById('constellationMap');
+            map.innerHTML = '';
+
+            const mapRect = map.getBoundingClientRect();
+
+            // Create stars
+            constellation.pattern.forEach((pos, index) => {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${pos.x}%`;
+                star.style.top = `${pos.y}%`;
+                star.dataset.index = index;
+
+                star.addEventListener('click', () => {
+                    activateStar(index);
+                });
+
+                map.appendChild(star);
+            });
+
+            // Create constellation lines
+            for (let i = 0; i < constellation.pattern.length - 1; i++) {
+                const line = createLine(constellation.pattern[i], constellation.pattern[i + 1]);
+                map.appendChild(line);
+            }
+
+            // Update info
+            document.getElementById('constellationName').textContent = constellation.name;
+            document.getElementById('constellationDescription').textContent = constellation.description;
+            document.getElementById('starCount').textContent = constellation.stars;
+            document.getElementById('magnitude').textContent = constellation.magnitude;
+            document.getElementById('distance').textContent = constellation.distance;
+            document.getElementById('visibility').textContent = constellation.visibility;
+        }
+
+        function createLine(start, end) {
+            const line = document.createElement('div');
+            line.className = 'constellation-line';
+
+            const deltaX = end.x - start.x;
+            const deltaY = end.y - start.y;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+
+            line.style.left = `${start.x}%`;
+            line.style.top = `${start.y}%`;
+            line.style.width = `${distance}%`;
+            line.style.transform = `rotate(${angle}deg)`;
+
+            setTimeout(() => {
+                line.classList.add('visible');
+            }, 100);
+
+            return line;
+        }
+
+        function activateStar(index) {
+            const stars = document.querySelectorAll('.star');
+            stars.forEach(star => star.classList.remove('active'));
+
+            if (index >= 0 && index < stars.length) {
+                stars[index].classList.add('active');
+                activeStarIndex = index;
+            }
+        }
+
+        function nextConstellation() {
+            currentConstellation = (currentConstellation + 1) % constellations.length;
+            createConstellation(constellations[currentConstellation]);
+        }
+
+        function createShootingStar() {
+            const star = document.createElement('div');
+            star.className = 'shooting-star';
+            star.style.left = Math.random() * 50 + '%';
+            star.style.top = Math.random() * 50 + '%';
+            document.body.appendChild(star);
+
+            setTimeout(() => {
+                star.remove();
+            }, 3000);
+        }
+
+        // Initialize
+        createConstellation(constellations[currentConstellation]);
+
+        // Auto-cycle constellations
+        setInterval(nextConstellation, 15000);
+
+        // Random shooting stars
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                createShootingStar();
+            }
+        }, 3000);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                nextConstellation();
+            } else if (e.key >= '1' && e.key <= '9') {
+                activateStar(parseInt(e.key) - 1);
+            }
+        });
+    </script>
+</body>
+</html>
