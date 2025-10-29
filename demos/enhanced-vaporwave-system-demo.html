@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enhanced Vaporwave System – Multi-Instance Visualizer</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --primary: #6ff3ff;
+            --secondary: #ff5ee8;
+            --accent: #ffe072;
+            --grid-density: 24px;
+            --layer-opacity: 0.85;
+            --chaos-strength: 0.15;
+            --canvas-glow: rgba(0, 255, 255, 0.35);
+            --parallax-strength: 12;
+            --transition-speed: 180ms;
+            --focus-outline: rgba(255, 255, 255, 0.72);
+            --high-contrast-shadow: rgba(255, 255, 255, 0.42);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(255, 94, 232, 0.2), transparent 45%),
+                radial-gradient(circle at 80% 10%, rgba(111, 243, 255, 0.18), transparent 40%),
+                #060010;
+            color: #f6f7ff;
+        }
+
+        body.reduce-motion * {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+        }
+
+        body.reduce-motion .visualizer-layer {
+            transform: none !important;
+        }
+
+        .vaporwave-shell {
+            position: relative;
+            min-height: 100vh;
+            padding: clamp(24px, 5vw, 48px);
+            overflow: hidden;
+        }
+
+        .visualizer-layer {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: clamp(16px, 3vw, 28px);
+            padding: clamp(24px, 5vw, 48px);
+            pointer-events: none;
+        }
+
+        .visualizer-instance {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            opacity: var(--layer-opacity);
+            filter: saturate(1.2) contrast(1.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.06),
+                0 24px 40px rgba(0, 0, 0, 0.35),
+                0 0 34px rgba(111, 243, 255, 0.35);
+            background:
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent 55%),
+                conic-gradient(from 180deg at 50% 50%, rgba(111, 243, 255, 0.75), rgba(255, 94, 232, 0.35), transparent);
+        }
+
+        .visualizer-instance::after {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background:
+                repeating-linear-gradient(
+                    30deg,
+                    transparent,
+                    transparent calc(var(--grid-density) - 1px),
+                    rgba(111, 243, 255, 0.35) calc(var(--grid-density))
+                );
+            opacity: 0.55;
+            mix-blend-mode: screen;
+            animation: gridDrift 18s linear infinite;
+        }
+
+        .visualizer-instance:nth-child(2)::after {
+            background:
+                repeating-linear-gradient(
+                    120deg,
+                    transparent,
+                    transparent calc(var(--grid-density) - 1px),
+                    rgba(255, 94, 232, 0.35) calc(var(--grid-density))
+                );
+        }
+
+        .visualizer-instance:nth-child(3) {
+            grid-column: span 3;
+            min-height: 280px;
+            opacity: 0.9;
+        }
+
+        .visualizer-instance:nth-child(3)::after {
+            animation-duration: 26s;
+            background:
+                repeating-linear-gradient(
+                    60deg,
+                    transparent,
+                    transparent calc(var(--grid-density) - 1px),
+                    rgba(255, 224, 114, 0.35) calc(var(--grid-density))
+                );
+        }
+
+        header.vaporwave-header {
+            position: relative;
+            z-index: 2;
+            max-width: 920px;
+            padding: 22px 28px;
+            border-radius: 24px;
+            backdrop-filter: blur(22px) saturate(1.2);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: linear-gradient(135deg, rgba(6, 0, 16, 0.82), rgba(20, 0, 35, 0.58));
+            box-shadow: 0 22px 40px rgba(0, 0, 0, 0.5), 0 0 28px rgba(111, 243, 255, 0.26);
+        }
+
+        .tuning-panel {
+            position: relative;
+            z-index: 3;
+            margin: clamp(20px, 4vw, 40px) 0 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: clamp(16px, 3vw, 28px);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: linear-gradient(140deg, rgba(6, 0, 16, 0.82), rgba(25, 0, 44, 0.6));
+            box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45), 0 0 24px rgba(111, 243, 255, 0.22);
+            backdrop-filter: blur(18px);
+        }
+
+        .tuning-group {
+            display: grid;
+            gap: 12px;
+        }
+
+        .tuning-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-size: 0.72rem;
+            color: rgba(240, 245, 255, 0.7);
+        }
+
+        .tuning-label output {
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            color: rgba(255, 255, 255, 0.68);
+        }
+
+        .tuning-panel input[type="range"] {
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            outline: none;
+            overflow: hidden;
+        }
+
+        .tuning-panel input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(120deg, var(--primary), var(--secondary));
+            box-shadow: 0 0 12px rgba(111, 243, 255, 0.45);
+            cursor: pointer;
+        }
+
+        .tuning-panel input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(120deg, var(--primary), var(--secondary));
+            box-shadow: 0 0 12px rgba(111, 243, 255, 0.45);
+            border: none;
+            cursor: pointer;
+        }
+
+        .tuning-panel select {
+            appearance: none;
+            padding: 10px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(8, 0, 16, 0.6);
+            color: #f5f7ff;
+            font-size: 0.84rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .tuning-panel select:focus-visible,
+        .tuning-panel button:focus-visible,
+        .tuning-panel input[type='range']:focus-visible,
+        .toggle input:focus-visible,
+        .ui-button:focus-visible,
+        .state-dot:focus-visible {
+            outline: 2px solid var(--focus-outline);
+            outline-offset: 3px;
+        }
+
+        .snapshot-actions {
+            display: grid;
+            gap: 8px;
+        }
+
+        .snapshot-actions button {
+            appearance: none;
+            padding: 10px 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: linear-gradient(135deg, rgba(111, 243, 255, 0.22), rgba(255, 94, 232, 0.28));
+            color: rgba(248, 249, 255, 0.88);
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+        }
+
+        .snapshot-actions button:hover:not([disabled]) {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 20px rgba(0, 0, 0, 0.35);
+        }
+
+        .snapshot-actions button[disabled] {
+            opacity: 0.55;
+            cursor: not-allowed;
+            filter: saturate(0.6);
+        }
+
+        .snapshot-note {
+            margin: 0;
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            color: rgba(220, 230, 255, 0.62);
+        }
+
+        .control-actions {
+            align-content: start;
+        }
+
+        .control-actions button {
+            padding: 12px 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(130deg, rgba(111, 243, 255, 0.18), rgba(255, 94, 232, 0.24));
+            color: #fefbff;
+            font-size: 0.78rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 140ms ease, box-shadow 140ms ease;
+        }
+
+        .control-actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        .control-actions .micro-copy {
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            color: rgba(235, 240, 255, 0.54);
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle input {
+            appearance: none;
+            width: 42px;
+            height: 22px;
+            border-radius: 999px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            cursor: pointer;
+            transition: background var(--transition-speed) ease;
+        }
+
+        .toggle input::after {
+            content: "";
+            position: absolute;
+            inset: 3px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--secondary);
+            box-shadow: 0 0 10px rgba(255, 94, 232, 0.4);
+            transform: translateX(0);
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .toggle input:checked {
+            background: rgba(255, 94, 232, 0.24);
+        }
+
+        .toggle input:checked::after {
+            transform: translateX(18px);
+        }
+
+        .toggle span {
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(240, 245, 255, 0.7);
+        }
+
+        .tuning-note {
+            margin: 0;
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            color: rgba(220, 230, 255, 0.68);
+        }
+
+        .vaporwave-header h1 {
+            margin: 0;
+            font-size: clamp(2.4rem, 4vw, 3.4rem);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--primary);
+            text-shadow: 0 0 18px rgba(111, 243, 255, 0.6);
+        }
+
+        .vaporwave-header p {
+            margin: 12px 0 0;
+            color: rgba(248, 249, 255, 0.75);
+            max-width: 640px;
+            line-height: 1.7;
+        }
+
+        .content-overlay {
+            position: relative;
+            z-index: 3;
+            margin-top: clamp(36px, 6vw, 64px);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: clamp(18px, 3vw, 32px);
+        }
+
+        .overlay-card {
+            position: relative;
+            padding: 26px;
+            border-radius: 22px;
+            background: linear-gradient(160deg, rgba(6, 0, 16, 0.9), rgba(35, 0, 55, 0.65));
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow:
+                0 18px 40px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.08),
+                0 0 36px rgba(255, 94, 232, 0.32);
+            backdrop-filter: blur(18px);
+        }
+
+        .overlay-card h2 {
+            margin: 0 0 16px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-size: 1rem;
+            color: var(--accent);
+        }
+
+        .overlay-card p {
+            margin: 0;
+            line-height: 1.6;
+            color: rgba(240, 244, 255, 0.78);
+        }
+
+        .ui-button-bar {
+            margin-top: 22px;
+            display: inline-flex;
+            gap: 12px;
+        }
+
+        .ui-button {
+            position: relative;
+            border: none;
+            border-radius: 999px;
+            padding: 10px 26px;
+            font-family: inherit;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: #060010;
+            cursor: pointer;
+            background: linear-gradient(125deg, rgba(111, 243, 255, 0.85), rgba(255, 94, 232, 0.85));
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+                0 0 18px rgba(255, 94, 232, 0.48),
+                0 18px 28px rgba(0, 0, 0, 0.4);
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .ui-button:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+                0 0 22px rgba(255, 224, 114, 0.5),
+                0 22px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .ui-button[aria-disabled='true'] {
+            opacity: 0.5;
+            filter: saturate(0.6);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+                0 0 12px rgba(111, 243, 255, 0.25);
+        }
+
+        .state-controls {
+            position: fixed;
+            right: clamp(18px, 4vw, 44px);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            z-index: 4;
+        }
+
+        .state-dot {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: linear-gradient(140deg, rgba(111, 243, 255, 0.35), rgba(255, 94, 232, 0.35));
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 0 18px rgba(111, 243, 255, 0.32);
+            transition: transform 200ms ease, box-shadow 200ms ease;
+        }
+
+        .state-dot::after {
+            content: attr(data-label);
+            position: absolute;
+            left: -140px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 6px 14px;
+            font-size: 0.68rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            border-radius: 999px;
+            background: rgba(6, 0, 16, 0.75);
+            color: rgba(248, 249, 255, 0.75);
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 180ms ease;
+        }
+
+        .state-dot:hover::after {
+            opacity: 1;
+        }
+
+        .state-dot.active {
+            transform: scale(1.18);
+            box-shadow: 0 0 32px rgba(255, 224, 114, 0.55), 0 0 0 2px rgba(255, 224, 114, 0.7);
+            background: linear-gradient(140deg, rgba(255, 224, 114, 0.75), rgba(255, 94, 232, 0.6));
+        }
+
+        .state-indicator {
+            position: fixed;
+            right: clamp(18px, 4vw, 44px);
+            bottom: clamp(18px, 5vw, 48px);
+            z-index: 4;
+            padding: 16px 24px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(6, 0, 16, 0.82);
+            backdrop-filter: blur(16px);
+            color: rgba(248, 249, 255, 0.8);
+            font-size: 0.8rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            display: grid;
+            gap: 8px;
+            min-width: 220px;
+        }
+
+        .scroll-progress {
+            position: fixed;
+            right: clamp(8px, 3vw, 32px);
+            top: 0;
+            width: 8px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 999px;
+            overflow: hidden;
+            z-index: 4;
+        }
+
+        .scroll-fill {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background: linear-gradient(180deg, rgba(111, 243, 255, 0.85), rgba(255, 94, 232, 0.85));
+            box-shadow: 0 0 22px rgba(255, 94, 232, 0.45);
+            transition: height 180ms ease;
+        }
+
+        body.high-contrast {
+            background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.12), transparent 45%), #020005;
+        }
+
+        body.high-contrast .visualizer-instance {
+            opacity: 0.95;
+            border-color: rgba(255, 255, 255, 0.28);
+            box-shadow: 0 0 0 1px var(--high-contrast-shadow), 0 26px 44px rgba(0, 0, 0, 0.55), 0 0 36px rgba(255, 224, 114, 0.38);
+        }
+
+        body.high-contrast header.vaporwave-header,
+        body.high-contrast .tuning-panel,
+        body.high-contrast .overlay-card,
+        body.high-contrast .state-indicator {
+            border-color: rgba(255, 255, 255, 0.26);
+            box-shadow: 0 24px 44px rgba(0, 0, 0, 0.55), 0 0 32px rgba(255, 224, 114, 0.32);
+        }
+
+        body.high-contrast .ui-button {
+            color: #020005;
+        }
+
+        .chaos-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(22.5deg, transparent, transparent 3px, rgba(255, 94, 232, var(--chaos-strength)) 3px, rgba(255, 94, 232, var(--chaos-strength)) 6px),
+                repeating-linear-gradient(67.5deg, transparent, transparent 3px, rgba(111, 243, 255, var(--chaos-strength)) 3px, rgba(111, 243, 255, var(--chaos-strength)) 6px);
+            mix-blend-mode: screen;
+            opacity: 0;
+            z-index: 5;
+        }
+        body.reduce-motion .chaos-overlay {
+            opacity: 0 !important;
+        }
+
+        .chaos-overlay.active {
+            opacity: 1;
+            animation: chaosFlicker 120ms infinite;
+        }
+
+        .chaos-overlay.muted {
+            opacity: 0 !important;
+            animation: none !important;
+        }
+
+        .transition-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(255, 224, 114, 0.4), transparent 70%);
+            opacity: 0;
+            z-index: 6;
+        }
+        body.reduce-motion .transition-overlay {
+            display: none;
+        }
+
+        .transition-overlay.active {
+            animation: transitionPulse 720ms ease;
+        }
+
+        .scan-lines {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 3px);
+            mix-blend-mode: screen;
+            opacity: 0.35;
+            z-index: 1;
+            animation: scanMove 12s linear infinite;
+        }
+        body.reduce-motion .scan-lines {
+            display: none;
+        }
+
+        @keyframes gridDrift {
+            0% {
+                transform: translate3d(-8%, -8%, 0);
+            }
+            100% {
+                transform: translate3d(8%, 8%, 0);
+            }
+        }
+
+        @keyframes chaosFlicker {
+            0%,
+            100% {
+                opacity: 0.75;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes transitionPulse {
+            0% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes scanMove {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(100%);
+            }
+        }
+
+        @media (max-width: 960px) {
+            .visualizer-layer {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .visualizer-instance:nth-child(3) {
+                grid-column: span 2;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body {
+                scroll-behavior: auto;
+            }
+
+            .visualizer-instance::after,
+            .chaos-overlay,
+            .scan-lines,
+            .transition-overlay {
+                animation: none !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .visualizer-layer {
+                grid-template-columns: 1fr;
+            }
+
+            .visualizer-instance:nth-child(3) {
+                grid-column: span 1;
+            }
+
+            .state-controls,
+            .state-indicator,
+            .scroll-progress {
+                position: static;
+                transform: none;
+                display: flex;
+                flex-direction: row;
+                gap: 12px;
+                margin-top: 24px;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .state-indicator {
+                order: 2;
+            }
+
+            .scroll-progress {
+                order: 3;
+                height: 8px;
+            }
+
+            .scroll-fill {
+                height: 100%;
+                width: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="vaporwave-shell">
+        <div class="visualizer-layer" aria-hidden="true">
+            <div class="visualizer-instance" data-role="background"></div>
+            <div class="visualizer-instance" data-role="left-panel"></div>
+            <div class="visualizer-instance" data-role="footer"></div>
+        </div>
+
+        <header class="vaporwave-header">
+            <h1>Enhanced Vaporwave System</h1>
+            <p>
+                Multi-instance canvases blend layered gradients, animated grid lattices, and neon glyphs. Scroll and input data
+                modulate density, color drift, and chaos overlays while glassmorphic panels float above the visual field.
+            </p>
+        </header>
+
+        <section class="tuning-panel" aria-label="Visualizer tuning">
+            <div class="tuning-group">
+                <label class="tuning-label" for="opacityControl">
+                    <span>layer opacity</span>
+                    <output id="opacityValue" for="opacityControl">85%</output>
+                </label>
+                <input type="range" id="opacityControl" min="45" max="100" value="85" step="1" />
+                <p class="tuning-note">Controls the shared alpha applied to every visualizer canvas.</p>
+            </div>
+            <div class="tuning-group">
+                <label class="tuning-label" for="densityControl">
+                    <span>grid density</span>
+                    <output id="densityValue" for="densityControl">24px</output>
+                </label>
+                <input type="range" id="densityControl" min="16" max="48" value="24" step="1" />
+                <p class="tuning-note">Adjusts the spacing of overlay lattices and scanlines.</p>
+            </div>
+            <div class="tuning-group">
+                <label class="tuning-label" for="chaosControl">
+                    <span>chaos intensity</span>
+                    <output id="chaosValue" for="chaosControl">0.15</output>
+                </label>
+                <input type="range" id="chaosControl" min="0" max="40" value="15" step="1" />
+                <p class="tuning-note">Scales glitch band opacity for the chaos overlay pulses.</p>
+            </div>
+            <div class="tuning-group">
+                <label class="tuning-label" for="paletteControl">
+                    <span>spectral mode</span>
+                </label>
+                <select id="paletteControl" aria-label="Select spectral mode">
+                    <option value="azure-mist">Azure Mist</option>
+                    <option value="neon-dusk">Neon Dusk</option>
+                    <option value="luminous-sand">Luminous Sand</option>
+                    <option value="custom">Custom (state driven)</option>
+                </select>
+                <p class="tuning-note">Switch primary/secondary hues to mirror the preset families.</p>
+            </div>
+            <div class="tuning-group">
+                <div class="tuning-label">
+                    <span>parallax drift</span>
+                    <span class="toggle">
+                        <input type="checkbox" id="parallaxToggle" checked aria-label="Toggle parallax drift" />
+                        <span id="parallaxStatus">enabled</span>
+                    </span>
+                </div>
+                <p class="tuning-note">Disable for static presentations or reduced motion preference.</p>
+            </div>
+            <div class="tuning-group">
+                <div class="tuning-label">
+                    <span>chaos pulses</span>
+                    <span class="toggle">
+                        <input type="checkbox" id="chaosToggle" checked aria-label="Toggle chaos pulses" />
+                        <span id="chaosStatus">active</span>
+                    </span>
+                </div>
+                <p class="tuning-note">Pause the glitch cascade for calmer reviews or recordings.</p>
+            </div>
+            <div class="tuning-group snapshot-group">
+                <div class="tuning-label">
+                    <span>snapshots</span>
+                    <span id="snapshotStatus">unsaved</span>
+                </div>
+                <div class="snapshot-actions">
+                    <button type="button" id="snapshotSave">save snapshot</button>
+                    <button type="button" id="snapshotRestore" disabled>restore snapshot</button>
+                    <button type="button" id="snapshotCopy" disabled>copy share code</button>
+                </div>
+                <p class="snapshot-note" id="snapshotNotice">No snapshot stored yet.</p>
+            </div>
+            <div class="tuning-group control-actions">
+                <button type="button" id="resetControls">reset defaults</button>
+                <span class="micro-copy">Shift + click chaos pulse button to double intensity temporarily.</span>
+            </div>
+        </section>
+
+        <section class="content-overlay">
+            <article class="overlay-card" id="state-brief">
+                <h2>State Briefing</h2>
+                <p>
+                    Active profile <strong id="state-name">HOME</strong> uses density <strong id="state-density">24px</strong>,
+                    color spread <strong id="state-palette">Cyan → Magenta</strong>, and chaos level
+                    <strong id="state-chaos">0.15</strong>. Buttons trigger smooth transitions while preserving the vaporwave glow.
+                </p>
+                <div class="ui-button-bar">
+                    <button class="ui-button" data-action="transition">transition</button>
+                    <button class="ui-button pulse" data-action="chaos">chaos pulse</button>
+                </div>
+            </article>
+            <article class="overlay-card">
+                <h2>Overlay Notes</h2>
+                <p>
+                    Each `visualizer-instance` adopts unique saturation and blur filters to stack depth. Backdrop-filtered cards
+                    bend color through `linear-gradient` shells and neon text shadows. Scroll progress bars reflect state changes
+                    as gradients to mirror the original GEMINI overlay design.
+                </p>
+            </article>
+            <article class="overlay-card">
+                <h2>Interaction Metrics</h2>
+                <p>
+                    Mouse movement shifts gradient pivots using requestAnimationFrame, while the chaos overlay intensifies under
+                    pulse triggers. Layouts preload configuration sets so the gallery demo can mirror the original multi-instance
+                    choreography without external assets.
+                </p>
+            </article>
+        </section>
+
+        <div class="state-controls" role="group" aria-label="Visualizer states">
+            <button class="state-dot active" data-label="HOME" data-state='{"primary":"#6ff3ff","secondary":"#ff5ee8","accent":"#ffe072","density":24,"chaos":0.15}'></button>
+            <button class="state-dot" data-label="TECH" data-state='{"primary":"#9fffa9","secondary":"#14d1ff","accent":"#ffd966","density":18,"chaos":0.22}'></button>
+            <button class="state-dot" data-label="MEDIA" data-state='{"primary":"#ff92fb","secondary":"#6f77ff","accent":"#ffd0a8","density":20,"chaos":0.18}'></button>
+            <button class="state-dot" data-label="AUDIO" data-state='{"primary":"#6cfff2","secondary":"#ffbd6f","accent":"#ffe6a8","density":28,"chaos":0.25}'></button>
+            <button class="state-dot" data-label="QUANTUM" data-state='{"primary":"#b6d7ff","secondary":"#ff4ec4","accent":"#fff39c","density":32,"chaos":0.3}'></button>
+        </div>
+
+        <aside class="state-indicator" aria-live="polite">
+            <span>layout: <strong id="indicator-layout">home</strong></span>
+            <span>density: <strong id="indicator-density">24px</strong></span>
+            <span>chaos: <strong id="indicator-chaos">0.15</strong></span>
+            <span>color drift: <strong id="indicator-colors">cyan → magenta</strong></span>
+        </aside>
+
+        <div class="sr-only" id="liveStatus" aria-live="polite" aria-atomic="true"></div>
+
+        <div class="scroll-progress" aria-hidden="true">
+            <div class="scroll-fill"></div>
+        </div>
+    </div>
+
+    <div class="chaos-overlay" aria-hidden="true"></div>
+    <div class="transition-overlay" aria-hidden="true"></div>
+    <div class="scan-lines" aria-hidden="true"></div>
+
+    <script>
+        const root = document.documentElement;
+        const dots = document.querySelectorAll('.state-dot');
+        const chaosOverlay = document.querySelector('.chaos-overlay');
+        const transitionOverlay = document.querySelector('.transition-overlay');
+        const scrollFill = document.querySelector('.scroll-fill');
+        const layer = document.querySelector('.visualizer-layer');
+        const paletteControl = document.getElementById('paletteControl');
+        const chaosToggle = document.getElementById('chaosToggle');
+        const chaosStatus = document.getElementById('chaosStatus');
+        const resetButton = document.getElementById('resetControls');
+        const chaosButton = document.querySelector("[data-action='chaos']");
+        const transitionButton = document.querySelector("[data-action='transition']");
+        const liveRegion = document.getElementById('liveStatus');
+        const snapshotButtons = {
+            save: document.getElementById('snapshotSave'),
+            restore: document.getElementById('snapshotRestore'),
+            copy: document.getElementById('snapshotCopy'),
+        };
+        const snapshotStatus = document.getElementById('snapshotStatus');
+        const snapshotNotice = document.getElementById('snapshotNotice');
+        const snapshotStorageKey = 'enhancedVaporwaveSnapshot';
+        const controls = {
+            opacity: document.getElementById('opacityControl'),
+            density: document.getElementById('densityControl'),
+            chaos: document.getElementById('chaosControl'),
+            parallax: document.getElementById('parallaxToggle'),
+            palette: paletteControl,
+            chaosToggle,
+        };
+        const outputs = {
+            opacity: document.getElementById('opacityValue'),
+            density: document.getElementById('densityValue'),
+            chaos: document.getElementById('chaosValue'),
+            parallax: document.getElementById('parallaxStatus'),
+            chaosToggle: chaosStatus,
+        };
+        const indicator = {
+            layout: document.getElementById('indicator-layout'),
+            density: document.getElementById('indicator-density'),
+            chaos: document.getElementById('indicator-chaos'),
+            colors: document.getElementById('indicator-colors'),
+            stateName: document.getElementById('state-name'),
+            stateDensity: document.getElementById('state-density'),
+            statePalette: document.getElementById('state-palette'),
+            stateChaos: document.getElementById('state-chaos'),
+        };
+        const defaultDot = document.querySelector('.state-dot.active') || dots[0];
+        const defaultState = defaultDot ? JSON.parse(defaultDot.dataset.state) : { primary: '#6ff3ff', secondary: '#ff5ee8', accent: '#ffe072', density: 24, chaos: 0.15 };
+        const palettePresets = {
+            'azure-mist': { primary: '#6ff3ff', secondary: '#ff5ee8', accent: '#ffe072', label: 'Azure Mist' },
+            'neon-dusk': { primary: '#7cf5ff', secondary: '#9f5eff', accent: '#ffd27f', label: 'Neon Dusk' },
+            'luminous-sand': { primary: '#ffd7a8', secondary: '#ff92fb', accent: '#fff1c4', label: 'Luminous Sand' },
+        };
+        const defaultControls = {
+            opacity: Number(controls.opacity.value),
+            density: Number(controls.density.value),
+            chaos: Number(controls.chaos.value),
+            parallax: controls.parallax.checked,
+            palette: controls.palette ? controls.palette.value : 'custom',
+            chaosToggle: controls.chaosToggle ? controls.chaosToggle.checked : true,
+        };
+        const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const contrastQuery = window.matchMedia('(prefers-contrast: more)');
+        let parallaxEnabled = true;
+        let chaosEnabled = true;
+        let storedParallaxPreference = controls.parallax.checked;
+        let storedChaosPreference = controls.chaosToggle ? controls.chaosToggle.checked : true;
+        let snapshotData = null;
+        let suppressDirtyFlag = false;
+
+        function updateIndicatorDensity(value) {
+            indicator.density.textContent = `${value}px`;
+            indicator.stateDensity.textContent = `${value}px`;
+        }
+
+        function updateIndicatorChaos(value) {
+            const formatted = value.toFixed(2);
+            indicator.chaos.textContent = formatted;
+            indicator.stateChaos.textContent = formatted;
+        }
+
+        function announceStatus(message) {
+            if (!liveRegion) return;
+            liveRegion.textContent = '';
+            requestAnimationFrame(() => {
+                liveRegion.textContent = message;
+            });
+        }
+
+        function updateSnapshotNotice(message) {
+            if (!snapshotNotice) return;
+            snapshotNotice.textContent = message;
+        }
+
+        function updateSnapshotStatus(label, notice) {
+            if (snapshotStatus) {
+                snapshotStatus.textContent = label;
+            }
+            if (typeof notice === 'string') {
+                updateSnapshotNotice(notice);
+            }
+        }
+
+        function toggleSnapshotButtons(enabled) {
+            if (!snapshotButtons) return;
+            ['restore', 'copy'].forEach((key) => {
+                const button = snapshotButtons[key];
+                if (!button) return;
+                button.disabled = !enabled;
+                button.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+            });
+        }
+
+        function markSnapshotDirty() {
+            if (suppressDirtyFlag) {
+                return;
+            }
+            if (snapshotData) {
+                updateSnapshotStatus('modified', 'Adjustments differ from saved snapshot.');
+            } else {
+                updateSnapshotStatus('unsaved', 'No snapshot stored yet.');
+            }
+        }
+
+        function updateColorIndicators(primary, secondary) {
+            const paletteLabel = `${primary.toUpperCase()} → ${secondary.toUpperCase()}`;
+            indicator.colors.textContent = paletteLabel;
+            indicator.statePalette.textContent = paletteLabel;
+        }
+
+        function updateColors(primary, secondary, accent) {
+            root.style.setProperty('--primary', primary);
+            root.style.setProperty('--secondary', secondary);
+            root.style.setProperty('--accent', accent);
+            updateColorIndicators(primary, secondary);
+        }
+
+        function captureSnapshot() {
+            const computed = getComputedStyle(root);
+            return {
+                opacity: Number(controls.opacity.value),
+                density: Number(controls.density.value),
+                chaos: Number(controls.chaos.value),
+                parallax: controls.parallax.checked,
+                palette: controls.palette ? controls.palette.value : 'custom',
+                chaosToggle: controls.chaosToggle ? controls.chaosToggle.checked : chaosEnabled,
+                colors: {
+                    primary: computed.getPropertyValue('--primary').trim(),
+                    secondary: computed.getPropertyValue('--secondary').trim(),
+                    accent: computed.getPropertyValue('--accent').trim(),
+                },
+            };
+        }
+
+        function applySnapshot(data, { announce = true } = {}) {
+            if (!data) return;
+            suppressDirtyFlag = true;
+            controls.opacity.value = data.opacity;
+            controls.opacity.dispatchEvent(new Event('input'));
+
+            controls.density.value = data.density;
+            controls.density.dispatchEvent(new Event('input'));
+
+            controls.chaos.value = data.chaos;
+            controls.chaos.dispatchEvent(new Event('input'));
+
+            controls.parallax.checked = data.parallax;
+            setParallaxEnabled(data.parallax, { announce: false });
+
+            if (controls.palette) {
+                controls.palette.value = data.palette;
+            }
+
+            if (data.palette === 'custom' && data.colors) {
+                updateColors(data.colors.primary, data.colors.secondary, data.colors.accent);
+            } else if (controls.palette && palettePresets[data.palette]) {
+                const preset = palettePresets[data.palette];
+                updateColors(preset.primary, preset.secondary, preset.accent);
+            }
+
+            if (controls.chaosToggle) {
+                controls.chaosToggle.checked = data.chaosToggle;
+            }
+            setChaosEnabled(data.chaosToggle, { announce: false });
+
+            syncPaletteSelection(
+                data.colors?.primary ?? root.style.getPropertyValue('--primary'),
+                data.colors?.secondary ?? root.style.getPropertyValue('--secondary'),
+                data.colors?.accent ?? root.style.getPropertyValue('--accent')
+            );
+
+            suppressDirtyFlag = false;
+
+            updateSnapshotStatus('synced', 'Snapshot restored.');
+            if (announce) {
+                announceStatus('Snapshot settings restored.');
+            }
+        }
+
+        function handleContrastChange(event, { announce = false } = {}) {
+            const enableHighContrast = event.matches;
+            document.body.classList.toggle('high-contrast', enableHighContrast);
+            if (announce) {
+                announceStatus(
+                    enableHighContrast
+                        ? 'High contrast preference detected. Visual intensity boosted.'
+                        : 'High contrast preference cleared. Standard contrast restored.'
+                );
+            }
+        }
+
+        function normalizeColor(value) {
+            return value ? value.trim().toLowerCase() : '';
+        }
+
+        function syncPaletteSelection(primary, secondary, accent) {
+            const target = normalizeColor(primary);
+            const targetSecondary = normalizeColor(secondary);
+            const targetAccent = normalizeColor(accent);
+            const match = Object.entries(palettePresets).find(([, preset]) => {
+                return (
+                    normalizeColor(preset.primary) === target &&
+                    normalizeColor(preset.secondary) === targetSecondary &&
+                    normalizeColor(preset.accent) === targetAccent
+                );
+            });
+            if (controls.palette) {
+                controls.palette.value = match ? match[0] : 'custom';
+            }
+        }
+
+        toggleSnapshotButtons(false);
+        updateSnapshotStatus('unsaved', 'No snapshot stored yet.');
+
+        try {
+            const storedSnapshot = localStorage.getItem(snapshotStorageKey);
+            if (storedSnapshot) {
+                const parsed = JSON.parse(storedSnapshot);
+                if (parsed) {
+                    snapshotData = parsed;
+                    toggleSnapshotButtons(true);
+                    updateSnapshotStatus('synced', 'Snapshot ready from a previous session.');
+                }
+            }
+        } catch (error) {
+            console.warn('Unable to restore vaporwave snapshot from storage.', error);
+        }
+
+        if (snapshotButtons.save) {
+            snapshotButtons.save.addEventListener('click', () => {
+                snapshotData = captureSnapshot();
+                toggleSnapshotButtons(true);
+                updateSnapshotStatus('synced', 'Snapshot stored locally and ready to restore.');
+                try {
+                    localStorage.setItem(snapshotStorageKey, JSON.stringify(snapshotData));
+                } catch (error) {
+                    console.warn('Unable to persist vaporwave snapshot.', error);
+                }
+                announceStatus('Snapshot saved.');
+            });
+        }
+
+        if (snapshotButtons.restore) {
+            snapshotButtons.restore.addEventListener('click', () => {
+                if (!snapshotData) {
+                    try {
+                        const stored = localStorage.getItem(snapshotStorageKey);
+                        if (stored) {
+                            snapshotData = JSON.parse(stored);
+                        }
+                    } catch (error) {
+                        console.warn('Unable to access stored vaporwave snapshot.', error);
+                    }
+                }
+
+                if (snapshotData) {
+                    applySnapshot(snapshotData);
+                } else {
+                    updateSnapshotStatus('unsaved', 'Save a snapshot before restoring.');
+                }
+            });
+        }
+
+        if (snapshotButtons.copy) {
+            snapshotButtons.copy.addEventListener('click', async () => {
+                if (!snapshotData) {
+                    updateSnapshotStatus('unsaved', 'Save a snapshot before copying.');
+                    return;
+                }
+
+                const payload = JSON.stringify(snapshotData);
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(payload);
+                        updateSnapshotStatus('copied', 'Snapshot JSON copied to clipboard.');
+                        announceStatus('Snapshot copied to clipboard.');
+                    } else {
+                        throw new Error('Clipboard API unavailable');
+                    }
+                } catch (error) {
+                    updateSnapshotStatus('synced', 'Copy failed. Snapshot JSON logged to console.');
+                    console.warn('Snapshot copy fallback:', error, payload);
+                }
+            });
+        }
+
+        function setChaosEnabled(enabled, { announce = true } = {}) {
+            chaosEnabled = enabled;
+            chaosOverlay.classList.toggle('muted', !enabled);
+            if (chaosButton) {
+                chaosButton.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+            }
+            if (outputs.chaosToggle) {
+                outputs.chaosToggle.textContent = enabled ? 'active' : 'muted';
+            }
+            if (!enabled) {
+                chaosOverlay.classList.remove('active');
+            }
+            if (announce) {
+                announceStatus(`Chaos pulses ${enabled ? 'reactivated' : 'muted'}.`);
+            }
+        }
+
+        function applyState(label, state) {
+            updateColors(state.primary, state.secondary, state.accent);
+            root.style.setProperty('--grid-density', `${state.density}px`);
+            root.style.setProperty('--chaos-strength', state.chaos);
+
+            indicator.layout.textContent = label.toLowerCase();
+            indicator.stateName.textContent = label;
+
+            controls.density.value = state.density;
+            outputs.density.textContent = `${state.density}px`;
+            updateIndicatorDensity(state.density);
+
+            const chaosSliderValue = Math.min(40, Math.max(0, Math.round(state.chaos * 100)));
+            controls.chaos.value = chaosSliderValue;
+            const chaosValue = chaosSliderValue / 100;
+            outputs.chaos.textContent = chaosValue.toFixed(2);
+            updateIndicatorChaos(chaosValue);
+
+            syncPaletteSelection(state.primary, state.secondary, state.accent);
+
+            transitionOverlay.classList.remove('active');
+            void transitionOverlay.offsetWidth;
+            transitionOverlay.classList.add('active');
+            announceStatus(`State ${label} engaged.`);
+            markSnapshotDirty();
+        }
+
+        dots.forEach((dot) => {
+            dot.addEventListener('click', () => {
+                dots.forEach((d) => d.classList.remove('active'));
+                dot.classList.add('active');
+                const state = JSON.parse(dot.dataset.state);
+                applyState(dot.dataset.label, state);
+            });
+        });
+
+        if (transitionButton) {
+            transitionButton.addEventListener('click', () => {
+                const active = document.querySelector('.state-dot.active');
+                if (active) {
+                    const next = active.nextElementSibling || dots[0];
+                    next.click();
+                }
+            });
+        }
+
+        if (chaosButton) {
+            chaosButton.addEventListener('click', (event) => {
+                if (!chaosEnabled) {
+                    announceStatus('Chaos pulses are muted. Enable them in the tuning panel to trigger effects.');
+                    return;
+                }
+
+                const computed = getComputedStyle(root);
+                const baseChaos = parseFloat(computed.getPropertyValue('--chaos-strength')) || 0;
+                let boosted = baseChaos;
+                let revertTimer;
+
+                if (event.shiftKey && !reduceMotionQuery.matches) {
+                    boosted = Math.min(0.4, baseChaos * 1.8 + 0.05);
+                    root.style.setProperty('--chaos-strength', boosted.toFixed(2));
+                    outputs.chaos.textContent = boosted.toFixed(2);
+                    updateIndicatorChaos(boosted);
+                    revertTimer = window.setTimeout(() => {
+                        root.style.setProperty('--chaos-strength', baseChaos.toFixed(2));
+                        outputs.chaos.textContent = baseChaos.toFixed(2);
+                        updateIndicatorChaos(baseChaos);
+                    }, 600);
+                }
+
+                chaosOverlay.classList.add('active');
+                const duration = reduceMotionQuery.matches ? 0 : 900;
+                const resetOverlay = () => {
+                    chaosOverlay.classList.remove('active');
+                    if (event.shiftKey && revertTimer) {
+                        window.clearTimeout(revertTimer);
+                        root.style.setProperty('--chaos-strength', baseChaos.toFixed(2));
+                        outputs.chaos.textContent = baseChaos.toFixed(2);
+                        updateIndicatorChaos(baseChaos);
+                    }
+                };
+
+                if (duration === 0) {
+                    requestAnimationFrame(resetOverlay);
+                } else {
+                    window.setTimeout(resetOverlay, duration);
+                }
+
+                announceStatus(event.shiftKey ? 'Chaos pulse boosted.' : 'Chaos pulse triggered.');
+            });
+        }
+
+        function updateScrollProgress() {
+            const doc = document.documentElement;
+            const scrolled = (doc.scrollTop || document.body.scrollTop) /
+                ((doc.scrollHeight || document.body.scrollHeight) - doc.clientHeight);
+            scrollFill.style.height = `${Math.min(1, scrolled) * 100}%`;
+        }
+
+        window.addEventListener('scroll', updateScrollProgress, { passive: true });
+
+        controls.opacity.addEventListener('input', (event) => {
+            const value = Number(event.target.value);
+            root.style.setProperty('--layer-opacity', (value / 100).toFixed(2));
+            outputs.opacity.textContent = `${value}%`;
+            markSnapshotDirty();
+        });
+
+        controls.density.addEventListener('input', (event) => {
+            const value = Number(event.target.value);
+            root.style.setProperty('--grid-density', `${value}px`);
+            outputs.density.textContent = `${value}px`;
+            updateIndicatorDensity(value);
+            markSnapshotDirty();
+        });
+
+        controls.chaos.addEventListener('input', (event) => {
+            const value = Number(event.target.value) / 100;
+            root.style.setProperty('--chaos-strength', value.toFixed(2));
+            outputs.chaos.textContent = value.toFixed(2);
+            updateIndicatorChaos(value);
+            const computed = getComputedStyle(root);
+            syncPaletteSelection(
+                computed.getPropertyValue('--primary'),
+                computed.getPropertyValue('--secondary'),
+                computed.getPropertyValue('--accent')
+            );
+            markSnapshotDirty();
+        });
+
+        if (controls.palette) {
+            controls.palette.addEventListener('change', (event) => {
+                const key = event.target.value;
+                if (key === 'custom' || !palettePresets[key]) {
+                    const computed = getComputedStyle(root);
+                    syncPaletteSelection(
+                        computed.getPropertyValue('--primary'),
+                        computed.getPropertyValue('--secondary'),
+                        computed.getPropertyValue('--accent')
+                    );
+                    announceStatus('Custom palette retained.');
+                    return;
+                }
+                const preset = palettePresets[key];
+                updateColors(preset.primary, preset.secondary, preset.accent);
+                announceStatus(`${preset.label} palette applied.`);
+                markSnapshotDirty();
+            });
+        }
+
+        if (controls.chaosToggle) {
+            controls.chaosToggle.addEventListener('change', (event) => {
+                setChaosEnabled(event.target.checked);
+                storedChaosPreference = event.target.checked;
+                markSnapshotDirty();
+            });
+        }
+
+        function setParallaxEnabled(enabled, { announce = true } = {}) {
+            parallaxEnabled = enabled;
+            outputs.parallax.textContent = enabled ? 'enabled' : 'disabled';
+            if (!enabled) {
+                layer.style.transform = 'none';
+            }
+            if (announce) {
+                announceStatus(`Parallax ${enabled ? 'enabled' : 'disabled'}.`);
+            }
+        }
+
+        controls.parallax.addEventListener('change', (event) => {
+            setParallaxEnabled(event.target.checked);
+            storedParallaxPreference = event.target.checked;
+            markSnapshotDirty();
+        });
+
+        if (resetButton) {
+            resetButton.addEventListener('click', () => {
+                if (defaultDot) {
+                    defaultDot.click();
+                }
+
+                controls.opacity.value = defaultControls.opacity;
+                controls.opacity.dispatchEvent(new Event('input'));
+
+                controls.density.value = defaultControls.density;
+                controls.density.dispatchEvent(new Event('input'));
+
+                controls.chaos.value = defaultControls.chaos;
+                controls.chaos.dispatchEvent(new Event('input'));
+
+                controls.parallax.checked = defaultControls.parallax;
+                setParallaxEnabled(defaultControls.parallax, { announce: false });
+                storedParallaxPreference = defaultControls.parallax;
+
+                if (controls.palette) {
+                    controls.palette.value = defaultControls.palette;
+                    const preset = palettePresets[defaultControls.palette];
+                    if (preset) {
+                        updateColors(preset.primary, preset.secondary, preset.accent);
+                    }
+                }
+
+                if (controls.chaosToggle) {
+                    controls.chaosToggle.checked = defaultControls.chaosToggle;
+                }
+                setChaosEnabled(defaultControls.chaosToggle, { announce: false });
+                storedChaosPreference = defaultControls.chaosToggle;
+
+                announceStatus('Visualizer settings restored to defaults.');
+                markSnapshotDirty();
+            });
+        }
+
+        function handleMouseMove(event) {
+            if (!parallaxEnabled) return;
+            const strength = Number(getComputedStyle(root).getPropertyValue('--parallax-strength')) || 12;
+            const x = (event.clientX / window.innerWidth - 0.5) * strength;
+            const y = (event.clientY / window.innerHeight - 0.5) * strength;
+            layer.style.transform = `translate3d(${x * -1}px, ${y * -1}px, 0)`;
+        }
+
+        window.addEventListener('mousemove', handleMouseMove);
+
+        function syncFromComputedStyles() {
+            const computed = getComputedStyle(root);
+            const opacity = Math.round(parseFloat(computed.getPropertyValue('--layer-opacity')) * 100);
+            if (!Number.isNaN(opacity)) {
+                controls.opacity.value = opacity;
+                outputs.opacity.textContent = `${opacity}%`;
+            }
+            const density = parseFloat(computed.getPropertyValue('--grid-density')) || 24;
+            const roundedDensity = Math.round(density);
+            controls.density.value = roundedDensity;
+            outputs.density.textContent = `${roundedDensity}px`;
+            updateIndicatorDensity(roundedDensity);
+            const chaos = parseFloat(computed.getPropertyValue('--chaos-strength')) || 0;
+            controls.chaos.value = Math.round(chaos * 100);
+            outputs.chaos.textContent = chaos.toFixed(2);
+            updateIndicatorChaos(chaos);
+            const primary = computed.getPropertyValue('--primary');
+            const secondary = computed.getPropertyValue('--secondary');
+            const accent = computed.getPropertyValue('--accent');
+            updateColorIndicators(primary.trim(), secondary.trim());
+            syncPaletteSelection(primary, secondary, accent);
+        }
+
+        function handleReduceMotion(event) {
+            const reduce = event.matches;
+            document.body.classList.toggle('reduce-motion', reduce);
+            controls.parallax.disabled = reduce;
+            controls.parallax.setAttribute('aria-disabled', reduce ? 'true' : 'false');
+            if (controls.chaosToggle) {
+                controls.chaosToggle.disabled = reduce;
+                controls.chaosToggle.setAttribute('aria-disabled', reduce ? 'true' : 'false');
+            }
+            if (reduce) {
+                storedParallaxPreference = controls.parallax.checked;
+                controls.parallax.checked = false;
+                setParallaxEnabled(false, { announce: false });
+
+                if (controls.chaosToggle) {
+                    storedChaosPreference = controls.chaosToggle.checked;
+                    controls.chaosToggle.checked = false;
+                }
+                setChaosEnabled(false, { announce: false });
+            } else {
+                controls.parallax.checked = storedParallaxPreference;
+                setParallaxEnabled(storedParallaxPreference, { announce: false });
+
+                const restoredChaos = controls.chaosToggle ? storedChaosPreference : chaosEnabled;
+                if (controls.chaosToggle) {
+                    controls.chaosToggle.checked = restoredChaos;
+                }
+                setChaosEnabled(restoredChaos, { announce: false });
+            }
+            announceStatus(reduce ? 'Reduced motion preference detected. Animations softened.' : 'Standard motion preference restored.');
+        }
+
+        updateScrollProgress();
+        syncFromComputedStyles();
+        setChaosEnabled(controls.chaosToggle ? controls.chaosToggle.checked : true, { announce: false });
+
+        reduceMotionQuery.addEventListener('change', handleReduceMotion);
+        handleReduceMotion(reduceMotionQuery);
+        contrastQuery.addEventListener('change', (event) => handleContrastChange(event, { announce: true }));
+        handleContrastChange(contrastQuery);
+    </script>
+</body>
+</html>
