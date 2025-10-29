@@ -1,0 +1,17 @@
+{
+  "name": "visual-codex-v2",
+  "version": "1.0.0",
+  "description": "**NO PERMISSIONS GRANTED. VIEWING FOR DEMONSTRATION ONLY.**",
+  "main": "test-gallery-puppeteer.js",
+  "scripts": {
+    "test": "npm run test:snapshots",
+    "test:snapshots": "playwright test tests/snapshot-contrast.spec.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
