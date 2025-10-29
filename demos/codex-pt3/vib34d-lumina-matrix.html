@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codex Pt. 3 – VIB34D Lumina Matrix</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark light;
+      --surface: rgba(10, 12, 18, 0.68);
+      --surface-alt: rgba(250, 252, 255, 0.85);
+      --accent: #8af7d0;
+      --accent-secondary: #8aa2ff;
+      --accent-tertiary: #ffb0f8;
+      --grid-line: rgba(138, 247, 208, 0.18);
+      --glow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      font-family: "Urbanist", system-ui;
+      font-size: clamp(15px, 0.85vw + 0.65rem, 18px);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 10%, rgba(138, 247, 208, 0.24), transparent 60%),
+                  radial-gradient(circle at 80% 15%, rgba(138, 162, 255, 0.2), transparent 55%),
+                  #060810;
+      color: #f6fbff;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(1.8rem, 3vw, 3.6rem);
+      padding: clamp(1.6rem, 3vw, 3rem);
+      overflow-x: hidden;
+    }
+
+    header {
+      display: grid;
+      gap: 1rem;
+      max-width: 880px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(2.6rem, 5vw, 4.4rem);
+      letter-spacing: -0.01em;
+    }
+
+    header p {
+      margin: 0;
+      color: rgba(214, 235, 255, 0.7);
+      line-height: 1.7;
+    }
+
+    .grid-shell {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) minmax(480px, 1fr);
+      gap: clamp(1.6rem, 3.8vw, 4.4rem);
+      align-items: start;
+    }
+
+    .matrix-panel {
+      background: var(--surface);
+      border-radius: 28px;
+      padding: 1.4rem 1.6rem;
+      border: 1px solid rgba(138, 247, 208, 0.2);
+      backdrop-filter: blur(20px) saturate(140%);
+      box-shadow: var(--glow);
+      position: relative;
+    }
+
+    .matrix-panel h2 {
+      margin: 0 0 0.75rem;
+      font-size: 0.95rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(214, 235, 255, 0.7);
+    }
+
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+
+    .swatch {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid transparent;
+      height: 94px;
+      display: grid;
+      place-items: center;
+      color: rgba(8, 12, 22, 0.8);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: border 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+    }
+
+    .swatch::after {
+      content: attr(data-label);
+      position: absolute;
+      inset: auto 0 0 0;
+      padding: 0.35rem 0.5rem;
+      font-size: 0.78rem;
+      background: rgba(0, 0, 0, 0.2);
+      color: #f5fbff;
+      letter-spacing: 0.2em;
+    }
+
+    .swatch[data-active="true"] {
+      border-color: rgba(138, 247, 208, 0.65);
+      transform: translateY(-4px);
+      box-shadow: 0 22px 46px rgba(8, 20, 30, 0.55);
+    }
+
+    .matrix-panel button,
+    .matrix-panel select,
+    .matrix-panel input {
+      font: inherit;
+    }
+
+    .matrix-panel select,
+    .matrix-panel input[type="color"],
+    .matrix-panel input[type="range"] {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(138, 247, 208, 0.35);
+      padding: 0.55rem 0.8rem;
+      background: rgba(8, 12, 20, 0.6);
+      color: inherit;
+      margin-bottom: 0.75rem;
+    }
+
+    .matrix-panel input[type="range"] {
+      accent-color: var(--accent);
+    }
+
+    .matrix-panel button {
+      padding: 0.6rem 1rem;
+      border-radius: 16px;
+      border: 1px solid rgba(138, 247, 208, 0.32);
+      background: rgba(6, 10, 18, 0.65);
+      color: rgba(214, 235, 255, 0.82);
+      cursor: pointer;
+      transition: transform 150ms ease, border 150ms ease;
+    }
+
+    .matrix-panel button:hover,
+    .matrix-panel button:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(138, 247, 208, 0.6);
+    }
+
+    .matrix-stage {
+      position: relative;
+      background: rgba(4, 8, 18, 0.72);
+      border-radius: 36px;
+      border: 1px solid rgba(138, 247, 208, 0.25);
+      padding: clamp(1.8rem, 3vw, 3rem);
+      display: grid;
+      gap: 1.2rem;
+      min-height: 520px;
+      overflow: hidden;
+      box-shadow: 0 42px 90px rgba(2, 12, 20, 0.55);
+    }
+
+    .matrix-stage canvas {
+      width: 100%;
+      height: 320px;
+      border-radius: 24px;
+      border: 1px solid rgba(138, 247, 208, 0.32);
+      background: rgba(8, 12, 20, 0.6);
+    }
+
+    .matrix-stage::before,
+    .matrix-stage::after {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.4;
+      pointer-events: none;
+      transition: transform 1s ease, opacity 1s ease;
+    }
+
+    .matrix-stage::before {
+      top: -160px;
+      left: -160px;
+      background: radial-gradient(circle, rgba(138, 247, 208, 0.95), transparent 70%);
+    }
+
+    .matrix-stage::after {
+      bottom: -180px;
+      right: -160px;
+      background: radial-gradient(circle, rgba(138, 162, 255, 0.85), transparent 70%);
+    }
+
+    .matrix-stage[data-pattern="veils"]::after {
+      opacity: 0.52;
+      transform: translate(-14%, -18%);
+    }
+
+    .matrix-stage[data-pattern="clusters"]::before {
+      transform: translate(12%, 16%);
+    }
+
+    .matrix-stage[data-pattern="splines"]::after {
+      transform: translate(18%, 4%);
+    }
+
+    .status-led {
+      position: absolute;
+      top: 1.4rem;
+      right: 1.6rem;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(138, 247, 208, 0.32);
+      border: 2px solid rgba(138, 247, 208, 0.65);
+      box-shadow: 0 0 18px rgba(138, 247, 208, 0.65);
+      transition: background 300ms ease, box-shadow 300ms ease;
+    }
+
+    .status-led[data-active="true"] {
+      background: rgba(255, 176, 248, 0.5);
+      box-shadow: 0 0 26px rgba(255, 176, 248, 0.75);
+    }
+
+    .announcer {
+      position: fixed;
+      bottom: clamp(1.4rem, 3vw, 2.5rem);
+      right: clamp(1.4rem, 4vw, 2.8rem);
+      padding: 0.75rem 1.1rem;
+      border-radius: 16px;
+      border: 1px solid rgba(138, 247, 208, 0.35);
+      background: rgba(6, 10, 18, 0.78);
+      color: rgba(214, 235, 255, 0.9);
+      font-size: 0.88rem;
+      letter-spacing: 0.06em;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.4);
+    }
+
+    @media (max-width: 1100px) {
+      .grid-shell {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>VIB34D Lumina Matrix</h1>
+    <p>
+      The VIB34D index transformed into a luminous control lattice. Every palette references the live matrix,
+      streaming vector veils, diffusion clusters, and spline blooms to orchestrate holographic dashboards and
+      adaptive storytelling.
+    </p>
+  </header>
+
+  <main class="grid-shell">
+    <section class="matrix-panel" aria-label="Palette selection">
+      <div class="status-led" id="status-led" aria-hidden="true"></div>
+      <h2>Flux Palettes</h2>
+      <div class="palette-grid" id="palette-grid" role="listbox">
+        <button class="swatch" type="button" style="background: linear-gradient(135deg, #8af7d0, #8aa2ff);" data-palette="veils" data-active="true" data-label="VEILS"></button>
+        <button class="swatch" type="button" style="background: linear-gradient(135deg, #8aa2ff, #ffb0f8);" data-palette="clusters" data-label="CLUSTERS"></button>
+        <button class="swatch" type="button" style="background: linear-gradient(135deg, #ffb0f8, #ffd19a);" data-palette="splines" data-label="SPLINES"></button>
+        <button class="swatch" type="button" style="background: linear-gradient(135deg, #65fdf0, #1d6fa3);" data-palette="abyss" data-label="ABYSS"></button>
+        <button class="swatch" type="button" style="background: linear-gradient(135deg, #ff9a9e, #fad0c4);" data-palette="sunset" data-label="SUNSET"></button>
+        <button class="swatch" type="button" style="background: linear-gradient(135deg, #89f7fe, #66a6ff);" data-palette="glacial" data-label="GLACIAL"></button>
+      </div>
+      <h2>Chroma Calibration</h2>
+      <label>
+        Pattern Density
+        <input type="range" min="12" max="88" value="42" id="density" />
+      </label>
+      <label>
+        Motion Flow
+        <input type="range" min="2" max="12" value="6" id="flow" />
+      </label>
+      <label>
+        Accent Highlight
+        <input type="color" id="accent" value="#8af7d0" />
+      </label>
+      <select id="pattern" aria-label="Pattern mode">
+        <option value="veils" selected>Veils</option>
+        <option value="clusters">Clusters</option>
+        <option value="splines">Splines</option>
+        <option value="veils-shift">Veils Shift</option>
+        <option value="halo">Halo Traces</option>
+      </select>
+      <div class="palette-grid" style="grid-template-columns: repeat(2, 1fr);">
+        <button type="button" id="save" class="swatch" data-label="SAVE" style="background: rgba(8, 12, 20, 0.65); color: rgba(214, 235, 255, 0.82);">Save</button>
+        <button type="button" id="restore" class="swatch" data-label="RESTORE" style="background: rgba(8, 12, 20, 0.65); color: rgba(214, 235, 255, 0.82);">Restore</button>
+      </div>
+      <button type="button" id="reset" style="margin-top: 0.8rem;">Reset Matrix</button>
+    </section>
+
+    <section class="matrix-stage" data-pattern="veils" aria-label="Lumina matrix visualization">
+      <canvas id="matrix-canvas" aria-label="Animated lumina matrix"></canvas>
+      <article class="matrix-panel" aria-live="polite">
+        <h2>Matrix Insight</h2>
+        <p id="matrix-insight">
+          Veils weave gentle aurora ribbons with balanced density 42 and flow 6. Accent highlight #8af7d0 is locked in.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <div class="announcer" role="status" aria-live="assertive" aria-atomic="true" hidden></div>
+
+  <script>
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+    const swatches = document.querySelectorAll('.swatch[data-palette]');
+    const density = document.getElementById('density');
+    const flow = document.getElementById('flow');
+    const accentInput = document.getElementById('accent');
+    const patternSelect = document.getElementById('pattern');
+    const matrixStage = document.querySelector('.matrix-stage');
+    const insight = document.getElementById('matrix-insight');
+    const saveBtn = document.getElementById('save');
+    const restoreBtn = document.getElementById('restore');
+    const resetBtn = document.getElementById('reset');
+    const announcer = document.querySelector('.announcer');
+    const led = document.getElementById('status-led');
+
+    const state = {
+      palette: 'veils',
+      density: 42,
+      flow: 6,
+      accent: '#8af7d0',
+      pattern: 'veils'
+    };
+
+    const paletteMap = {
+      veils: ['#8af7d0', '#8aa2ff', '#f1f9ff'],
+      clusters: ['#8aa2ff', '#ffb0f8', '#ffe0f8'],
+      splines: ['#ffb0f8', '#ffd19a', '#fff4e6'],
+      abyss: ['#65fdf0', '#1d6fa3', '#06122b'],
+      sunset: ['#ff9a9e', '#fad0c4', '#fde4cf'],
+      glacial: ['#89f7fe', '#66a6ff', '#def3ff'],
+      'veils-shift': ['#8af7d0', '#35a0ff', '#0a2740'],
+      halo: ['#f8f7ff', '#8aa2ff', '#2b1b5a']
+    };
+
+    const descriptions = {
+      veils: 'Veils weave gentle aurora ribbons with balanced density',
+      clusters: 'Clusters sculpt particle blooms with reactive overlays at density',
+      splines: 'Splines bend luminous splines through multi-axis parallax at density',
+      abyss: 'Abyss channels abyssal blues with crystalline edges at density',
+      sunset: 'Sunset drapes warm gradients with soft bloom density',
+      glacial: 'Glacial evolves icy streaks with crisp shards around density',
+      'veils-shift': 'Veils Shift twists the aurora with midnight undertones at density',
+      halo: 'Halo Traces orbit spectral halos with density'
+    };
+
+    const setCanvasSize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+    };
+
+    let tick = 0;
+    let animationFrame;
+    let reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function drawMatrix() {
+      const width = canvas.width / (window.devicePixelRatio || 1);
+      const height = canvas.height / (window.devicePixelRatio || 1);
+      ctx.clearRect(0, 0, width, height);
+
+      const palette = paletteMap[state.palette] || paletteMap.veils;
+      const gradient = ctx.createLinearGradient(0, 0, width, height);
+      gradient.addColorStop(0, palette[0]);
+      gradient.addColorStop(0.5, palette[1]);
+      gradient.addColorStop(1, palette[2]);
+      ctx.fillStyle = gradient;
+      ctx.globalAlpha = 0.65;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.globalAlpha = 0.95;
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = state.accent + 'bb';
+
+      const lineCount = Math.max(6, Math.floor(state.density / 4));
+      for (let i = 0; i < lineCount; i++) {
+        ctx.beginPath();
+        const offset = (i / lineCount) * width;
+        ctx.moveTo(offset, 0);
+        for (let y = 0; y <= height; y += 42) {
+          const amplitude = Math.sin((y / 50) + tick / 30 + i) * 40 * (state.flow / 12);
+          ctx.lineTo(offset + amplitude, y);
+        }
+        ctx.stroke();
+      }
+
+      ctx.globalAlpha = 0.4;
+      ctx.fillStyle = state.accent + '55';
+      const bloomCount = Math.round(state.flow / 2);
+      for (let i = 0; i < bloomCount; i++) {
+        const x = (i / bloomCount) * width + 40 * Math.sin(tick / 40 + i);
+        const y = (i / bloomCount) * height + 40 * Math.cos(tick / 35 + i);
+        const radius = 24 + Math.sin(tick / 30 + i) * 10;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (!reducedMotion) {
+        tick += state.flow * 0.6;
+        animationFrame = requestAnimationFrame(drawMatrix);
+      }
+    }
+
+    function announce(message) {
+      announcer.textContent = message;
+      announcer.hidden = false;
+      clearTimeout(announce.timeout);
+      announce.timeout = setTimeout(() => announcer.setAttribute('hidden', ''), 2400);
+    }
+
+    function updateInsight() {
+      insight.textContent = `${descriptions[state.pattern] || descriptions[state.palette]} ${state.density} and flow ${state.flow}. Accent highlight ${state.accent} locked.`;
+    }
+
+    function updateMatrix(partial = {}) {
+      Object.assign(state, partial);
+      matrixStage.dataset.pattern = state.pattern;
+      swatches.forEach(button => button.dataset.active = (button.dataset.palette === state.palette));
+      updateInsight();
+      led.dataset.active = 'true';
+      setTimeout(() => led.dataset.active = 'false', 1000);
+      cancelAnimationFrame(animationFrame);
+      drawMatrix();
+    }
+
+    swatches.forEach(button => {
+      button.addEventListener('click', () => {
+        updateMatrix({ palette: button.dataset.palette, pattern: button.dataset.palette });
+        patternSelect.value = button.dataset.palette;
+        announce(`${button.dataset.label} palette engaged.`);
+      });
+    });
+
+    density.addEventListener('input', event => {
+      updateMatrix({ density: Number(event.target.value) });
+    });
+
+    flow.addEventListener('input', event => {
+      updateMatrix({ flow: Number(event.target.value) });
+    });
+
+    accentInput.addEventListener('input', event => {
+      updateMatrix({ accent: event.target.value });
+    });
+
+    patternSelect.addEventListener('change', event => {
+      const value = event.target.value;
+      updateMatrix({ pattern: value, palette: value.includes('veils') ? 'veils' : value });
+      swatches.forEach(button => {
+        button.dataset.active = (button.dataset.palette === state.palette);
+      });
+      announce(`${event.target.selectedOptions[0].text} pattern applied.`);
+    });
+
+    saveBtn.addEventListener('click', () => {
+      localStorage.setItem('codex-lumina-state', JSON.stringify(state));
+      announce('Matrix snapshot saved.');
+    });
+
+    restoreBtn.addEventListener('click', () => {
+      const saved = localStorage.getItem('codex-lumina-state');
+      if (!saved) {
+        announce('No snapshot stored yet.');
+        return;
+      }
+      const snapshot = JSON.parse(saved);
+      density.value = snapshot.density;
+      flow.value = snapshot.flow;
+      accentInput.value = snapshot.accent;
+      patternSelect.value = snapshot.pattern;
+      updateMatrix(snapshot);
+      announce('Matrix snapshot restored.');
+    });
+
+    resetBtn.addEventListener('click', () => {
+      density.value = 42;
+      flow.value = 6;
+      accentInput.value = '#8af7d0';
+      patternSelect.value = 'veils';
+      updateMatrix({ palette: 'veils', pattern: 'veils', density: 42, flow: 6, accent: '#8af7d0' });
+      announce('Matrix reset to default.');
+    });
+
+    window.addEventListener('resize', () => {
+      setCanvasSize();
+      drawMatrix();
+    });
+
+    window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => {
+      reducedMotion = event.matches;
+      if (reducedMotion) {
+        cancelAnimationFrame(animationFrame);
+      } else {
+        drawMatrix();
+      }
+    });
+
+    setCanvasSize();
+    updateMatrix();
+  </script>
+</body>
+</html>

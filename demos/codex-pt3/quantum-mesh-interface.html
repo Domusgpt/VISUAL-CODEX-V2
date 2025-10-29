@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codex Pt. 3 – Quantum Mesh Interface</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: radial-gradient(circle at 10% 10%, rgba(90, 211, 255, 0.32), transparent 55%),
+             radial-gradient(circle at 90% 20%, rgba(255, 177, 217, 0.25), transparent 40%),
+             #040409;
+      --panel: rgba(9, 11, 18, 0.74);
+      --highlight: rgba(118, 175, 255, 0.45);
+      --core: #d5f5ff;
+      --accent: #ffa6ff;
+      --accent-2: #8c54ff;
+      --mesh-bg: rgba(17, 21, 35, 0.6);
+      --text: rgba(240, 246, 255, 0.92);
+      --muted: rgba(195, 215, 255, 0.58);
+      --glass: blur(18px) saturate(140%);
+      font-family: "Manrope", system-ui;
+      font-size: clamp(15px, 0.9vw + 0.6rem, 18px);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      gap: 2.4rem;
+      padding: clamp(1.8rem, 3vw, 3.4rem);
+      overflow-x: hidden;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(1.4rem, 3vw, 3.2rem);
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(2.8rem, 5vw, 4.6rem);
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      flex: 1 1 360px;
+      margin: 0;
+      max-width: 640px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .orbit-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 1.1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(118, 175, 255, 0.32);
+      background: rgba(12, 16, 28, 0.65);
+      backdrop-filter: var(--glass);
+      color: var(--muted);
+      cursor: pointer;
+      transition: transform 200ms ease, color 200ms ease, border 200ms ease;
+    }
+
+    .orbit-toggle[data-active="true"] {
+      color: var(--core);
+      border-color: rgba(255, 166, 255, 0.45);
+      transform: translateY(-2px);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 400px) minmax(420px, 1fr);
+      gap: clamp(1.8rem, 4vw, 4.4rem);
+      align-items: start;
+    }
+
+    .stacked-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.3rem;
+    }
+
+    .panel {
+      background: var(--panel);
+      border-radius: 28px;
+      padding: 1.4rem 1.6rem;
+      border: 1px solid rgba(118, 175, 255, 0.22);
+      backdrop-filter: var(--glass);
+      position: relative;
+      box-shadow: 0 28px 68px rgba(3, 7, 20, 0.55);
+    }
+
+    .panel h2 {
+      margin: 0 0 0.8rem;
+      text-transform: uppercase;
+      font-size: 0.95rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    .panel p {
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .mesh-stage {
+      position: relative;
+      background: var(--mesh-bg);
+      border-radius: 36px;
+      border: 1px solid rgba(118, 175, 255, 0.25);
+      padding: clamp(1.8rem, 3vw, 3rem);
+      min-height: 540px;
+      display: grid;
+      grid-template-columns: minmax(200px, 260px) 1fr;
+      gap: clamp(1.4rem, 3vw, 3.2rem);
+      overflow: hidden;
+      box-shadow: 0 40px 90px rgba(2, 8, 26, 0.65);
+    }
+
+    .mesh-stage::before,
+    .mesh-stage::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(110px);
+      opacity: 0.45;
+      transition: transform 1.2s ease, opacity 1.2s ease;
+      pointer-events: none;
+    }
+
+    .mesh-stage::before {
+      width: 420px;
+      height: 420px;
+      top: -160px;
+      left: -140px;
+      background: radial-gradient(circle, rgba(118, 175, 255, 0.9), transparent 70%);
+    }
+
+    .mesh-stage::after {
+      width: 420px;
+      height: 420px;
+      bottom: -180px;
+      right: -160px;
+      background: radial-gradient(circle, rgba(140, 84, 255, 0.9), transparent 70%);
+    }
+
+    .mesh-stage[data-program="refraction"]::before {
+      transform: translate(14%, 12%);
+      opacity: 0.65;
+    }
+
+    .mesh-stage[data-program="refraction"]::after {
+      transform: translate(-12%, -16%);
+    }
+
+    .mesh-stage[data-program="pulse"]::before {
+      transform: translate(4%, -6%);
+      opacity: 0.6;
+    }
+
+    .mesh-stage[data-program="pulse"]::after {
+      transform: translate(-4%, 8%);
+    }
+
+    .mesh-stage[data-program="lumen"]::before {
+      transform: translate(20%, -4%);
+      opacity: 0.52;
+    }
+
+    .mesh-stage canvas {
+      grid-column: 1 / -1;
+      width: 100%;
+      height: 320px;
+      border-radius: 22px;
+      border: 1px solid rgba(118, 175, 255, 0.3);
+      background: rgba(6, 10, 20, 0.65);
+    }
+
+    .mesh-actions {
+      display: grid;
+      gap: 0.7rem;
+    }
+
+    .mesh-actions button {
+      font: inherit;
+      padding: 0.65rem 1rem;
+      border-radius: 16px;
+      border: 1px solid rgba(118, 175, 255, 0.35);
+      background: rgba(12, 16, 28, 0.6);
+      color: var(--muted);
+      cursor: pointer;
+      transition: transform 150ms ease, border 150ms ease, color 150ms ease;
+    }
+
+    .mesh-actions button:hover,
+    .mesh-actions button:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(255, 166, 255, 0.45);
+      color: var(--core);
+    }
+
+    .program-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.8rem;
+    }
+
+    .program {
+      padding: 0.8rem;
+      border-radius: 18px;
+      border: 1px solid rgba(118, 175, 255, 0.18);
+      background: rgba(16, 20, 32, 0.65);
+      position: relative;
+      overflow: hidden;
+      transition: border 200ms ease, transform 200ms ease;
+      cursor: pointer;
+    }
+
+    .program[data-active="true"] {
+      border-color: rgba(255, 166, 255, 0.55);
+      transform: translateY(-3px);
+    }
+
+    .program strong {
+      display: block;
+      font-size: 0.9rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.2rem;
+    }
+
+    .program span {
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .status-feed {
+      margin-top: auto;
+      background: rgba(5, 8, 16, 0.65);
+      border-radius: 16px;
+      border: 1px solid rgba(118, 175, 255, 0.22);
+      padding: 0.8rem 1rem;
+      display: grid;
+      gap: 0.6rem;
+      max-height: 220px;
+      overflow-y: auto;
+      font-size: 0.88rem;
+    }
+
+    .status-feed time {
+      color: rgba(118, 175, 255, 0.66);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+    }
+
+    .status-feed p {
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .mesh-telemetry {
+      display: grid;
+      gap: 0.6rem;
+      align-self: start;
+    }
+
+    .mesh-telemetry h3 {
+      margin: 0;
+      font-size: 0.9rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .mesh-telemetry meter {
+      width: 100%;
+      height: 16px;
+      border-radius: 999px;
+      background: rgba(12, 16, 28, 0.6);
+      border: 1px solid rgba(118, 175, 255, 0.35);
+    }
+
+    .mesh-telemetry meter::-webkit-meter-bar {
+      background: transparent;
+      border-radius: inherit;
+      border: none;
+    }
+
+    .mesh-telemetry meter::-webkit-meter-optimum-value {
+      background: linear-gradient(120deg, rgba(118, 175, 255, 0.95), rgba(255, 166, 255, 0.85));
+      border-radius: inherit;
+    }
+
+    .insight-led {
+      position: absolute;
+      top: 1.3rem;
+      right: 1.4rem;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(118, 175, 255, 0.28);
+      border: 2px solid rgba(118, 175, 255, 0.65);
+      box-shadow: 0 0 16px rgba(118, 175, 255, 0.65);
+      transition: background 400ms ease, box-shadow 400ms ease;
+    }
+
+    .insight-led[data-active="true"] {
+      background: rgba(255, 166, 255, 0.55);
+      box-shadow: 0 0 22px rgba(255, 166, 255, 0.75);
+    }
+
+    .announcer {
+      position: fixed;
+      bottom: clamp(1.4rem, 3vw, 2.4rem);
+      left: clamp(1.4rem, 4vw, 2.4rem);
+      padding: 0.75rem 1.1rem;
+      border-radius: 14px;
+      border: 1px solid rgba(118, 175, 255, 0.35);
+      background: rgba(6, 10, 18, 0.78);
+      color: var(--core);
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      box-shadow: 0 12px 32px rgba(5, 8, 18, 0.6);
+    }
+
+    @media (max-width: 1120px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .mesh-stage {
+        grid-template-columns: 1fr;
+      }
+
+      .mesh-stage canvas {
+        grid-column: auto;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Quantum Mesh Interface</h1>
+      <p>
+        The neoskeuomorphic deck reinvented through responsive depth physics. This mesh orchestrator maps
+        energy wells, refraction programs, and orbital feedback to a layered motion canvas with optional
+        pointer orbiting for tactile exploration.
+      </p>
+    </div>
+    <button class="orbit-toggle" type="button" aria-pressed="false" data-active="false" id="orbit-toggle">
+      <span aria-hidden="true">⟳</span>
+      Pointer Orbit
+    </button>
+  </header>
+
+  <main>
+    <section class="stacked-panel" aria-label="Program controls">
+      <article class="panel">
+        <div class="insight-led" id="insight-led" aria-hidden="true"></div>
+        <h2>Mesh Programs</h2>
+        <div class="program-grid" role="listbox" aria-label="Mesh program selector">
+          <button class="program" type="button" data-program="refraction" data-active="true">
+            <strong>Refraction Bloom</strong>
+            <span>phase-stacked</span>
+          </button>
+          <button class="program" type="button" data-program="pulse">
+            <strong>Pulse Helix</strong>
+            <span>harmonic resonant</span>
+          </button>
+          <button class="program" type="button" data-program="lumen">
+            <strong>Lumen Halo</strong>
+            <span>multispectral</span>
+          </button>
+        </div>
+        <div class="mesh-actions">
+          <button type="button" id="save-snapshot">Save Snapshot</button>
+          <button type="button" id="load-snapshot">Load Snapshot</button>
+          <button type="button" id="reset-program">Reset Program</button>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Depth Parameters</h2>
+        <label>
+          Depth Fold
+          <input type="range" min="10" max="90" value="46" id="depth-fold" />
+        </label>
+        <label>
+          Frequency
+          <input type="range" min="2" max="12" value="6" id="frequency" />
+        </label>
+        <label>
+          Mesh Glow
+          <input type="color" value="#76afff" id="mesh-glow" aria-label="Mesh glow color" />
+        </label>
+      </article>
+
+      <article class="panel">
+        <h2>Telemetry</h2>
+        <div class="mesh-telemetry">
+          <h3>Energy Bias</h3>
+          <meter id="telemetry-bias" min="0" max="100" value="62">62%</meter>
+          <h3>Quantum Stability</h3>
+          <meter id="telemetry-stability" min="0" max="100" value="74">74%</meter>
+          <h3>Orbit Integrity</h3>
+          <meter id="telemetry-orbit" min="0" max="100" value="58">58%</meter>
+        </div>
+      </article>
+    </section>
+
+    <section class="mesh-stage" data-program="refraction" aria-label="Quantum mesh visualization">
+      <canvas id="mesh-canvas" aria-label="Animated quantum mesh"></canvas>
+      <aside class="panel" aria-live="polite">
+        <h2>Program Insight</h2>
+        <p id="program-insight">
+          Refraction Bloom focuses on layered caustics, bending spectra through a tri-axis array. Depth fold set to 46.
+        </p>
+        <div class="status-feed" id="status-feed" aria-live="polite"></div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="announcer" role="status" aria-live="assertive" aria-atomic="true" hidden></div>
+
+  <script>
+    const canvas = document.getElementById('mesh-canvas');
+    const ctx = canvas.getContext('2d');
+    const programs = document.querySelectorAll('.program');
+    const meshStage = document.querySelector('.mesh-stage');
+    const insight = document.getElementById('program-insight');
+    const depthFold = document.getElementById('depth-fold');
+    const frequency = document.getElementById('frequency');
+    const meshGlow = document.getElementById('mesh-glow');
+    const telemetryBias = document.getElementById('telemetry-bias');
+    const telemetryStability = document.getElementById('telemetry-stability');
+    const telemetryOrbit = document.getElementById('telemetry-orbit');
+    const statusFeed = document.getElementById('status-feed');
+    const saveBtn = document.getElementById('save-snapshot');
+    const loadBtn = document.getElementById('load-snapshot');
+    const resetBtn = document.getElementById('reset-program');
+    const orbitToggle = document.getElementById('orbit-toggle');
+    const announcer = document.querySelector('.announcer');
+    const led = document.getElementById('insight-led');
+
+    const state = {
+      program: 'refraction',
+      depth: 46,
+      frequency: 6,
+      glow: '#76afff',
+      orbit: false
+    };
+
+    const descriptions = {
+      refraction: 'Refraction Bloom focuses on layered caustics, bending spectra through a tri-axis array.',
+      pulse: 'Pulse Helix is tuned for kinetic interference waves that ripple across the lattice.',
+      lumen: 'Lumen Halo charges a concentric halo mesh to bathe the interface in multispectral light.'
+    };
+
+    const setCanvasSize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+    };
+
+    let pointer = { x: 0, y: 0 };
+    let tick = 0;
+    let animationFrame;
+    let reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function drawMesh() {
+      const width = canvas.width / (window.devicePixelRatio || 1);
+      const height = canvas.height / (window.devicePixelRatio || 1);
+      ctx.clearRect(0, 0, width, height);
+
+      const gradient = ctx.createLinearGradient(0, 0, width, height);
+      gradient.addColorStop(0, state.glow + '88');
+      gradient.addColorStop(0.5, '#10152a');
+      gradient.addColorStop(1, '#060915');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      const meshLines = Math.floor(state.depth / 6);
+      ctx.strokeStyle = state.glow;
+      ctx.lineWidth = 1.6;
+      ctx.globalAlpha = 0.85;
+
+      const orbitInfluence = state.orbit ? ((pointer.x + pointer.y) / (width + height)) : 0.4;
+
+      for (let i = 0; i <= meshLines; i++) {
+        const progress = i / meshLines;
+        const offset = Math.sin((tick / 40) + progress * Math.PI * state.frequency / 3) * 40;
+        ctx.beginPath();
+        ctx.moveTo(40, 80 + progress * (height - 160));
+        ctx.bezierCurveTo(
+          width * orbitInfluence,
+          60 + progress * (height - 100),
+          width - 120,
+          100 + progress * (height - 200) + offset,
+          width - 40,
+          100 + progress * (height - 160)
+        );
+        ctx.stroke();
+      }
+
+      ctx.globalAlpha = 0.18;
+      ctx.fillStyle = state.glow;
+      ctx.beginPath();
+      ctx.arc(width * orbitInfluence + 80, height / 2, 120 + Math.sin(tick / 30) * 20, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (!reducedMotion) {
+        tick += state.frequency * 0.8;
+        animationFrame = requestAnimationFrame(drawMesh);
+      }
+    }
+
+    function logStatus(message) {
+      const item = document.createElement('article');
+      const time = document.createElement('time');
+      time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const text = document.createElement('p');
+      text.textContent = message;
+      item.appendChild(time);
+      item.appendChild(text);
+      statusFeed.prepend(item);
+      while (statusFeed.children.length > 6) {
+        statusFeed.removeChild(statusFeed.lastChild);
+      }
+    }
+
+    function announce(message) {
+      announcer.textContent = message;
+      announcer.hidden = false;
+      clearTimeout(announce.timeout);
+      announce.timeout = setTimeout(() => announcer.setAttribute('hidden', ''), 2600);
+    }
+
+    function updateTelemetry() {
+      telemetryBias.value = Math.min(100, Math.round(state.depth * 1.4));
+      telemetryStability.value = Math.max(20, 100 - Math.abs(state.frequency - 7) * 6);
+      telemetryOrbit.value = state.orbit ? 78 : 54;
+    }
+
+    function updateProgram(newProgram) {
+      state.program = newProgram;
+      meshStage.dataset.program = newProgram;
+      programs.forEach(btn => btn.dataset.active = (btn.dataset.program === newProgram));
+      insight.textContent = `${descriptions[newProgram]} Depth fold set to ${state.depth}.`;
+      logStatus(`${descriptions[newProgram]}`);
+      led.dataset.active = 'true';
+      setTimeout(() => led.dataset.active = 'false', 1200);
+      updateTelemetry();
+      announce(`${newProgram.replace(/^[a-z]/, c => c.toUpperCase())} program engaged.`);
+      cancelAnimationFrame(animationFrame);
+      drawMesh();
+    }
+
+    programs.forEach(button => {
+      button.addEventListener('click', () => updateProgram(button.dataset.program));
+    });
+
+    depthFold.addEventListener('input', event => {
+      state.depth = Number(event.target.value);
+      insight.textContent = `${descriptions[state.program]} Depth fold set to ${state.depth}.`;
+      updateTelemetry();
+      drawMesh();
+    });
+
+    frequency.addEventListener('input', event => {
+      state.frequency = Number(event.target.value);
+      updateTelemetry();
+      drawMesh();
+    });
+
+    meshGlow.addEventListener('input', event => {
+      state.glow = event.target.value;
+      drawMesh();
+    });
+
+    orbitToggle.addEventListener('click', () => {
+      state.orbit = !state.orbit;
+      orbitToggle.dataset.active = String(state.orbit);
+      orbitToggle.setAttribute('aria-pressed', state.orbit);
+      logStatus(state.orbit ? 'Pointer orbit engaged.' : 'Pointer orbit disengaged.');
+      announce(state.orbit ? 'Pointer orbit enabled.' : 'Pointer orbit disabled.');
+      drawMesh();
+    });
+
+    canvas.addEventListener('pointermove', event => {
+      if (!state.orbit) return;
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = event.clientX - rect.left;
+      pointer.y = event.clientY - rect.top;
+    });
+
+    saveBtn.addEventListener('click', () => {
+      localStorage.setItem('codex-quantum-state', JSON.stringify(state));
+      logStatus('Snapshot saved to orbit cache.');
+      announce('Snapshot saved.');
+    });
+
+    loadBtn.addEventListener('click', () => {
+      const saved = localStorage.getItem('codex-quantum-state');
+      if (!saved) {
+        announce('No snapshot stored yet.');
+        return;
+      }
+      const snapshot = JSON.parse(saved);
+      Object.assign(state, snapshot);
+      depthFold.value = state.depth;
+      frequency.value = state.frequency;
+      meshGlow.value = state.glow;
+      orbitToggle.dataset.active = String(state.orbit);
+      orbitToggle.setAttribute('aria-pressed', state.orbit);
+      updateProgram(state.program);
+      announce('Snapshot restored.');
+    });
+
+    resetBtn.addEventListener('click', () => {
+      Object.assign(state, { program: 'refraction', depth: 46, frequency: 6, glow: '#76afff', orbit: false });
+      depthFold.value = state.depth;
+      frequency.value = state.frequency;
+      meshGlow.value = state.glow;
+      orbitToggle.dataset.active = 'false';
+      orbitToggle.setAttribute('aria-pressed', 'false');
+      updateProgram('refraction');
+      logStatus('Program reset to refraction bloom baseline.');
+      announce('Program reset.');
+    });
+
+    window.addEventListener('resize', () => {
+      setCanvasSize();
+      drawMesh();
+    });
+
+    window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => {
+      reducedMotion = event.matches;
+      if (reducedMotion) {
+        cancelAnimationFrame(animationFrame);
+      } else {
+        drawMesh();
+      }
+    });
+
+    setCanvasSize();
+    updateProgram('refraction');
+  </script>
+</body>
+</html>

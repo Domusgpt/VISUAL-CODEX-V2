@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codex Pt. 3 – Aurora Spectra Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark light;
+      --bg: radial-gradient(circle at 20% 20%, rgba(72, 156, 255, 0.32), transparent 60%),
+             radial-gradient(circle at 80% 0%, rgba(255, 82, 196, 0.22), transparent 40%),
+             #05060d;
+      --panel: rgba(12, 14, 26, 0.76);
+      --panel-light: rgba(250, 252, 255, 0.86);
+      --accent-primary: #82f7ff;
+      --accent-secondary: #f863f8;
+      --accent-tertiary: #7cffad;
+      --text: #f2f7ff;
+      --text-light: rgba(242, 247, 255, 0.72);
+      --shadow: 0 35px 80px rgba(8, 16, 40, 0.45);
+      font-family: "Space Grotesk", system-ui;
+      font-size: clamp(16px, 0.9vw + 0.6rem, 18px);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    header {
+      padding: clamp(2.5rem, 4vw, 5rem) clamp(1.5rem, 4vw, 5rem) 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 1.5rem clamp(2rem, 4vw, 5rem);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(2.4rem, 4vw, 4.8rem);
+      letter-spacing: 0.045em;
+      line-height: 1.05;
+      text-transform: uppercase;
+    }
+
+    header .badge {
+      background: linear-gradient(120deg, rgba(130, 247, 255, 0.3), rgba(248, 99, 248, 0.25));
+      border: 1px solid rgba(130, 247, 255, 0.45);
+      border-radius: 999px;
+      padding: 0.5rem 1.4rem;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--accent-primary);
+    }
+
+    header p {
+      max-width: 520px;
+      line-height: 1.65;
+      color: var(--text-light);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(260px, 360px) minmax(480px, 1fr);
+      gap: clamp(1.5rem, 4vw, 4rem);
+      padding: 0 clamp(1.5rem, 4vw, 5rem) clamp(2.5rem, 5vw, 5.5rem);
+    }
+
+    .control-stack {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .control-card {
+      position: relative;
+      padding: 1.2rem 1.5rem;
+      border-radius: 24px;
+      background: var(--panel);
+      backdrop-filter: blur(20px) saturate(140%);
+      border: 1px solid rgba(130, 247, 255, 0.18);
+      box-shadow: var(--shadow);
+      transition: transform 200ms ease, box-shadow 200ms ease;
+    }
+
+    .control-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 22px 65px rgba(20, 40, 80, 0.45);
+    }
+
+    .control-card h2 {
+      margin: 0 0 0.6rem;
+      font-size: 1.05rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .control-card label,
+    .control-card legend {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.96rem;
+      color: var(--text-light);
+      letter-spacing: 0.04em;
+    }
+
+    .control-card fieldset {
+      border: 0;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .control-card button,
+    .control-card select,
+    .control-card input[type="range"],
+    .control-card input[type="color"] {
+      font: inherit;
+    }
+
+    .control-card select,
+    .control-card input[type="color"] {
+      background: rgba(5, 8, 18, 0.9);
+      border-radius: 12px;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid rgba(130, 247, 255, 0.35);
+      color: var(--text);
+      width: 100%;
+    }
+
+    .control-card input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent-secondary);
+    }
+
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(130, 247, 255, 0.12);
+      border: 1px solid transparent;
+      color: var(--accent-primary);
+      border-radius: 999px;
+      padding: 0.4rem 0.9rem;
+      cursor: pointer;
+      transition: border 120ms ease, color 120ms ease, background 120ms ease;
+    }
+
+    .chip[data-selected="true"] {
+      border-color: rgba(248, 99, 248, 0.4);
+      color: var(--accent-secondary);
+      background: rgba(248, 99, 248, 0.18);
+    }
+
+    .live-status {
+      margin-top: 0.2rem;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      color: var(--accent-tertiary);
+    }
+
+    .visual-canvas {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(220px, 280px) 1fr;
+      gap: clamp(1.5rem, 3vw, 3rem);
+      background: rgba(4, 7, 16, 0.45);
+      border-radius: 32px;
+      border: 1px solid rgba(130, 247, 255, 0.18);
+      padding: clamp(1.75rem, 4vw, 3rem);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(30px) saturate(150%);
+      overflow: hidden;
+      min-height: 460px;
+    }
+
+    .visual-canvas::before,
+    .visual-canvas::after {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.45;
+      pointer-events: none;
+      transition: transform 800ms ease, opacity 600ms ease;
+    }
+
+    .visual-canvas::before {
+      background: radial-gradient(circle, rgba(130, 247, 255, 0.9), transparent 70%);
+      top: -160px;
+      right: -140px;
+    }
+
+    .visual-canvas::after {
+      background: radial-gradient(circle, rgba(248, 99, 248, 0.8), transparent 70%);
+      bottom: -180px;
+      left: -120px;
+    }
+
+    .visual-canvas[data-mode="pulse"]::before {
+      transform: translate(-10%, 8%) scale(1.12);
+    }
+
+    .visual-canvas[data-mode="pulse"]::after {
+      transform: translate(12%, -6%) scale(0.88);
+      opacity: 0.55;
+    }
+
+    .visual-canvas[data-mode="drift"]::before {
+      transform: translate(-16%, -6%) scale(1.32);
+      opacity: 0.5;
+    }
+
+    .visual-canvas[data-mode="drift"]::after {
+      transform: translate(10%, 14%) scale(1.05);
+    }
+
+    .visual-canvas canvas {
+      grid-column: span 2;
+      width: 100%;
+      height: 360px;
+      border-radius: 20px;
+      border: 1px solid rgba(130, 247, 255, 0.35);
+      background: rgba(2, 4, 12, 0.7);
+    }
+
+    .insight-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      align-self: start;
+    }
+
+    .insight-panel h2 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .insight-panel p {
+      margin: 0;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.9rem;
+    }
+
+    .metric {
+      padding: 0.85rem 1rem;
+      border-radius: 18px;
+      border: 1px solid rgba(130, 247, 255, 0.25);
+      background: rgba(10, 18, 32, 0.55);
+      display: grid;
+      gap: 0.4rem;
+    }
+
+    .metric span {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(130, 247, 255, 0.7);
+    }
+
+    .metric strong {
+      font-size: 1.35rem;
+      letter-spacing: 0.04em;
+    }
+
+    .timeline {
+      grid-column: span 2;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .timeline h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .timeline-track {
+      position: relative;
+      height: 110px;
+      border-radius: 16px;
+      border: 1px solid rgba(130, 247, 255, 0.35);
+      background: linear-gradient(180deg, rgba(130, 247, 255, 0.15), rgba(248, 99, 248, 0.08));
+      overflow: hidden;
+    }
+
+    .timeline-marker {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid rgba(0, 0, 0, 0.45);
+      box-shadow: 0 0 18px rgba(130, 247, 255, 0.75);
+      transform: translate(-50%, -50%);
+      top: 50%;
+      transition: left 500ms cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 400ms ease;
+      background: linear-gradient(120deg, var(--accent-primary), var(--accent-secondary));
+    }
+
+    .timeline[data-phase="calibrating"] .timeline-marker {
+      box-shadow: 0 0 18px rgba(248, 99, 248, 0.85);
+    }
+
+    .timeline[data-phase="integrating"] .timeline-marker {
+      box-shadow: 0 0 18px rgba(124, 255, 173, 0.9);
+    }
+
+    .status-announcer {
+      position: fixed;
+      inset: auto clamp(1.2rem, 3vw, 2.5rem) clamp(1.2rem, 3vw, 2.5rem) auto;
+      padding: 0.8rem 1.2rem;
+      border-radius: 14px;
+      border: 1px solid rgba(130, 247, 255, 0.35);
+      background: rgba(3, 5, 12, 0.82);
+      color: var(--accent-primary);
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+      box-shadow: 0 12px 32px rgba(8, 12, 28, 0.4);
+      transition: opacity 320ms ease;
+    }
+
+    @media (max-width: 1120px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .visual-canvas {
+        grid-template-columns: 1fr;
+      }
+
+      .visual-canvas canvas,
+      .timeline {
+        grid-column: auto;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="badge">Codex Pt. 3</div>
+      <h1>Aurora Spectra Dashboard</h1>
+    </div>
+    <p>
+      A re-imagined vaporwave telemetry board that leans into generative aurora kinetics,
+      adaptive palette choreography, and responsive data rituals designed to evolve with
+      the operator. Each control writes directly into the canvas shader ensemble with
+      accessible narration for every modulation.
+    </p>
+  </header>
+
+  <main>
+    <section class="control-stack" aria-label="Aurora control deck">
+      <article class="control-card" id="mode-card">
+        <h2>Lightfield Modes</h2>
+        <div class="chip-group" role="listbox" aria-label="Aurora modes">
+          <button class="chip" type="button" data-mode="pulse" data-selected="true">Pulsewave</button>
+          <button class="chip" type="button" data-mode="drift">Northern Drift</button>
+          <button class="chip" type="button" data-mode="lattice">Prism Lattice</button>
+        </div>
+        <p class="live-status" aria-live="polite">Pulsewave resonance active.</p>
+      </article>
+
+      <article class="control-card">
+        <h2>Atmospheric Synthesis</h2>
+        <fieldset>
+          <legend>Blend Intensity</legend>
+          <input type="range" min="0" max="100" value="64" id="intensity" aria-label="Blend intensity" />
+        </fieldset>
+        <fieldset>
+          <legend>Pulse Frequency</legend>
+          <input type="range" min="2" max="14" value="8" id="frequency" aria-label="Pulse frequency" />
+        </fieldset>
+        <fieldset>
+          <legend>Flux Palette</legend>
+          <select id="palette" aria-label="Flux palette">
+            <option value="aurora">Aurora Cascade</option>
+            <option value="sol">Solar Flare</option>
+            <option value="abyss">Abyss Echo</option>
+            <option value="neon">Neon Lattice</option>
+          </select>
+        </fieldset>
+      </article>
+
+      <article class="control-card">
+        <h2>Chromatic Roots</h2>
+        <label>
+          Highlight Accent
+          <input type="color" id="accent" value="#82f7ff" aria-label="Highlight accent" />
+        </label>
+        <label>
+          Deep Field
+          <input type="color" id="background" value="#05060d" aria-label="Background" />
+        </label>
+        <div class="chip-group" role="group" aria-label="State presets">
+          <button class="chip" type="button" data-preset="sunrise">Sunrise Echo</button>
+          <button class="chip" type="button" data-preset="nocturne">Nocturne Field</button>
+          <button class="chip" type="button" data-preset="glacier">Glacier Bloom</button>
+        </div>
+        <div class="chip-group" role="group" aria-label="State actions">
+          <button class="chip" type="button" id="save-state">Save Snapshot</button>
+          <button class="chip" type="button" id="restore-state">Restore</button>
+          <button class="chip" type="button" id="reset">Reset Deck</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="visual-canvas" id="visual" data-mode="pulse" aria-label="Aurora generative field">
+      <canvas id="aurora" role="img" aria-label="Animated aurora field" aria-live="polite"></canvas>
+      <aside class="insight-panel">
+        <h2>Insight Synopsis</h2>
+        <p id="insight-text">
+          Pulsewave resonance is amplifying vertical ribbons with medium diffusion. Operator focus set to
+          Aurora Cascade palette with accent #82f7ff.
+        </p>
+        <div class="metric-grid" aria-live="polite">
+          <div class="metric">
+            <span>Flux Drift</span>
+            <strong id="metric-drift">62%</strong>
+          </div>
+          <div class="metric">
+            <span>Pulse Rate</span>
+            <strong id="metric-rate">8.2hz</strong>
+          </div>
+          <div class="metric">
+            <span>Light Harmonics</span>
+            <strong id="metric-harmonics">216</strong>
+          </div>
+          <div class="metric">
+            <span>Ambient Bloom</span>
+            <strong id="metric-bloom">1.4</strong>
+          </div>
+        </div>
+      </aside>
+      <section class="timeline" aria-label="Aurora staging timeline">
+        <h3>Phase Sequencer</h3>
+        <div class="timeline-track" role="presentation">
+          <div class="timeline-marker" id="timeline-marker" style="left: 28%"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="status-announcer" aria-live="assertive" aria-atomic="true" hidden></div>
+
+  <script>
+    const canvas = document.getElementById('aurora');
+    const ctx = canvas.getContext('2d');
+    const chipButtons = document.querySelectorAll('[data-mode]');
+    const paletteSelect = document.getElementById('palette');
+    const intensityRange = document.getElementById('intensity');
+    const frequencyRange = document.getElementById('frequency');
+    const accentInput = document.getElementById('accent');
+    const backgroundInput = document.getElementById('background');
+    const presetButtons = document.querySelectorAll('[data-preset]');
+    const saveStateBtn = document.getElementById('save-state');
+    const restoreStateBtn = document.getElementById('restore-state');
+    const resetBtn = document.getElementById('reset');
+    const insightText = document.getElementById('insight-text');
+    const driftMetric = document.getElementById('metric-drift');
+    const rateMetric = document.getElementById('metric-rate');
+    const harmonicsMetric = document.getElementById('metric-harmonics');
+    const bloomMetric = document.getElementById('metric-bloom');
+    const timelineMarker = document.getElementById('timeline-marker');
+    const visual = document.getElementById('visual');
+    const announcer = document.querySelector('.status-announcer');
+    const statusChip = document.querySelector('#mode-card .live-status');
+
+    const state = {
+      mode: 'pulse',
+      palette: 'aurora',
+      intensity: 64,
+      frequency: 8,
+      accent: '#82f7ff',
+      background: '#05060d'
+    };
+
+    const palettes = {
+      aurora: ['#82f7ff', '#f863f8', '#82f7ff', '#7cffad'],
+      sol: ['#ffbe0b', '#fb5607', '#ff006e', '#8338ec'],
+      abyss: ['#023e8a', '#03045e', '#0077b6', '#90e0ef'],
+      neon: ['#22d1ee', '#2a9d8f', '#f72585', '#7209b7']
+    };
+
+    const presets = {
+      sunrise: {
+        mode: 'pulse',
+        palette: 'sol',
+        intensity: 72,
+        frequency: 6,
+        accent: '#ffbe0b',
+        background: '#110504'
+      },
+      nocturne: {
+        mode: 'drift',
+        palette: 'abyss',
+        intensity: 58,
+        frequency: 4,
+        accent: '#90e0ef',
+        background: '#010913'
+      },
+      glacier: {
+        mode: 'lattice',
+        palette: 'aurora',
+        intensity: 46,
+        frequency: 10,
+        accent: '#7cffad',
+        background: '#021018'
+      }
+    };
+
+    const setCanvasSize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      ctx.scale(dpr, dpr);
+    };
+
+    let animationFrame;
+    let tick = 0;
+    let reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function drawAurora() {
+      const { intensity, frequency, palette: paletteName } = state;
+      const colors = palettes[paletteName];
+      const width = canvas.width / (window.devicePixelRatio || 1);
+      const height = canvas.height / (window.devicePixelRatio || 1);
+      ctx.clearRect(0, 0, width, height);
+
+      const gradient = ctx.createLinearGradient(0, 0, width, height);
+      colors.forEach((color, index) => {
+        gradient.addColorStop(index / (colors.length - 1), color);
+      });
+
+      ctx.fillStyle = gradient;
+      ctx.globalAlpha = 0.6;
+      ctx.fillRect(0, 0, width, height);
+
+      const ribbonCount = Math.max(6, Math.floor(intensity / 6));
+      ctx.globalAlpha = 0.9;
+
+      for (let i = 0; i < ribbonCount; i++) {
+        const amplitude = (Math.sin(tick / 60 + i) + 1) * 0.5 * (intensity / 90);
+        const offsetX = (width / ribbonCount) * i + 40 * Math.sin(tick / (50 + i * 4));
+        const gradientRibbon = ctx.createLinearGradient(0, 0, width, height);
+        gradientRibbon.addColorStop(0, colors[(i + 1) % colors.length]);
+        gradientRibbon.addColorStop(1, colors[i % colors.length]);
+
+        ctx.fillStyle = gradientRibbon;
+        ctx.beginPath();
+        ctx.moveTo(offsetX, 0);
+        const harmonic = (frequency / 12) * 80;
+        for (let y = 0; y <= height; y += 40) {
+          const waveX = offsetX + Math.sin((y / 60) + tick / (30 + i * 2)) * harmonic * amplitude;
+          ctx.lineTo(waveX, y);
+        }
+        ctx.lineTo(offsetX + 120, height);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      if (!reducedMotion) {
+        tick += state.frequency * 0.6;
+        animationFrame = requestAnimationFrame(drawAurora);
+      }
+    }
+
+    function announce(message) {
+      announcer.textContent = message;
+      announcer.hidden = false;
+      clearTimeout(announce.timeout);
+      announce.timeout = setTimeout(() => (announcer.hidden = true), 2600);
+    }
+
+    function updateVisualState(partial = {}) {
+      Object.assign(state, partial);
+      document.body.style.setProperty('--accent-primary', state.accent);
+      document.body.style.background = `radial-gradient(circle at 20% 20%, ${state.accent}22, transparent 60%),` +
+        `radial-gradient(circle at 80% 0%, ${palettes[state.palette][1]}22, transparent 40%), ${state.background}`;
+      visual.dataset.mode = state.mode;
+      paletteSelect.value = state.palette;
+      intensityRange.value = state.intensity;
+      frequencyRange.value = state.frequency;
+      accentInput.value = state.accent;
+      backgroundInput.value = state.background;
+
+      driftMetric.textContent = `${Math.round(state.intensity)}%`;
+      rateMetric.textContent = `${(state.frequency + 0.2).toFixed(1)}hz`;
+      harmonicsMetric.textContent = Math.round(state.intensity * state.frequency * 0.42);
+      bloomMetric.textContent = (state.intensity / 45).toFixed(1);
+
+      const descriptions = {
+        pulse: 'Pulsewave resonance is amplifying vertical ribbons with medium diffusion.',
+        drift: 'Northern drift modulates horizon bands with elongated waveforms.',
+        lattice: 'Prism lattice tessellates chroma nodes into geometric cascades.'
+      };
+
+      statusChip.textContent = `${descriptions[state.mode]} Accent ${state.accent}.`;
+      insightText.textContent = `${descriptions[state.mode]} Operator focus set to ${paletteSelect.options[paletteSelect.selectedIndex].text} palette with accent ${state.accent}.`;
+
+      const phases = {
+        pulse: { phase: 'resonating', position: '28%' },
+        drift: { phase: 'calibrating', position: '58%' },
+        lattice: { phase: 'integrating', position: '82%' }
+      };
+
+      const { phase, position } = phases[state.mode];
+      timelineMarker.style.left = position;
+      visual.parentElement?.querySelector('.timeline')?.setAttribute('data-phase', phase);
+
+      cancelAnimationFrame(animationFrame);
+      drawAurora();
+    }
+
+    function storeState() {
+      localStorage.setItem('codex-aurora-state', JSON.stringify(state));
+      announce('Aurora snapshot stored.');
+    }
+
+    function restoreState() {
+      const saved = localStorage.getItem('codex-aurora-state');
+      if (!saved) {
+        announce('No snapshot available yet.');
+        return;
+      }
+      updateVisualState(JSON.parse(saved));
+      announce('Aurora snapshot restored.');
+    }
+
+    chipButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        chipButtons.forEach(chip => chip.dataset.selected = 'false');
+        button.dataset.selected = 'true';
+        updateVisualState({ mode: button.dataset.mode });
+        announce(`${button.textContent} mode engaged.`);
+      });
+    });
+
+    paletteSelect.addEventListener('change', event => {
+      updateVisualState({ palette: event.target.value });
+      announce(`${event.target.selectedOptions[0].text} palette applied.`);
+    });
+
+    intensityRange.addEventListener('input', event => {
+      updateVisualState({ intensity: Number(event.target.value) });
+    });
+
+    frequencyRange.addEventListener('input', event => {
+      updateVisualState({ frequency: Number(event.target.value) });
+    });
+
+    accentInput.addEventListener('input', event => {
+      updateVisualState({ accent: event.target.value });
+    });
+
+    backgroundInput.addEventListener('input', event => {
+      updateVisualState({ background: event.target.value });
+    });
+
+    presetButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const preset = presets[button.dataset.preset];
+        if (preset) {
+          chipButtons.forEach(chip => chip.dataset.selected = (chip.dataset.mode === preset.mode).toString());
+          updateVisualState(preset);
+          announce(`${button.textContent} preset activated.`);
+        }
+      });
+    });
+
+    saveStateBtn.addEventListener('click', storeState);
+    restoreStateBtn.addEventListener('click', restoreState);
+    resetBtn.addEventListener('click', () => {
+      chipButtons.forEach(chip => chip.dataset.selected = (chip.dataset.mode === 'pulse').toString());
+      updateVisualState({
+        mode: 'pulse',
+        palette: 'aurora',
+        intensity: 64,
+        frequency: 8,
+        accent: '#82f7ff',
+        background: '#05060d'
+      });
+      announce('Control deck reset to default.');
+    });
+
+    window.addEventListener('resize', () => {
+      setCanvasSize();
+      drawAurora();
+    });
+
+    window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => {
+      reducedMotion = event.matches;
+      if (reducedMotion) {
+        cancelAnimationFrame(animationFrame);
+      } else {
+        drawAurora();
+      }
+    });
+
+    setCanvasSize();
+    updateVisualState();
+  </script>
+</body>
+</html>
