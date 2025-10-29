@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codex Pt. 3 – Hyperdrive Command Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: radial-gradient(circle at 10% -20%, rgba(255, 128, 0, 0.24), transparent 70%),
+             radial-gradient(circle at 80% 0%, rgba(0, 208, 255, 0.25), transparent 60%),
+             #03040b;
+      --panel: rgba(9, 12, 18, 0.74);
+      --panel-light: rgba(250, 252, 255, 0.85);
+      --accent: #ff8a3d;
+      --accent-2: #34d0ff;
+      --accent-3: #e96bff;
+      --border: rgba(52, 208, 255, 0.32);
+      --text: rgba(244, 248, 255, 0.94);
+      --muted: rgba(180, 210, 255, 0.68);
+      --glass: blur(18px) saturate(145%);
+      font-family: "IBM Plex Sans", system-ui;
+      font-size: clamp(15px, 0.9vw + 0.6rem, 18px);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(1.6rem, 3vw, 3.6rem);
+      padding: clamp(1.8rem, 3vw, 3.4rem);
+      overflow-x: hidden;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(260px, 320px) minmax(320px, 520px) minmax(200px, 320px);
+      gap: clamp(1.6rem, 3vw, 3.4rem);
+      align-items: end;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(2.4rem, 4.6vw, 4.6rem);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .header-panel {
+      background: var(--panel);
+      border-radius: 28px;
+      padding: 1.2rem 1.4rem;
+      border: 1px solid var(--border);
+      backdrop-filter: var(--glass);
+      box-shadow: 0 24px 60px rgba(4, 8, 18, 0.5);
+    }
+
+    .header-panel h2 {
+      margin: 0 0 0.6rem;
+      font-size: 0.9rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .header-panel .cta {
+      display: inline-flex;
+      gap: 0.6rem;
+      align-items: center;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 138, 61, 0.45);
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.75rem;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 380px) minmax(420px, 1fr);
+      gap: clamp(1.8rem, 4vw, 4.4rem);
+      align-items: start;
+    }
+
+    .control-bay {
+      display: grid;
+      gap: 1.2rem;
+    }
+
+    .control-panel {
+      background: var(--panel);
+      border-radius: 28px;
+      padding: 1.3rem 1.6rem;
+      border: 1px solid var(--border);
+      backdrop-filter: var(--glass);
+      box-shadow: 0 26px 66px rgba(4, 10, 20, 0.5);
+      position: relative;
+    }
+
+    .control-panel h2 {
+      margin: 0 0 0.8rem;
+      font-size: 0.92rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .control-panel label,
+    .control-panel legend {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.8rem;
+      font-size: 0.92rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    .control-panel input,
+    .control-panel select,
+    .control-panel button {
+      font: inherit;
+    }
+
+    .control-panel input[type="range"],
+    .control-panel select,
+    .control-panel input[type="color"] {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.8rem;
+      background: rgba(6, 10, 18, 0.65);
+      color: inherit;
+    }
+
+    .control-panel input[type="range"] {
+      accent-color: var(--accent);
+    }
+
+    .control-panel button {
+      padding: 0.6rem 1rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(6, 10, 18, 0.65);
+      color: var(--muted);
+      cursor: pointer;
+      transition: transform 150ms ease, border 150ms ease;
+    }
+
+    .control-panel button:hover,
+    .control-panel button:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(255, 138, 61, 0.55);
+      color: var(--accent);
+    }
+
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    .chip {
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(52, 208, 255, 0.35);
+      background: rgba(6, 10, 18, 0.55);
+      color: rgba(180, 210, 255, 0.8);
+      letter-spacing: 0.12em;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: transform 150ms ease, border 150ms ease, color 150ms ease;
+    }
+
+    .chip[data-active="true"] {
+      transform: translateY(-2px);
+      border-color: rgba(255, 138, 61, 0.5);
+      color: var(--accent);
+    }
+
+    .stage {
+      position: relative;
+      background: rgba(4, 8, 16, 0.75);
+      border-radius: 36px;
+      border: 1px solid var(--border);
+      padding: clamp(1.8rem, 3.4vw, 3rem);
+      display: grid;
+      gap: 1.4rem;
+      min-height: 540px;
+      overflow: hidden;
+      box-shadow: 0 44px 92px rgba(2, 8, 18, 0.64);
+    }
+
+    .stage::before,
+    .stage::after {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.42;
+      pointer-events: none;
+      transition: transform 1.2s ease, opacity 1.2s ease;
+    }
+
+    .stage::before {
+      top: -180px;
+      left: -160px;
+      background: radial-gradient(circle, rgba(255, 138, 61, 0.9), transparent 70%);
+    }
+
+    .stage::after {
+      bottom: -200px;
+      right: -160px;
+      background: radial-gradient(circle, rgba(52, 208, 255, 0.9), transparent 70%);
+    }
+
+    .stage[data-protocol="warp"]::after {
+      transform: translate(8%, -6%);
+      opacity: 0.6;
+    }
+
+    .stage[data-protocol="pulse"]::before {
+      transform: translate(6%, 12%);
+      opacity: 0.58;
+    }
+
+    canvas {
+      width: 100%;
+      height: 320px;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: rgba(6, 10, 18, 0.62);
+    }
+
+    .timeline {
+      display: grid;
+      gap: 0.7rem;
+    }
+
+    .timeline h2 {
+      margin: 0;
+      font-size: 0.9rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .timeline-track {
+      position: relative;
+      height: 110px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(52, 208, 255, 0.18), rgba(233, 107, 255, 0.12));
+      overflow: hidden;
+    }
+
+    .timeline-marker {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid rgba(0, 0, 0, 0.4);
+      background: linear-gradient(130deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 18px rgba(255, 138, 61, 0.75);
+      transform: translate(-50%, -50%);
+      top: 50%;
+      transition: left 500ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .stage-log {
+      background: rgba(6, 10, 18, 0.65);
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      padding: 1rem 1.2rem;
+      display: grid;
+      gap: 0.6rem;
+      max-height: 210px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+    }
+
+    .stage-log time {
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      color: rgba(52, 208, 255, 0.66);
+    }
+
+    .announcer {
+      position: fixed;
+      bottom: clamp(1.4rem, 3vw, 2.4rem);
+      left: clamp(1.4rem, 4vw, 2.4rem);
+      padding: 0.75rem 1.1rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(6, 10, 18, 0.82);
+      color: var(--text);
+      letter-spacing: 0.08em;
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.5);
+    }
+
+    @media (max-width: 1200px) {
+      header {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hyperdrive Command Suite</h1>
+    <p>
+      The working finale evolves into a hyperdrive orchestration chamber with modular protocol decks,
+      telemetry sweeps, and sequenced drift alignments. Every dial aligns warp corridors while timeline
+      markers narrate the activation journey.
+    </p>
+    <div class="header-panel">
+      <h2>Launch Preparation</h2>
+      <div class="cta">Phase: Codex Pt. 3</div>
+      <p>Snapshot aware, protocol seeded, telemetry streaming at 144hz cadence.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="control-bay" aria-label="Command controls">
+      <article class="control-panel">
+        <h2>Protocol Modes</h2>
+        <div class="chip-group" role="listbox" aria-label="Protocol selector">
+          <button class="chip" type="button" data-protocol="warp" data-active="true">Warp Corridors</button>
+          <button class="chip" type="button" data-protocol="pulse">Pulse Array</button>
+          <button class="chip" type="button" data-protocol="drift">Drift Align</button>
+        </div>
+        <div class="chip-group" aria-label="Protocol actions">
+          <button class="chip" type="button" id="save">Save Snapshot</button>
+          <button class="chip" type="button" id="restore">Restore</button>
+          <button class="chip" type="button" id="reset">Reset Deck</button>
+        </div>
+      </article>
+
+      <article class="control-panel">
+        <h2>Flux Controls</h2>
+        <label>
+          Flux Density
+          <input type="range" min="10" max="90" value="52" id="density" />
+        </label>
+        <label>
+          Resonance Speed
+          <input type="range" min="2" max="12" value="7" id="resonance" />
+        </label>
+        <label>
+          Horizon Accent
+          <input type="color" value="#ff8a3d" id="accent" aria-label="Horizon accent" />
+        </label>
+        <label>
+          Nebula Accent
+          <input type="color" value="#34d0ff" id="accent-secondary" aria-label="Nebula accent" />
+        </label>
+        <select id="trajectory" aria-label="Trajectory">
+          <option value="warp" selected>Warp Corridor</option>
+          <option value="pulse">Pulse Helix</option>
+          <option value="drift">Drift Alignment</option>
+          <option value="lumen">Lumen Ribbon</option>
+        </select>
+      </article>
+
+      <article class="control-panel" aria-live="polite">
+        <h2>Telemetry</h2>
+        <p id="telemetry-status">Warp corridors stabilized. Flux density 52, resonance speed 7.</p>
+        <div class="stage-log" id="stage-log"></div>
+      </article>
+    </section>
+
+    <section class="stage" data-protocol="warp" aria-label="Hyperdrive visualization">
+      <canvas id="stage-canvas" aria-label="Animated hyperdrive field"></canvas>
+      <section class="timeline" aria-label="Launch sequence">
+        <h2>Launch Timeline</h2>
+        <div class="timeline-track">
+          <div class="timeline-marker" id="timeline-marker" style="left: 34%"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="announcer" role="status" aria-live="assertive" aria-atomic="true" hidden></div>
+
+  <script>
+    const canvas = document.getElementById('stage-canvas');
+    const ctx = canvas.getContext('2d');
+    const chips = document.querySelectorAll('.chip[data-protocol]');
+    const density = document.getElementById('density');
+    const resonance = document.getElementById('resonance');
+    const accentPrimary = document.getElementById('accent');
+    const accentSecondary = document.getElementById('accent-secondary');
+    const trajectory = document.getElementById('trajectory');
+    const telemetryStatus = document.getElementById('telemetry-status');
+    const stageLog = document.getElementById('stage-log');
+    const stage = document.querySelector('.stage');
+    const announcer = document.querySelector('.announcer');
+    const timelineMarker = document.getElementById('timeline-marker');
+
+    const state = {
+      protocol: 'warp',
+      density: 52,
+      resonance: 7,
+      accent: '#ff8a3d',
+      accentSecondary: '#34d0ff',
+      trajectory: 'warp'
+    };
+
+    const protocolNarratives = {
+      warp: 'Warp corridors stabilized.',
+      pulse: 'Pulse array oscillating through the corridor.',
+      drift: 'Drift align calibrating gyroscopic fins.',
+      lumen: 'Lumen ribbons cascading along the hull.'
+    };
+
+    const setCanvasSize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+    };
+
+    let tick = 0;
+    let animationFrame;
+    let reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function drawField() {
+      const width = canvas.width / (window.devicePixelRatio || 1);
+      const height = canvas.height / (window.devicePixelRatio || 1);
+      ctx.clearRect(0, 0, width, height);
+
+      const gradient = ctx.createRadialGradient(
+        width / 2,
+        height / 2,
+        Math.min(width, height) * 0.1,
+        width / 2,
+        height / 2,
+        Math.max(width, height)
+      );
+      gradient.addColorStop(0, state.accentSecondary + 'ee');
+      gradient.addColorStop(0.4, '#060a14');
+      gradient.addColorStop(1, '#04060d');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.globalAlpha = 0.85;
+      ctx.strokeStyle = state.accent;
+      ctx.lineWidth = 1.4;
+
+      const waveCount = Math.max(6, Math.floor(state.density / 5));
+      for (let i = 0; i < waveCount; i++) {
+        ctx.beginPath();
+        const phase = (i / waveCount) * Math.PI * 2;
+        for (let x = 0; x <= width; x += 40) {
+          const amplitude = Math.sin((tick / 40) + phase + x / 120) * 30 * (state.resonance / 10);
+          const y = height / 2 + Math.sin(x / 80 + phase) * 80 + amplitude;
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = state.accent + '44';
+      const starCount = Math.round(state.density / 3);
+      for (let i = 0; i < starCount; i++) {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        const radius = Math.random() * 2 + 1;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (!reducedMotion) {
+        tick += state.resonance * 0.8;
+        animationFrame = requestAnimationFrame(drawField);
+      }
+    }
+
+    function updateTimeline(protocol) {
+      const positions = { warp: '34%', pulse: '58%', drift: '78%', lumen: '46%' };
+      timelineMarker.style.left = positions[protocol] || '34%';
+    }
+
+    function logStatus(message) {
+      const entry = document.createElement('article');
+      const time = document.createElement('time');
+      time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const text = document.createElement('p');
+      text.textContent = message;
+      entry.appendChild(time);
+      entry.appendChild(text);
+      stageLog.prepend(entry);
+      while (stageLog.children.length > 6) {
+        stageLog.removeChild(stageLog.lastChild);
+      }
+    }
+
+    function announce(message) {
+      announcer.textContent = message;
+      announcer.hidden = false;
+      clearTimeout(announce.timeout);
+      announce.timeout = setTimeout(() => announcer.setAttribute('hidden', ''), 2400);
+    }
+
+    function updateState(partial = {}) {
+      Object.assign(state, partial);
+      stage.dataset.protocol = state.protocol;
+      chips.forEach(chip => chip.dataset.active = (chip.dataset.protocol === state.protocol));
+      telemetryStatus.textContent = `${protocolNarratives[state.protocol]} Flux density ${state.density}, resonance speed ${state.resonance}.`;
+      stage.style.setProperty('--accent', state.accent);
+      stage.style.setProperty('--accent-secondary', state.accentSecondary);
+      document.documentElement.style.setProperty('--accent', state.accent);
+      document.documentElement.style.setProperty('--accent-2', state.accentSecondary);
+      updateTimeline(state.protocol);
+      cancelAnimationFrame(animationFrame);
+      drawField();
+    }
+
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        updateState({ protocol: chip.dataset.protocol, trajectory: chip.dataset.protocol });
+        trajectory.value = state.protocol;
+        logStatus(`${chip.textContent} engaged.`);
+        announce(`${chip.textContent} engaged.`);
+      });
+    });
+
+    density.addEventListener('input', event => {
+      updateState({ density: Number(event.target.value) });
+    });
+
+    resonance.addEventListener('input', event => {
+      updateState({ resonance: Number(event.target.value) });
+    });
+
+    accentPrimary.addEventListener('input', event => {
+      updateState({ accent: event.target.value });
+    });
+
+    accentSecondary.addEventListener('input', event => {
+      updateState({ accentSecondary: event.target.value });
+    });
+
+    trajectory.addEventListener('change', event => {
+      updateState({ protocol: event.target.value, trajectory: event.target.value });
+      chips.forEach(chip => chip.dataset.active = (chip.dataset.protocol === state.protocol));
+      logStatus(`${event.target.selectedOptions[0].text} trajectory locked.`);
+      announce(`${event.target.selectedOptions[0].text} trajectory locked.`);
+    });
+
+    document.getElementById('save').addEventListener('click', () => {
+      localStorage.setItem('codex-hyperdrive-state', JSON.stringify(state));
+      logStatus('Snapshot saved to command archive.');
+      announce('Snapshot saved.');
+    });
+
+    document.getElementById('restore').addEventListener('click', () => {
+      const saved = localStorage.getItem('codex-hyperdrive-state');
+      if (!saved) {
+        announce('No snapshot stored yet.');
+        return;
+      }
+      const snapshot = JSON.parse(saved);
+      density.value = snapshot.density;
+      resonance.value = snapshot.resonance;
+      accentPrimary.value = snapshot.accent;
+      accentSecondary.value = snapshot.accentSecondary;
+      trajectory.value = snapshot.trajectory;
+      updateState(snapshot);
+      logStatus('Snapshot restored from archive.');
+      announce('Snapshot restored.');
+    });
+
+    document.getElementById('reset').addEventListener('click', () => {
+      density.value = 52;
+      resonance.value = 7;
+      accentPrimary.value = '#ff8a3d';
+      accentSecondary.value = '#34d0ff';
+      trajectory.value = 'warp';
+      updateState({ protocol: 'warp', density: 52, resonance: 7, accent: '#ff8a3d', accentSecondary: '#34d0ff', trajectory: 'warp' });
+      logStatus('Deck reset to warp corridors baseline.');
+      announce('Deck reset.');
+    });
+
+    window.addEventListener('resize', () => {
+      setCanvasSize();
+      drawField();
+    });
+
+    window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => {
+      reducedMotion = event.matches;
+      if (reducedMotion) {
+        cancelAnimationFrame(animationFrame);
+      } else {
+        drawField();
+      }
+    });
+
+    setCanvasSize();
+    updateState();
+  </script>
+</body>
+</html>

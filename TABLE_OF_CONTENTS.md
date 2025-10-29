@@ -45,10 +45,18 @@ This document provides an organized index of all cataloged visual effects, anima
 *   [VIB34D Visualizer Pool - Dynamic Visualizer Management](/mnt/c/Users/millz/visual_codex/core_documentation/vib34d-visualizer-pool.md)
 *   [VIB3CODE - Morphing Blog System](/mnt/c/Users/millz/visual_codex/webgl_visualizations/full_page_background_visualizers/vib3code-morphing-blog.md)
 *   [Neoskeuomorphic Holographic UI](/mnt/c/Users/millz/visual_codex/webgl_visualizations/embedded_multi_instance_visualizers/neoskeuomorphic-holographic-ui.md)
+*   [VIB34D Editor Dashboard – Holographic Index Cards](webgl_visualizations/embedded_multi_instance_visualizers/vib34d-editor-dashboard-index.md)
 *   [Dynamic Layout System](/mnt/c/Users/millz/visual_codex/css_animations_effects/particle_systems_css_based/dynamic-layout-system.md)
 *   [Enhanced Vaporwave System](/mnt/c/Users/millz/visual_codex/webgl_visualizations/embedded_multi_instance_visualizers/enhanced-vaporwave-system.md)
 *   [Optimized Full Page Polytopal System](/mnt/c/Users/millz/visual_codex/webgl_visualizations/full_page_background_visualizers/optimized-full-page-polytopal-system.md)
 *   [Enhanced Vaporwave System Codex](/mnt/c/Users/millz/visual_codex/webgl_visualizations/embedded_multi_instance_visualizers/enhanced_vaporwave_system_codex.md)
+*   [Working Final Version – Consolidated System](webgl_visualizations/embedded_multi_instance_visualizers/working-final-version.md)
+
+### 1.6. Codex Pt. 3 Holographic Suites
+*   [Aurora Spectra Dashboard](demos/codex-pt3/aurora-spectra-dashboard.html)
+*   [Quantum Mesh Interface](demos/codex-pt3/quantum-mesh-interface.html)
+*   [VIB34D Lumina Matrix](demos/codex-pt3/vib34d-lumina-matrix.html)
+*   [Hyperdrive Command Suite](demos/codex-pt3/hyperdrive-command-suite.html)
 
 ---
 
@@ -59,6 +67,8 @@ This document provides an organized index of all cataloged visual effects, anima
 *   [Neoskeuomorphic Holographic UI](/mnt/c/Users/millz/visual_codex/webgl_visualizations/embedded_multi_instance_visualizers/neoskeuomorphic-holographic-ui.md)
 *   [VIB3CODE - Holographic Blog Production](/mnt/c/Users/millz/visual_codex/css_animations_effects/holographic_neoskeuomorphic_ui/holographic-blog-production.md)
 *   [VIB3CODE Enhanced UI](/mnt/c/Users/millz/visual_codex/css_animations_effects/holographic_neoskeuomorphic_ui/vib3code-enhanced-ui.md)
+*   [VIB34D Editor Dashboard – Holographic Index Cards](webgl_visualizations/embedded_multi_instance_visualizers/vib34d-editor-dashboard-index.md)
+*   [Working Final Version – Consolidated System](webgl_visualizations/embedded_multi_instance_visualizers/working-final-version.md)
 
 ### 2.2. Gradient Animations
 *   [VIB3CODE Enhanced Theme & Animations](/mnt/c/Users/millz/visual_codex/css_animations_effects/gradient_animations/vib3code-enhanced-theme.md)
@@ -115,7 +125,7 @@ This document provides an organized index of all cataloged visual effects, anima
 ## 3. Interactive UI Components
 
 ### 3.1. Custom Controls (Sliders, Knobs, Toggles)
-*   [Hypercube Lattice Applications UI & Effects](/mnt/c/Users/millz/visual_codex/interactive_ui_components/custom_controls/hypercube-lattice-app-ui.md)
+*   [Hypercube Lattice Applications UI & Effects](hypercube-lattice-app-ui.md)
 
 ### 3.2. Navigation Systems (Tabbed, Floating, 4D Cube Bezels)
 *   [Project Organizer Hub - UI & Animations](/mnt/c/Users/millz/visual_codex/css_animations_effects/hover_click_effects/project-organizer-hub.md)
@@ -129,7 +139,7 @@ This document provides an organized index of all cataloged visual effects, anima
 *   [Project Dashboard - UI & Animations](/mnt/c/Users/millz/visual_codex/css_animations_effects/hover_click_effects/project-dashboard-ui-animations.md)
 
 ### 3.4. Mouse/Scroll/Keyboard Reactive Elements
-*   [VIB34D Interaction Coordinator - Responsive Visual Control](/mnt/c/Users/millz/visual_codex/interactive_ui_components/mouse_scroll_keyboard_reactive_elements/vib34d-interaction-coordinator.md)
+*   [VIB34D Interaction Coordinator - Responsive Visual Control](vib34d-interaction-coordinator.md)
 *   [Hypercube Lattice Applications - Interactive Visualizer Logic](/mnt/c/Users/millz/visual_codex/webgl_visualizations/data_driven_visualizers/hypercube-lattice-app-logic.md)
 *   [Unified 4D Visualization Engine - Live Demo](/mnt/c/Users/millz/visual_codex/webgl_visualizations/4d_polytopal_visualizers/unified-4d-visualization-engine.md)
 *   [Parserator Website - Cyberpunk UI & Animations](/mnt/c/Users/millz/visual_codex/css_animations_effects/gradient_animations/parserator-website.md)
@@ -148,8 +158,8 @@ This document provides an organized index of all cataloged visual effects, anima
 ---
 
 ## 4. Core Documentation
-*   [VIB34D Preset Database - Customizable Visual Configurations](/mnt/c/Users/millz/visual_codex/core_documentation/vib34d-preset-database.md)
-*   [VIB34D System - Core Architecture for Visualizer Management](/mnt/c/Users/millz/visual_codex/core_documentation/vib34d-system-core-architecture.md)
+*   [VIB34D Preset Database - Customizable Visual Configurations](vib34d-preset-database.md)
+*   [VIB34D System - Core Architecture for Visualizer Management](vib34d-system-core-architecture.md)
 *   [VIB34D Visualizer Pool - Dynamic Visualizer Management](/mnt/c/Users/millz/visual_codex/core_documentation/vib34d-visualizer-pool.md)
 *   [HypercubeCore WebGL System](/mnt/c/Users/millz/visual_codex/core_documentation/hypercube_core_webgl_system.md)
 *   [Claude.md](/mnt/c/Users/millz/visual_codex/core_documentation/claude.md)
