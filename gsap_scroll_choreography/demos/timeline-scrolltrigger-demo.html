@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline & ScrollTrigger Demo - Visual Codex</title>
+
+  <!-- GSAP from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #7B3FF2;
+      --secondary: #4FC3F7;
+      --bg-dark: #0A0A0B;
+      --text: #fff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .section {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .hero-section {
+      background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+    }
+
+    .content-section {
+      background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
+    }
+
+    .cards-section {
+      background: linear-gradient(135deg, #1a1a2e, #2a1a3e);
+    }
+
+    .title {
+      font-size: clamp(2rem, 8vw, 5rem);
+      font-weight: 700;
+      text-align: center;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.7);
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 32px;
+      backdrop-filter: blur(10px);
+    }
+
+    .card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+      color: var(--primary);
+    }
+
+    .card p {
+      color: rgba(255,255,255,0.7);
+      line-height: 1.6;
+    }
+
+    .pinned-section {
+      height: 300vh;
+      background: linear-gradient(180deg, #2a1a3e, #0f0f1a, #1a1a2e);
+    }
+
+    .pinned-content {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      background: var(--primary);
+      width: 0%;
+      z-index: 100;
+    }
+
+    .scroll-indicator {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.5);
+      font-size: 14px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-10px); }
+    }
+
+    .footer {
+      padding: 40px;
+      text-align: center;
+      color: rgba(255,255,255,0.5);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-bar" id="progress"></div>
+
+  <!-- Hero Section -->
+  <section class="section hero-section">
+    <div>
+      <h1 class="title" id="hero-title">Timeline & ScrollTrigger</h1>
+      <p class="subtitle" id="hero-subtitle">GSAP scroll animation patterns from Visual Codex</p>
+    </div>
+  </section>
+
+  <!-- Content Section -->
+  <section class="section content-section">
+    <div style="text-align: center; max-width: 600px;">
+      <h2 class="title" style="font-size: 2.5rem;">Scroll-Tied Animations</h2>
+      <p class="subtitle">Watch elements animate as you scroll. The progress bar above tracks your position.</p>
+    </div>
+  </section>
+
+  <!-- Cards Section -->
+  <section class="section cards-section">
+    <div class="card-grid">
+      <div class="card">
+        <h3>Timeline Creation</h3>
+        <p>Scroll-tied timelines sync animation progress with scroll position using the scrub parameter.</p>
+      </div>
+      <div class="card">
+        <h3>Callback System</h3>
+        <p>onEnter, onLeave, onEnterBack, and onLeaveBack provide precise control over animations.</p>
+      </div>
+      <div class="card">
+        <h3>Pinning</h3>
+        <p>Lock elements in place while scrolling continues, creating immersive transitions.</p>
+      </div>
+      <div class="card">
+        <h3>Stagger Effects</h3>
+        <p>Sequential reveals with configurable delays create visual flow and hierarchy.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pinned Section -->
+  <section class="pinned-section">
+    <div class="pinned-content">
+      <h2 class="title" id="pinned-title" style="font-size: 3rem;">Pinned Section</h2>
+      <p class="subtitle" id="pinned-sub">This content stays fixed while you scroll through 300vh of space</p>
+    </div>
+  </section>
+
+  <div class="scroll-indicator">Scroll to explore</div>
+
+  <footer class="footer">
+    Visual Codex Chapter 5 - GSAP Scroll Choreography<br>
+    A Paul Phillips Manifestation | Clear Seas Solutions LLC
+  </footer>
+
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Progress bar
+    gsap.to("#progress", {
+      width: "100%",
+      ease: "none",
+      scrollTrigger: {
+        trigger: document.body,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 0.3
+      }
+    });
+
+    // Hero entrance
+    gsap.from("#hero-title", {
+      y: 100,
+      opacity: 0,
+      duration: 1,
+      ease: "power3.out"
+    });
+
+    gsap.from("#hero-subtitle", {
+      y: 50,
+      opacity: 0,
+      duration: 1,
+      delay: 0.3,
+      ease: "power2.out"
+    });
+
+    // Hero exit on scroll
+    gsap.to("#hero-title", {
+      y: -100,
+      opacity: 0,
+      scrollTrigger: {
+        trigger: ".hero-section",
+        start: "center center",
+        end: "bottom top",
+        scrub: 1
+      }
+    });
+
+    // Content section reveal
+    gsap.from(".content-section h2", {
+      scale: 0.8,
+      opacity: 0,
+      scrollTrigger: {
+        trigger: ".content-section",
+        start: "top center",
+        end: "center center",
+        scrub: 1
+      }
+    });
+
+    // Cards stagger reveal
+    gsap.from(".card", {
+      y: 80,
+      opacity: 0,
+      stagger: 0.15,
+      scrollTrigger: {
+        trigger: ".cards-section",
+        start: "top 70%",
+        end: "center center",
+        scrub: 0.5
+      }
+    });
+
+    // Pinned section animation
+    const pinnedTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".pinned-section",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1,
+        pin: ".pinned-content"
+      }
+    });
+
+    pinnedTl
+      .from("#pinned-title", { scale: 0.5, opacity: 0 })
+      .from("#pinned-sub", { y: 30, opacity: 0 }, "-=0.3")
+      .to("#pinned-title", { scale: 1.2, color: "#4FC3F7" })
+      .to("#pinned-title", { rotation: 360, scale: 1 })
+      .to(["#pinned-title", "#pinned-sub"], { opacity: 0, y: -50 });
+
+    // Hide scroll indicator after scroll
+    ScrollTrigger.create({
+      trigger: ".hero-section",
+      start: "bottom 80%",
+      onEnter: () => gsap.to(".scroll-indicator", { opacity: 0, duration: 0.5 })
+    });
+  </script>
+
+  <!--
+  Visual Codex Pattern: Timeline & ScrollTrigger
+  Category: GSAP Scroll Choreography
+  Patterns: 01, 02, 03, 14
+  Author: Paul Phillips
+  © 2025 Clear Seas Solutions LLC
+  -->
+</body>
+</html>

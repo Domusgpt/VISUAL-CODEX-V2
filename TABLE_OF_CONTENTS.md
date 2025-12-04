@@ -156,3 +156,47 @@ This document provides an organized index of all cataloged visual effects, anima
 *   [Codex Manifest](/mnt/c/Users/millz/visual_codex/core_documentation/codex_manifest.md)
 *   [Project Manifest](/mnt/c/Users/millz/visual_codex/core_documentation/Project-Manifest.md)
 *   [Visual Codex Leads](/mnt/c/Users/millz/visual_codex/core_documentation/VISUAL-CODEX-LEADS.md)
+
+---
+
+## 5. GSAP Scroll Choreography Systems
+
+**Chapter 5: Advanced Scroll-Driven Animation Orchestration**
+
+### 5.1 GSAP Core Patterns
+*   [01 - Timeline Creation Patterns](./gsap_scroll_choreography/gsap_core/01-timeline-creation-patterns.md)
+*   [02 - Animation Methods](./gsap_scroll_choreography/gsap_core/02-animation-methods.md)
+*   [03 - ScrollTrigger Configurations](./gsap_scroll_choreography/gsap_core/03-scrolltrigger-configurations.md)
+*   [04 - Easing Functions Library](./gsap_scroll_choreography/gsap_core/04-easing-functions-library.md)
+*   [05 - Stagger Patterns](./gsap_scroll_choreography/gsap_core/05-stagger-patterns.md)
+*   [06 - 3D Transform Patterns](./gsap_scroll_choreography/gsap_core/06-3d-transform-patterns.md)
+*   [07 - Scale Patterns](./gsap_scroll_choreography/gsap_core/07-scale-patterns.md)
+*   [08 - Visualizer Parameter Morphing](./gsap_scroll_choreography/gsap_core/08-visualizer-parameter-morphing.md)
+*   [09 - Three-Phase Animation](./gsap_scroll_choreography/gsap_core/09-three-phase-animation.md)
+*   [10 - Particle & Explosion Systems](./gsap_scroll_choreography/gsap_core/10-particle-explosion-systems.md)
+*   [11 - Chromatic Aberration](./gsap_scroll_choreography/gsap_core/11-chromatic-aberration.md)
+*   [12 - Percentage Parameter Binding](./gsap_scroll_choreography/gsap_core/12-percentage-parameter-binding.md)
+*   [13 - Filter & Blur Patterns](./gsap_scroll_choreography/gsap_core/13-filter-blur-patterns.md)
+*   [14 - Repetition & Looping](./gsap_scroll_choreography/gsap_core/14-repetition-looping.md)
+*   [15 - Mouse & Interaction Binding](./gsap_scroll_choreography/gsap_core/15-mouse-interaction-binding.md)
+*   [16 - Orbital Animation](./gsap_scroll_choreography/gsap_core/16-orbital-animation.md)
+*   [17 - Special Callbacks](./gsap_scroll_choreography/gsap_core/17-special-callbacks.md)
+
+### 5.2 Visualizer System Patterns
+*   [18 - Holographic Visualizer System](./gsap_scroll_choreography/visualizer_systems/18-holographic-visualizer-system.md)
+*   [19 - Impulse Event System](./gsap_scroll_choreography/visualizer_systems/19-impulse-event-system.md)
+*   [20 - Inverse Density Fog Effect](./gsap_scroll_choreography/visualizer_systems/20-inverse-density-fog.md)
+*   [21 - Quantum Glassmorphism](./gsap_scroll_choreography/visualizer_systems/21-quantum-glassmorphism.md)
+
+### 5.3 Standalone Demos
+*   [Timeline & ScrollTrigger Demo](./gsap_scroll_choreography/demos/timeline-scrolltrigger-demo.html)
+*   [Three-Phase Animation Demo](./gsap_scroll_choreography/demos/three-phase-animation-demo.html)
+*   [Particle System Demo](./gsap_scroll_choreography/demos/particle-system-demo.html)
+*   [Chromatic Aberration Demo](./gsap_scroll_choreography/demos/chromatic-aberration-demo.html)
+*   [Visualizer Binding Demo](./gsap_scroll_choreography/demos/visualizer-binding-demo.html)
+*   [Holographic Visualizer Demo](./gsap_scroll_choreography/demos/holographic-visualizer-demo.html)
+*   [Quantum Glassmorphism Demo](./gsap_scroll_choreography/demos/quantum-glassmorphism-demo.html)
+
+### 5.4 Reference Documents
+*   [Chapter README](./gsap_scroll_choreography/README.md)
+*   [Agent Reference (Compact)](./gsap_scroll_choreography/AGENT_REFERENCE.md)

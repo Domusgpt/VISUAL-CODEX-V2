@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Three-Phase Animation Demo - Visual Codex</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #7B3FF2;
+      --secondary: #4FC3F7;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0A0A0B;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      perspective: 1200px;
+    }
+
+    .scroll-container {
+      height: 500vh;
+    }
+
+    .viewport {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .phase-card {
+      width: 400px;
+      height: 300px;
+      background: linear-gradient(135deg, rgba(123,63,242,0.3), rgba(79,195,247,0.2));
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform-style: preserve-3d;
+      backdrop-filter: blur(20px);
+    }
+
+    .phase-card h2 {
+      font-size: 2rem;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .phase-card p {
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    .phase-indicator {
+      position: fixed;
+      top: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      z-index: 100;
+    }
+
+    .indicator {
+      width: 100px;
+      padding: 10px;
+      text-align: center;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+
+    .indicator.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .progress-ring {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      width: 80px;
+      height: 80px;
+    }
+
+    .progress-ring circle {
+      fill: none;
+      stroke-width: 4;
+    }
+
+    .progress-ring .bg {
+      stroke: rgba(255,255,255,0.1);
+    }
+
+    .progress-ring .progress {
+      stroke: var(--primary);
+      stroke-linecap: round;
+      stroke-dasharray: 220;
+      stroke-dashoffset: 220;
+      transform: rotate(-90deg);
+      transform-origin: center;
+    }
+
+    .info {
+      position: fixed;
+      bottom: 40px;
+      left: 40px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="phase-indicator">
+    <div class="indicator" id="ind-entrance">ENTRANCE<br>0-30%</div>
+    <div class="indicator" id="ind-lock">LOCK<br>30-70%</div>
+    <div class="indicator" id="ind-exit">EXIT<br>70-100%</div>
+  </div>
+
+  <svg class="progress-ring" viewBox="0 0 80 80">
+    <circle class="bg" cx="40" cy="40" r="35"/>
+    <circle class="progress" id="progress-circle" cx="40" cy="40" r="35"/>
+  </svg>
+
+  <div class="scroll-container"></div>
+
+  <div class="viewport">
+    <div class="phase-card" id="card">
+      <h2>Three-Phase</h2>
+      <p>ENTRANCE → LOCK → EXIT lifecycle creates narrative scroll experiences</p>
+    </div>
+  </div>
+
+  <div class="info">
+    Pattern 09: Three-Phase Animation<br>
+    Scroll to experience the full lifecycle
+  </div>
+
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    const card = document.getElementById('card');
+    const progressCircle = document.getElementById('progress-circle');
+    const indicators = {
+      entrance: document.getElementById('ind-entrance'),
+      lock: document.getElementById('ind-lock'),
+      exit: document.getElementById('ind-exit')
+    };
+
+    function setActivePhase(phase) {
+      Object.values(indicators).forEach(ind => ind.classList.remove('active'));
+      if (indicators[phase]) indicators[phase].classList.add('active');
+    }
+
+    // Main three-phase timeline
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".scroll-container",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1,
+        onUpdate: (self) => {
+          // Update progress ring
+          const offset = 220 - (self.progress * 220);
+          progressCircle.style.strokeDashoffset = offset;
+
+          // Update phase indicator
+          if (self.progress < 0.3) {
+            setActivePhase('entrance');
+          } else if (self.progress < 0.7) {
+            setActivePhase('lock');
+          } else {
+            setActivePhase('exit');
+          }
+        }
+      }
+    });
+
+    // PHASE 1: ENTRANCE (0-30%)
+    tl.from(card, {
+      z: -3000,
+      rotationX: -45,
+      rotationY: 180,
+      scale: 0.2,
+      opacity: 0,
+      duration: 0.3,
+      ease: "power3.out"
+    });
+
+    // PHASE 2: LOCK (30-70%) - subtle pulse
+    tl.to(card, {
+      scale: 1.05,
+      boxShadow: "0 0 60px rgba(123,63,242,0.4)",
+      duration: 0.1,
+      ease: "sine.inOut"
+    })
+    .to(card, {
+      scale: 1,
+      boxShadow: "0 0 30px rgba(123,63,242,0.2)",
+      duration: 0.1,
+      ease: "sine.inOut"
+    })
+    .to(card, {
+      scale: 1.03,
+      duration: 0.1,
+      ease: "sine.inOut"
+    })
+    .to(card, {
+      scale: 1,
+      duration: 0.1,
+      ease: "sine.inOut"
+    });
+
+    // PHASE 3: EXIT (70-100%)
+    tl.to(card, {
+      rotationY: -180,
+      rotationX: 30,
+      z: 2000,
+      scale: 0.5,
+      opacity: 0,
+      duration: 0.3,
+      ease: "power2.in"
+    });
+  </script>
+
+  <!--
+  Visual Codex Pattern: Three-Phase Animation
+  Category: GSAP Scroll Choreography
+  Pattern: 09
+  Author: Paul Phillips
+  © 2025 Clear Seas Solutions LLC
+  -->
+</body>
+</html>

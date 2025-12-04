@@ -278,6 +278,261 @@ This manifest provides a quick reference for all cataloged visual components, th
 
 ---
 
+## Chapter 5: GSAP Scroll Choreography Systems
+
+### 18. Timeline Creation Patterns
+- **Source**: gsap_scroll_choreography/gsap_core/01-timeline-creation-patterns.md
+- **Dependencies**: GSAP Core, ScrollTrigger
+- **Key Parameters**:
+  - `scrollTrigger.trigger`: Element or selector
+  - `scrollTrigger.start/end`: Scroll position triggers
+  - `defaults.ease`: Timeline-wide easing
+  - `defaults.duration`: Default animation duration
+- **Primary Use**: Scroll-tied timeline orchestration with GSAP
+
+### 19. Animation Methods (to/from/fromTo)
+- **Source**: gsap_scroll_choreography/gsap_core/02-animation-methods.md
+- **Dependencies**: GSAP Core
+- **Key Parameters**:
+  - `gsap.to()`: Forward animation
+  - `gsap.from()`: Reverse animation
+  - `gsap.fromTo()`: Explicit start/end states
+- **Primary Use**: Fundamental GSAP animation method selection
+
+### 20. ScrollTrigger Configurations
+- **Source**: gsap_scroll_choreography/gsap_core/03-scrolltrigger-configurations.md
+- **Dependencies**: GSAP Core, ScrollTrigger
+- **Key Parameters**:
+  - `pin`: true/element - Lock during scroll
+  - `anticipatePin`: 1 - Smooth pin start
+  - `scrub`: 0.3-1.2s - Scroll-to-animation smoothing
+  - `markers`: true - Debug visualization
+- **Primary Use**: Pinning, scrubbing, and scroll trigger configuration
+
+### 21. Easing Functions Library
+- **Source**: gsap_scroll_choreography/gsap_core/04-easing-functions-library.md
+- **Dependencies**: GSAP Core
+- **Key Parameters**:
+  - `power2-4.out/in/inOut`: Progressive deceleration
+  - `back.out(1.5-1.7)`: Overshoot bounce
+  - `sine.inOut`: Smooth wave motion
+  - `elastic.out`: Spring physics
+- **Primary Use**: Comprehensive easing function reference
+
+### 22. Stagger Patterns
+- **Source**: gsap_scroll_choreography/gsap_core/05-stagger-patterns.md
+- **Dependencies**: GSAP Core
+- **Key Parameters**:
+  - `stagger`: 0.02-0.1s - Fixed delay between elements
+  - `stagger.from`: "start", "center", "end", "random"
+  - `stagger.grid`: [rows, cols] - Grid-aware staggering
+- **Primary Use**: Sequential and grid-based animation timing
+
+### 23. 3D Transform Patterns
+- **Source**: gsap_scroll_choreography/gsap_core/06-3d-transform-patterns.md
+- **Dependencies**: GSAP Core, CSS 3D Transforms
+- **Key Parameters**:
+  - `z`: -3000px to 0px (depth emergence)
+  - `rotationY`: 0-360° (Y-axis spin)
+  - `rotationX`: -90° to 0° (tilt back)
+  - `rotationZ`: 0° to 1080° (multi-spin)
+  - `transformPerspective`: 1000px
+- **Primary Use**: 3D space animations with depth and rotation
+
+### 24. Scale Patterns
+- **Source**: gsap_scroll_choreography/gsap_core/07-scale-patterns.md
+- **Dependencies**: GSAP Core
+- **Key Parameters**:
+  - `scale`: 0.2-1.0 (grow reveal)
+  - `scaleX/scaleY`: Independent axis scaling
+  - `yoyo`: true - Breathing oscillation
+  - `repeat`: -1 - Infinite pulsing
+- **Primary Use**: Size-based animations and breathing effects
+
+### 25. Visualizer Parameter Morphing
+- **Source**: gsap_scroll_choreography/gsap_core/08-visualizer-parameter-morphing.md
+- **Dependencies**: GSAP Core, WebGL
+- **Key Parameters**:
+  - `params.hue`: 0-360 color rotation
+  - `params.intensity`: 0-1 brightness
+  - `params.chaos`: 0-1 randomness
+  - `params.gridDensity`: 10-100 resolution
+- **Primary Use**: Scroll-driven WebGL shader parameter animation
+
+### 26. Three-Phase Animation System
+- **Source**: gsap_scroll_choreography/gsap_core/09-three-phase-animation.md
+- **Dependencies**: GSAP Core, ScrollTrigger
+- **Key Parameters**:
+  - Phase 1 (0-30%): ENTRANCE - Emerge from depth
+  - Phase 2 (30-70%): LOCK - Center stage, subtle pulse
+  - Phase 3 (70-100%): EXIT - Disperse and fade
+- **Primary Use**: Structured enter-hold-exit scroll choreography
+
+### 27. Particle & Explosion Systems
+- **Source**: gsap_scroll_choreography/gsap_core/10-particle-explosion-systems.md
+- **Dependencies**: GSAP Core, DOM manipulation
+- **Key Parameters**:
+  - `particleCount`: 25-50 particles per burst
+  - `spreadRadius`: 100-300px radial distance
+  - `duration`: 0.6-1.2s particle lifespan
+  - `gravity`: Physics simulation offset
+- **Primary Use**: Click-triggered particle explosions and confetti
+
+### 28. Chromatic Aberration Animation
+- **Source**: gsap_scroll_choreography/gsap_core/11-chromatic-aberration.md
+- **Dependencies**: GSAP Core, CSS transforms
+- **Key Parameters**:
+  - `redOffset`: -4px to 0px (left shift)
+  - `blueOffset`: 0px to 4px (right shift)
+  - `opacity`: Per-channel transparency
+  - `duration`: Glitch timing
+- **Primary Use**: RGB channel split effects for text and elements
+
+### 29. Percentage Parameter Binding
+- **Source**: gsap_scroll_choreography/gsap_core/12-percentage-parameter-binding.md
+- **Dependencies**: GSAP Core, ScrollTrigger
+- **Key Parameters**:
+  - `self.progress`: 0-1 scroll progress
+  - Linear mapping: `value = min + (progress * range)`
+  - Inverse mapping: `value = max - (progress * range)`
+  - Sine wave: `Math.sin(progress * Math.PI)`
+- **Primary Use**: Direct scroll-to-parameter value mapping
+
+### 30. Filter & Blur Patterns
+- **Source**: gsap_scroll_choreography/gsap_core/13-filter-blur-patterns.md
+- **Dependencies**: GSAP Core, CSS Filters
+- **Key Parameters**:
+  - `filter`: "blur(20px) → blur(0px)"
+  - `backdropFilter`: Glass effect blur
+  - `brightness`: 0.5-1.5
+  - `saturate`: 0-2
+- **Primary Use**: CSS filter animations for reveal effects
+
+### 31. Repetition & Looping Patterns
+- **Source**: gsap_scroll_choreography/gsap_core/14-repetition-looping.md
+- **Dependencies**: GSAP Core
+- **Key Parameters**:
+  - `repeat`: -1 (infinite), n (count)
+  - `yoyo`: true - Reverse on each cycle
+  - `repeatDelay`: Pause between cycles
+  - Relative values: `+=90deg`, `+=10px`
+- **Primary Use**: Continuous animations and breathing effects
+
+### 32. Mouse & Interaction Binding
+- **Source**: gsap_scroll_choreography/gsap_core/15-mouse-interaction-binding.md
+- **Dependencies**: GSAP Core, DOM Events
+- **Key Parameters**:
+  - `mouseX/Y`: Normalized 0-1 coordinates
+  - `quickTo()`: Optimized continuous updates
+  - Parallax multipliers: Per-layer depth
+  - Touch support: Touch events mapping
+- **Primary Use**: Pointer-driven parameter control and parallax
+
+### 33. Orbital Animation (Simone-Style)
+- **Source**: gsap_scroll_choreography/gsap_core/16-orbital-animation.md
+- **Dependencies**: GSAP Core, CSS Transforms
+- **Key Parameters**:
+  - `xPercent/yPercent`: Position-based stagger
+  - Orbital radius: 200-400px
+  - Rotation: 0-360° per element
+  - Expand/collapse states: Click-driven
+- **Primary Use**: Radial element arrangement with orbital motion
+
+### 34. Special Callbacks & Lifecycle Hooks
+- **Source**: gsap_scroll_choreography/gsap_core/17-special-callbacks.md
+- **Dependencies**: GSAP Core, ScrollTrigger
+- **Key Parameters**:
+  - `onEnter/onLeave/onEnterBack/onLeaveBack`: Scroll triggers
+  - `onStart/onComplete/onUpdate`: Timeline callbacks
+  - `.call()`: Mid-timeline function calls
+  - `.add()`: Label-based timeline control
+- **Primary Use**: Custom code execution during animations
+
+### 35. Holographic Visualizer System (JusDNCE-Style)
+- **Source**: gsap_scroll_choreography/visualizer_systems/18-holographic-visualizer-system.md
+- **Dependencies**: WebGL 2.0, GLSL ES 3.00
+- **Key Parameters**:
+  - `geometryType`: 0=Tetra, 1=Box, 2=Sponge (KIFS fractals)
+  - `density`: 0.3-2.5 (fog thickness)
+  - `chaos`: 0-1 (fractal mutation intensity)
+  - `hue`: 0-360 (HSL color rotation)
+  - `intensity`: 0.3-1.5 (brightness)
+  - `morph`: 0-1 (geometry blending)
+- **Primary Use**: WebGL raymarched fractal visualizations with KIFS folding
+
+### 36. Impulse Event System
+- **Source**: gsap_scroll_choreography/visualizer_systems/19-impulse-event-system.md
+- **Dependencies**: CustomEvent API, GSAP
+- **Key Parameters**:
+  - `triggerImpulse(type, intensity)`: Event dispatcher
+  - `impulseDecay`: 0.95 (exponential falloff)
+  - Event types: 'click', 'hover', 'scroll', 'key'
+  - Intensity range: 0-1
+- **Primary Use**: UI interaction → WebGL shader reactivity bridging
+
+### 37. Inverse Density Fog Effect
+- **Source**: gsap_scroll_choreography/visualizer_systems/20-inverse-density-fog.md
+- **Dependencies**: WebGL, Fragment Shaders
+- **Key Parameters**:
+  - `idleDensity`: 2.5 (thick quantum foam)
+  - `activeDensity`: 0.4 (clear visualization)
+  - `decayRate`: 0.02 (return to idle speed)
+  - `impulseMultiplier`: 2.0 (density reduction factor)
+- **Primary Use**: "Fog clears on interaction" revealing hidden geometry
+
+### 38. Quantum Glassmorphism UI System
+- **Source**: gsap_scroll_choreography/visualizer_systems/21-quantum-glassmorphism.md
+- **Dependencies**: CSS backdrop-filter, CSS custom properties
+- **Key Parameters**:
+  - `--glass-bg`: rgba(15, 15, 17, 0.6)
+  - `--blur-md`: 16px
+  - `--glass-border`: rgba(255, 255, 255, 0.08)
+  - `--glow-subtle/medium/strong`: Box-shadow presets
+  - `--primary`: #7B3FF2 (accent purple)
+  - `--secondary`: #4FC3F7 (accent cyan)
+- **Primary Use**: Complete dark-mode glass design system with hover states and animations
+
+---
+
+## Chapter 5 Demo Files
+
+### Timeline & ScrollTrigger Demo
+- **Source**: gsap_scroll_choreography/demos/timeline-scrolltrigger-demo.html
+- **Patterns Covered**: 18, 19, 20, 31
+- **Features**: Scroll-tied timeline, pinning, scrub
+
+### Three-Phase Animation Demo
+- **Source**: gsap_scroll_choreography/demos/three-phase-animation-demo.html
+- **Patterns Covered**: 26
+- **Features**: ENTRANCE → LOCK → EXIT structure
+
+### Particle System Demo
+- **Source**: gsap_scroll_choreography/demos/particle-system-demo.html
+- **Patterns Covered**: 27
+- **Features**: Click explosions, confetti, star bursts
+
+### Chromatic Aberration Demo
+- **Source**: gsap_scroll_choreography/demos/chromatic-aberration-demo.html
+- **Patterns Covered**: 28
+- **Features**: RGB split text, glitch effects
+
+### Visualizer Binding Demo
+- **Source**: gsap_scroll_choreography/demos/visualizer-binding-demo.html
+- **Patterns Covered**: 25, 29
+- **Features**: Scroll-driven WebGL parameters
+
+### Holographic Visualizer Demo
+- **Source**: gsap_scroll_choreography/demos/holographic-visualizer-demo.html
+- **Patterns Covered**: 35, 36, 37
+- **Features**: KIFS fractals, impulse system, fog clearing
+
+### Quantum Glassmorphism Demo
+- **Source**: gsap_scroll_choreography/demos/quantum-glassmorphism-demo.html
+- **Patterns Covered**: 38
+- **Features**: Complete glass UI system
+
+---
+
 ## Integration Guidelines
 
 1. **Standalone Components**: Can be dropped into any project with minimal setup

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Particle System Demo - Visual Codex</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0A0A0B;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 20px;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .star {
+      position: fixed;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 16px solid #FFD700;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .trigger-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .trigger-btn {
+      padding: 20px 40px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #7B3FF2, #4FC3F7);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .trigger-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(123, 63, 242, 0.4);
+    }
+
+    .trigger-btn:active {
+      transform: scale(0.98);
+    }
+
+    .info {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      color: rgba(255,255,255,0.5);
+      font-size: 14px;
+    }
+
+    .title {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #7B3FF2, #4FC3F7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div class="trigger-area">
+    <h1 class="title">Particle Systems</h1>
+    <button class="trigger-btn" onclick="createExplosion(event)">Explosion</button>
+    <button class="trigger-btn" onclick="createConfetti(event)">Confetti</button>
+    <button class="trigger-btn" onclick="createStarBurst(event)">Star Burst</button>
+  </div>
+
+  <div class="info">
+    Pattern 10: Particle & Explosion Systems<br>
+    Click buttons or anywhere on screen
+  </div>
+
+  <script>
+    // Click anywhere for particles
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('trigger-btn')) return;
+      createExplosion(e);
+    });
+
+    // Basic Explosion
+    function createExplosion(e) {
+      const x = e.clientX || e.target.getBoundingClientRect().left + e.target.offsetWidth / 2;
+      const y = e.clientY || e.target.getBoundingClientRect().top + e.target.offsetHeight / 2;
+      const count = 25;
+      const colors = ['#7B3FF2', '#4FC3F7', '#FF6B6B', '#26A69A', '#FFE66D'];
+
+      for (let i = 0; i < count; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.background = colors[i % colors.length];
+        document.body.appendChild(particle);
+
+        const angle = (i / count) * Math.PI * 2;
+        const distance = 100 + Math.random() * 200;
+        const targetX = x + Math.cos(angle) * distance;
+        const targetY = y + Math.sin(angle) * distance;
+
+        gsap.fromTo(particle,
+          { x, y, scale: 1, opacity: 1 },
+          {
+            x: targetX,
+            y: targetY,
+            scale: 0,
+            opacity: 0,
+            duration: 0.6 + Math.random() * 0.4,
+            ease: "power2.out",
+            onComplete: () => particle.remove()
+          }
+        );
+      }
+    }
+
+    // Confetti Burst
+    function createConfetti(e) {
+      const x = e.clientX || e.target.getBoundingClientRect().left + e.target.offsetWidth / 2;
+      const y = e.clientY || e.target.getBoundingClientRect().top + e.target.offsetHeight / 2;
+      const count = 50;
+      const colors = ['#7B3FF2', '#4FC3F7', '#FF6B6B', '#26A69A', '#FFE66D', '#FF69B4'];
+
+      for (let i = 0; i < count; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.background = colors[i % colors.length];
+        confetti.style.width = (5 + Math.random() * 10) + 'px';
+        confetti.style.height = (10 + Math.random() * 15) + 'px';
+        document.body.appendChild(confetti);
+
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = 200 + Math.random() * 300;
+        const spin = (Math.random() - 0.5) * 1080;
+
+        gsap.fromTo(confetti,
+          { x, y, rotation: 0, scale: 1 },
+          {
+            x: x + Math.cos(angle) * velocity,
+            y: y + Math.sin(angle) * velocity + 300, // Gravity
+            rotation: spin,
+            scale: 0,
+            duration: 1.2 + Math.random() * 0.5,
+            ease: "power1.out",
+            onComplete: () => confetti.remove()
+          }
+        );
+      }
+    }
+
+    // Star Burst
+    function createStarBurst(e) {
+      const x = e.clientX || e.target.getBoundingClientRect().left + e.target.offsetWidth / 2;
+      const y = e.clientY || e.target.getBoundingClientRect().top + e.target.offsetHeight / 2;
+      const points = 8;
+
+      for (let i = 0; i < points; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        document.body.appendChild(star);
+
+        const angle = (i / points) * Math.PI * 2;
+        const distance = 150;
+        const targetX = x + Math.cos(angle) * distance;
+        const targetY = y + Math.sin(angle) * distance;
+
+        gsap.timeline()
+          .set(star, { x, y, scale: 0, rotation: 0 })
+          .to(star, {
+            x: targetX,
+            y: targetY,
+            scale: 1,
+            rotation: 360,
+            duration: 0.4,
+            ease: "back.out(2)"
+          })
+          .to(star, {
+            scale: 0,
+            opacity: 0,
+            rotation: 720,
+            duration: 0.3,
+            onComplete: () => star.remove()
+          });
+      }
+    }
+  </script>
+
+  <!--
+  Visual Codex Pattern: Particle & Explosion Systems
+  Category: GSAP Scroll Choreography
+  Pattern: 10
+  Author: Paul Phillips
+  © 2025 Clear Seas Solutions LLC
+  -->
+</body>
+</html>
