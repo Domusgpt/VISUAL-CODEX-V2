@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry Morphing System - GSAP + Three.js</title>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --mystic-dark: #1a103c;
+            --crystal-cyan: #a5f3fc;
+            --indigo-deep: #1e1b4b;
+            --purple-glow: #d8b4fe;
+            --amber-gold: #fbbf24;
+            --emerald: #34d399;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: #0A0A0B;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Three.js Canvas - Fixed Background */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Scroll Container */
+        .scroll-container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Hero Section - Bombastic Title */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .title {
+            font-size: clamp(3rem, 10vw, 8rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #a5f3fc 0%, #7B3FF2 50%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px;
+            transform-origin: center center;
+            will-change: transform, top;
+            transition: all 0.1s linear;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        /* Content Sections */
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 80px;
+        }
+
+        .section:nth-child(even) {
+            justify-content: flex-start;
+        }
+
+        .section:nth-child(odd) {
+            justify-content: flex-end;
+        }
+
+        .section-content {
+            max-width: 500px;
+            padding: 48px;
+            background: rgba(15, 15, 17, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            opacity: 0;
+            transform: translateX(-60px);
+        }
+
+        .section:nth-child(odd) .section-content {
+            transform: translateX(60px);
+        }
+
+        .section-content h2 {
+            font-size: 2rem;
+            margin-bottom: 16px;
+            transition: color 0.3s;
+        }
+
+        .section-content p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Section color themes */
+        #section-id h2 { color: var(--crystal-cyan); }
+        #section-journal h2 { color: #818cf8; }
+        #section-guru h2 { color: var(--purple-glow); }
+        #section-moon h2 { color: #f3f4f6; }
+        #section-healing h2 { color: var(--amber-gold); }
+        #section-market h2 { color: var(--emerald); }
+
+        /* Fixed Header (appears after bombastic animation) */
+        .fixed-header {
+            position: fixed;
+            top: 20px;
+            left: 30px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a5f3fc, #7B3FF2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        /* HUD */
+        .hud {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            font-family: 'SF Mono', monospace;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            z-index: 100;
+            text-align: right;
+        }
+
+        .hud-row { margin-bottom: 4px; }
+        .hud-label { color: rgba(123, 63, 242, 0.6); }
+        .hud-value { color: var(--crystal-cyan); }
+
+        /* Progress indicator */
+        .progress-ring {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            z-index: 100;
+        }
+
+        .progress-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 3;
+        }
+
+        .progress-ring .bg {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-ring .progress {
+            stroke: var(--crystal-cyan);
+            stroke-linecap: round;
+            stroke-dasharray: 157;
+            stroke-dashoffset: 157;
+            transition: stroke-dashoffset 0.1s;
+        }
+
+        /* Outro */
+        .outro {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .outro h2 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #fff, #a5f3fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <!-- Fixed Header (hidden initially) -->
+    <div class="fixed-header" id="fixedHeader">Crystal Grimoire</div>
+
+    <!-- HUD -->
+    <div class="hud">
+        <div class="hud-row">
+            <span class="hud-label">PROGRESS:</span>
+            <span class="hud-value" id="hudProgress">0%</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-label">SECTION:</span>
+            <span class="hud-value" id="hudSection">INTRO</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-label">GEOMETRY:</span>
+            <span class="hud-value" id="hudGeometry">ICOSAHEDRON</span>
+        </div>
+    </div>
+
+    <!-- Progress Ring -->
+    <div class="progress-ring">
+        <svg viewBox="0 0 60 60">
+            <circle class="bg" cx="30" cy="30" r="25"/>
+            <circle class="progress" id="progressCircle" cx="30" cy="30" r="25"/>
+        </svg>
+    </div>
+
+    <!-- Scroll Content -->
+    <div class="scroll-container" id="scrollContainer">
+
+        <!-- Hero with Bombastic Title -->
+        <section class="hero" id="hero">
+            <h1 class="title" id="mainTitle">Crystal Grimoire</h1>
+            <p class="subtitle" id="heroSubtitle">Scroll to begin your journey through geometric realms</p>
+        </section>
+
+        <!-- Section: Crystal ID -->
+        <section class="section" id="section-id">
+            <div class="section-content">
+                <h2>Crystal Identification</h2>
+                <p>The sharp octahedral form represents crystalline precision.
+                   Each facet catches light differently, creating the cyan
+                   shimmer that defines the identification process.</p>
+                <p>Watch how the geometry transforms as you scroll through
+                   different states of the application.</p>
+            </div>
+        </section>
+
+        <!-- Section: Journal -->
+        <section class="section" id="section-journal">
+            <div class="section-content">
+                <h2>Crystal Journal</h2>
+                <p>The box geometry symbolizes the collection - a repository
+                   of crystalline knowledge. The indigo glow represents
+                   the depth of stored wisdom.</p>
+                <p>Each entry in the journal adds another facet to your
+                   understanding of the mineral kingdom.</p>
+            </div>
+        </section>
+
+        <!-- Section: Guru -->
+        <section class="section" id="section-guru">
+            <div class="section-content">
+                <h2>Crystal Guru</h2>
+                <p>The perfect sphere embodies holistic wisdom. The purple
+                   emanation represents the AI's comprehensive knowledge,
+                   radiating in all directions equally.</p>
+                <p>Ask any question and receive guidance drawn from
+                   centuries of crystallographic study.</p>
+            </div>
+        </section>
+
+        <!-- Section: Moon -->
+        <section class="section" id="section-moon">
+            <div class="section-content">
+                <h2>Moon Phases</h2>
+                <p>The high-resolution icosahedron represents celestial
+                   precision. The silver-white luminance connects crystal
+                   properties to lunar cycles.</p>
+                <p>Understand how moon phases influence the energetic
+                   properties of your crystal collection.</p>
+            </div>
+        </section>
+
+        <!-- Section: Healing -->
+        <section class="section" id="section-healing">
+            <div class="section-content">
+                <h2>Healing Properties</h2>
+                <p>The torus knot geometry represents the flowing energy
+                   of healing. The amber-gold vibration suggests warmth
+                   and transformative power.</p>
+                <p>Discover the therapeutic applications and energy
+                   work potential of each crystal type.</p>
+            </div>
+        </section>
+
+        <!-- Section: Market -->
+        <section class="section" id="section-market">
+            <div class="section-content">
+                <h2>Crystal Market</h2>
+                <p>The hexagonal cylinder represents stability and commerce.
+                   The emerald glow symbolizes growth and abundance in
+                   your crystal journey.</p>
+                <p>Find authenticated specimens and trusted dealers
+                   in the crystal marketplace.</p>
+            </div>
+        </section>
+
+        <!-- Outro -->
+        <section class="outro" id="outro">
+            <div>
+                <h2>Journey Complete</h2>
+                <p style="color: rgba(255,255,255,0.5); margin-top: 20px;">
+                    Scroll back to explore each realm again
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+    // ============================================================================
+    // GEOMETRY MORPHING SYSTEM - Crystal Grimoire Style
+    // Three.js + GSAP ScrollTrigger Integration
+    // ============================================================================
+
+    // ==========================================================================
+    // THREE.JS SETUP
+    // ==========================================================================
+
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+    );
+    camera.position.z = 6;
+
+    const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // ==========================================================================
+    // GEOMETRIES - Pre-allocated for efficient swapping
+    // ==========================================================================
+
+    const geometries = {
+        // Intro: Complex Icosahedron
+        icosa: new THREE.IcosahedronGeometry(1.5, 2),
+
+        // ID: Sharp Octahedron
+        octa: new THREE.OctahedronGeometry(1.5, 0),
+
+        // Journal: Box (Book-like)
+        box: new THREE.BoxGeometry(2, 2.5, 0.5, 10, 10, 2),
+
+        // Guru: Perfect Sphere
+        sphere: new THREE.SphereGeometry(1.5, 64, 64),
+
+        // Moon: High-res Icosahedron
+        moon: new THREE.IcosahedronGeometry(1.5, 10),
+
+        // Healing: Torus Knot (Energy flow)
+        torus: new THREE.TorusKnotGeometry(1, 0.35, 150, 32),
+
+        // Market: Hexagonal Cylinder (Stability)
+        cylinder: new THREE.CylinderGeometry(0.8, 0.8, 3.5, 6, 20)
+    };
+
+    // Wireframe geometries (slightly larger)
+    const wireGeometries = {
+        icosa: new THREE.IcosahedronGeometry(1.6, 1),
+        octa: new THREE.OctahedronGeometry(1.6, 0),
+        box: new THREE.BoxGeometry(2.1, 2.6, 0.6, 2, 2, 1),
+        sphere: new THREE.SphereGeometry(1.6, 12, 12),
+        torus: new THREE.TorusKnotGeometry(1.1, 0.4, 64, 8),
+        cylinder: new THREE.CylinderGeometry(0.9, 0.9, 3.6, 6, 4)
+    };
+
+    // ==========================================================================
+    // HOLOGRAPHIC SHADER MATERIAL
+    // ==========================================================================
+
+    const holoMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            uTime: { value: 0 },
+            uColorA: { value: new THREE.Color('#1a103c') },
+            uColorB: { value: new THREE.Color('#a5f3fc') },
+            uDistortion: { value: 0.2 },
+            uOpacity: { value: 0.9 }
+        },
+        vertexShader: `
+            uniform float uTime;
+            uniform float uDistortion;
+
+            varying vec2 vUv;
+            varying vec3 vNormal;
+            varying vec3 vPosition;
+            varying float vDisplacement;
+
+            // Simplex noise function
+            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+            vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+
+            float snoise(vec3 v) {
+                const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+                const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+
+                vec3 i  = floor(v + dot(v, C.yyy));
+                vec3 x0 = v - i + dot(i, C.xxx);
+
+                vec3 g = step(x0.yzx, x0.xyz);
+                vec3 l = 1.0 - g;
+                vec3 i1 = min(g.xyz, l.zxy);
+                vec3 i2 = max(g.xyz, l.zxy);
+
+                vec3 x1 = x0 - i1 + C.xxx;
+                vec3 x2 = x0 - i2 + C.yyy;
+                vec3 x3 = x0 - D.yyy;
+
+                i = mod289(i);
+                vec4 p = permute(permute(permute(
+                    i.z + vec4(0.0, i1.z, i2.z, 1.0))
+                    + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+                    + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+
+                float n_ = 0.142857142857;
+                vec3 ns = n_ * D.wyz - D.xzx;
+
+                vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+
+                vec4 x_ = floor(j * ns.z);
+                vec4 y_ = floor(j - 7.0 * x_);
+
+                vec4 x = x_ *ns.x + ns.yyyy;
+                vec4 y = y_ *ns.x + ns.yyyy;
+                vec4 h = 1.0 - abs(x) - abs(y);
+
+                vec4 b0 = vec4(x.xy, y.xy);
+                vec4 b1 = vec4(x.zw, y.zw);
+
+                vec4 s0 = floor(b0)*2.0 + 1.0;
+                vec4 s1 = floor(b1)*2.0 + 1.0;
+                vec4 sh = -step(h, vec4(0.0));
+
+                vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+                vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+
+                vec3 p0 = vec3(a0.xy, h.x);
+                vec3 p1 = vec3(a0.zw, h.y);
+                vec3 p2 = vec3(a1.xy, h.z);
+                vec3 p3 = vec3(a1.zw, h.w);
+
+                vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+                p0 *= norm.x;
+                p1 *= norm.y;
+                p2 *= norm.z;
+                p3 *= norm.w;
+
+                vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+                m = m * m;
+                return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+            }
+
+            void main() {
+                vUv = uv;
+                vNormal = normalize(normalMatrix * normal);
+
+                // Displacement
+                float noise = snoise(position * 2.0 + uTime * 0.5);
+                float wave = sin(position.y * 3.0 - uTime);
+
+                vec3 newPosition = position;
+                float displacement = (noise * 0.3 + wave * 0.1) * uDistortion;
+                newPosition += normal * displacement;
+
+                vDisplacement = displacement;
+                vPosition = newPosition;
+
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform float uTime;
+            uniform vec3 uColorA;
+            uniform vec3 uColorB;
+            uniform float uOpacity;
+
+            varying vec2 vUv;
+            varying vec3 vNormal;
+            varying vec3 vPosition;
+            varying float vDisplacement;
+
+            void main() {
+                // Fresnel effect (edge glow)
+                vec3 viewDir = normalize(cameraPosition - vPosition);
+                float fresnel = pow(1.0 - abs(dot(viewDir, vNormal)), 3.0);
+
+                // Scanlines
+                float scanline = 0.9 + 0.1 * sin(vUv.y * 100.0 + uTime * 2.0);
+
+                // Height-based color mixing
+                float heightMix = (vPosition.y + 2.0) / 4.0;
+
+                // Hot spots where displacement is high
+                float hotSpot = smoothstep(0.1, 0.3, abs(vDisplacement));
+
+                // Base color gradient
+                vec3 color = mix(uColorA, uColorB, heightMix);
+
+                // Add fresnel glow
+                color = mix(color, uColorB, fresnel * 0.8);
+
+                // Add hot spots (white/gold)
+                vec3 hotColor = vec3(1.0, 0.95, 0.8);
+                color = mix(color, hotColor, hotSpot * 0.5);
+
+                // Apply scanlines
+                color *= scanline;
+
+                // Chromatic aberration hint
+                float aberration = fresnel * 0.1;
+                color.r += aberration;
+                color.b -= aberration * 0.5;
+
+                gl_FragColor = vec4(color, uOpacity);
+            }
+        `,
+        transparent: true,
+        side: THREE.DoubleSide
+    });
+
+    // Wireframe material
+    const wireMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.05,
+        blending: THREE.AdditiveBlending
+    });
+
+    // ==========================================================================
+    // MESH SETUP
+    // ==========================================================================
+
+    const mainMesh = new THREE.Mesh(geometries.icosa, holoMaterial);
+    mainMesh.scale.setScalar(1.2);
+    scene.add(mainMesh);
+
+    const wireMesh = new THREE.Mesh(wireGeometries.icosa, wireMaterial);
+    wireMesh.scale.setScalar(1.25);
+    scene.add(wireMesh);
+
+    // Particles
+    const particlesGeometry = new THREE.BufferGeometry();
+    const particleCount = 150;
+    const positions = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 25;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 25;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 15;
+    }
+
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    const particlesMaterial = new THREE.PointsMaterial({
+        color: 0xa5f3fc,
+        size: 0.05,
+        transparent: true,
+        opacity: 0.3,
+        blending: THREE.AdditiveBlending
+    });
+
+    const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+    scene.add(particles);
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    const pointLight = new THREE.PointLight(0xa5f3fc, 1);
+    pointLight.position.set(10, 10, 10);
+    scene.add(pointLight);
+
+    // ==========================================================================
+    // STATE & ANIMATION VARIABLES
+    // ==========================================================================
+
+    let scrollProgress = 0;
+    let expandedSection = null;
+    let currentGeometryKey = 'icosa';
+    let targetColorA = new THREE.Color('#1a103c');
+    let targetColorB = new THREE.Color('#a5f3fc');
+    let targetDistortion = 0.2;
+    let time = 0;
+
+    const SECTION_MAP = {
+        intro: { geom: 'icosa', wire: 'icosa', colorA: '#1a103c', colorB: '#a5f3fc', distortion: 2.0, name: 'INTRO' },
+        id: { geom: 'octa', wire: 'octa', colorA: '#020204', colorB: '#a5f3fc', distortion: 0.8, name: 'ID' },
+        journal: { geom: 'box', wire: 'box', colorA: '#1e1b4b', colorB: '#818cf8', distortion: 0.1, name: 'JOURNAL' },
+        guru: { geom: 'sphere', wire: 'sphere', colorA: '#2e0236', colorB: '#d8b4fe', distortion: 0.3, name: 'GURU' },
+        moon: { geom: 'moon', wire: 'sphere', colorA: '#111827', colorB: '#f3f4f6', distortion: 0.05, name: 'MOON' },
+        healing: { geom: 'torus', wire: 'torus', colorA: '#451a03', colorB: '#fbbf24', distortion: 1.0, name: 'HEALING' },
+        market: { geom: 'cylinder', wire: 'cylinder', colorA: '#064e3b', colorB: '#34d399', distortion: 0.4, name: 'MARKET' },
+        outro: { geom: 'icosa', wire: 'icosa', colorA: '#000000', colorB: '#ffffff', distortion: 2.0, name: 'OUTRO' }
+    };
+
+    // ==========================================================================
+    // GSAP SCROLL CHOREOGRAPHY
+    // ==========================================================================
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Main scroll progress
+    ScrollTrigger.create({
+        trigger: '#scrollContainer',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.5,
+        onUpdate: (self) => {
+            scrollProgress = self.progress;
+            updateVisualizerByProgress(self.progress);
+        }
+    });
+
+    // "Bombastic" title animation - first 10% of scroll
+    const mainTitle = document.getElementById('mainTitle');
+    const heroSubtitle = document.getElementById('heroSubtitle');
+    const fixedHeader = document.getElementById('fixedHeader');
+
+    // Animate subtitle in
+    gsap.to(heroSubtitle, {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        delay: 0.5,
+        ease: 'power2.out'
+    });
+
+    // Section content animations
+    document.querySelectorAll('.section-content').forEach((content, index) => {
+        const section = content.closest('.section');
+        const direction = index % 2 === 0 ? -60 : 60;
+
+        gsap.fromTo(content,
+            { opacity: 0, x: direction },
+            {
+                opacity: 1,
+                x: 0,
+                duration: 1,
+                ease: 'power2.out',
+                scrollTrigger: {
+                    trigger: section,
+                    start: 'top 60%',
+                    end: 'top 20%',
+                    scrub: 0.3
+                }
+            }
+        );
+    });
+
+    // ==========================================================================
+    // VISUALIZER UPDATE BY SCROLL PROGRESS
+    // ==========================================================================
+
+    function updateVisualizerByProgress(progress) {
+        // Update HUD
+        document.getElementById('hudProgress').textContent = Math.round(progress * 100) + '%';
+
+        // Progress ring
+        const circumference = 157; // 2 * PI * 25
+        document.getElementById('progressCircle').style.strokeDashoffset =
+            circumference - (progress * circumference);
+
+        // Bombastic title animation (first 10%)
+        const titleProgress = Math.min(progress * 10, 1);
+
+        if (titleProgress < 1) {
+            const scale = 4 - (3 * titleProgress);
+            const top = 50 - (48 * titleProgress);
+
+            mainTitle.style.position = 'fixed';
+            mainTitle.style.top = top + '%';
+            mainTitle.style.left = '50%';
+            mainTitle.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            mainTitle.style.opacity = 1 - titleProgress * 0.5;
+
+            fixedHeader.style.opacity = 0;
+        } else {
+            mainTitle.style.opacity = 0;
+            fixedHeader.style.opacity = 1;
+        }
+
+        // Determine current section
+        let sectionKey = 'intro';
+        if (progress < 0.12) {
+            sectionKey = 'intro';
+        } else if (progress < 0.24) {
+            sectionKey = 'id';
+        } else if (progress < 0.37) {
+            sectionKey = 'journal';
+        } else if (progress < 0.50) {
+            sectionKey = 'guru';
+        } else if (progress < 0.63) {
+            sectionKey = 'moon';
+        } else if (progress < 0.76) {
+            sectionKey = 'healing';
+        } else if (progress < 0.89) {
+            sectionKey = 'market';
+        } else {
+            sectionKey = 'outro';
+        }
+
+        const section = SECTION_MAP[sectionKey];
+        document.getElementById('hudSection').textContent = section.name;
+
+        // Update geometry targets
+        const geomKey = section.geom;
+        if (currentGeometryKey !== geomKey) {
+            currentGeometryKey = geomKey;
+            mainMesh.geometry = geometries[geomKey];
+            wireMesh.geometry = wireGeometries[section.wire] || wireGeometries[geomKey];
+
+            const geomNames = {
+                icosa: 'ICOSAHEDRON', octa: 'OCTAHEDRON', box: 'BOX',
+                sphere: 'SPHERE', moon: 'ICOSAHEDRON', torus: 'TORUS KNOT',
+                cylinder: 'HEXAGONAL CYLINDER'
+            };
+            document.getElementById('hudGeometry').textContent = geomNames[geomKey];
+        }
+
+        // Update color targets
+        targetColorA = new THREE.Color(section.colorA);
+        targetColorB = new THREE.Color(section.colorB);
+
+        // Update distortion target
+        targetDistortion = section.distortion;
+
+        // Healing section: add vibration
+        if (sectionKey === 'healing') {
+            targetDistortion += Math.sin(time * 8) * 0.1;
+        }
+    }
+
+    // ==========================================================================
+    // RENDER LOOP
+    // ==========================================================================
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        time += 0.016;
+        holoMaterial.uniforms.uTime.value = time;
+
+        // Rotation
+        const rotSpeed = expandedSection ? 0.05 : (0.2 + scrollProgress * 0.5);
+        mainMesh.rotation.y = time * rotSpeed;
+        mainMesh.rotation.x = scrollProgress * Math.PI + Math.sin(time * 0.5) * 0.1;
+        wireMesh.rotation.copy(mainMesh.rotation);
+
+        // Lerp colors
+        holoMaterial.uniforms.uColorA.value.lerp(targetColorA, 0.05);
+        holoMaterial.uniforms.uColorB.value.lerp(targetColorB, 0.05);
+
+        // Lerp distortion
+        const currentDist = holoMaterial.uniforms.uDistortion.value;
+        holoMaterial.uniforms.uDistortion.value = THREE.MathUtils.lerp(
+            currentDist, targetDistortion, 0.1
+        );
+
+        // Particles rotation
+        particles.rotation.y = -time * 0.05;
+        const particleScale = 1 + scrollProgress * 2;
+        particles.scale.setScalar(particleScale);
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // ==========================================================================
+    // RESIZE HANDLER
+    // ==========================================================================
+
+    function onResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    window.addEventListener('resize', onResize);
+
+    // ==========================================================================
+    // API EXPOSURE
+    // ==========================================================================
+
+    window.GeometryMorpher = {
+        setSection: (key) => {
+            if (SECTION_MAP[key]) {
+                updateVisualizerByProgress(
+                    Object.keys(SECTION_MAP).indexOf(key) / 8
+                );
+            }
+        },
+        getCurrentSection: () => currentGeometryKey,
+        getProgress: () => scrollProgress
+    };
+
+    console.log('%c[GeometryMorpher] Crystal Grimoire Style System Initialized', 'color: #a5f3fc; font-weight: bold;');
+
+    </script>
+
+    <!--
+    ════════════════════════════════════════════════════════════════════════════
+    Visual Codex Pattern: Geometry Morphing System - Crystal Grimoire Style
+    Category: GSAP + Three.js Integration
+
+    Features:
+    - 7 pre-allocated geometries for efficient swapping
+    - Holographic shader with vertex displacement, fresnel, scanlines
+    - "Bombastic" title animation (4x scale → 1x over first 10% scroll)
+    - Section-based geometry/color transitions
+    - Smooth lerping for all parameters
+    - Wireframe overlay with additive blending
+    - Particle system scaling with scroll
+    - Progress ring indicator
+
+    Based on: CG-Web-Visualizer (React Three Fiber implementation)
+    Ported to: Vanilla Three.js + GSAP for standalone use
+
+    Author: Paul Phillips
+    © 2025 Clear Seas Solutions LLC
+
+    "The Revolution Will Not be in a Structured Format"
+    ════════════════════════════════════════════════════════════════════════════
+    -->
+</body>
+</html>

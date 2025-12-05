@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Flux Visualizer - VIB34D KIFS System</title>
+
+    <!-- GSAP + ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --accent-primary: #7B3FF2;
+            --accent-secondary: #4FC3F7;
+            --glass-bg: rgba(15, 15, 17, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: #0A0A0B;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Fixed Visualizer Canvas */
+        #visualizer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Scroll Container - 800vh for pinned sections */
+        .scroll-container {
+            position: relative;
+            height: 800vh;
+            z-index: 1;
+        }
+
+        /* Sections with glass panels */
+        .section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            pointer-events: none;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 48px;
+            max-width: 600px;
+            pointer-events: auto;
+            opacity: 0;
+            transform: translateY(60px);
+        }
+
+        .glass-panel h2 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass-panel p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 24px;
+        }
+
+        /* Interactive Controls */
+        .control-group {
+            margin-top: 24px;
+        }
+
+        .control-label {
+            display: block;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(123, 63, 242, 0.5);
+        }
+
+        .slider-value {
+            min-width: 40px;
+            text-align: right;
+            font-family: 'SF Mono', monospace;
+            font-size: 14px;
+            color: var(--accent-secondary);
+        }
+
+        /* Glass Buttons */
+        .glass-btn {
+            padding: 14px 28px;
+            background: rgba(123, 63, 242, 0.2);
+            border: 1px solid rgba(123, 63, 242, 0.4);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 12px;
+            margin-top: 16px;
+        }
+
+        .glass-btn:hover {
+            background: rgba(123, 63, 242, 0.4);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 30px rgba(123, 63, 242, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .glass-btn.active {
+            background: rgba(123, 63, 242, 0.5);
+            border-color: var(--accent-primary);
+        }
+
+        /* Section positioning */
+        .section:nth-child(1) { justify-content: flex-start; }
+        .section:nth-child(2) { justify-content: flex-end; }
+        .section:nth-child(3) { justify-content: flex-start; }
+        .section:nth-child(4) { justify-content: center; }
+        .section:nth-child(5) { justify-content: flex-end; }
+        .section:nth-child(6) { justify-content: flex-start; }
+        .section:nth-child(7) { justify-content: center; }
+        .section:nth-child(8) { justify-content: flex-end; }
+
+        /* HUD Overlay */
+        .hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            font-family: 'SF Mono', monospace;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            pointer-events: none;
+        }
+
+        .hud-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .hud-label { color: rgba(123, 63, 242, 0.6); }
+        .hud-value { color: rgba(79, 195, 247, 0.8); }
+
+        /* Progress bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            width: 0%;
+            z-index: 1000;
+        }
+
+        /* Impulse flash */
+        .impulse-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(123, 63, 242, 0.3) 0%, transparent 70%);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* Input field styling */
+        .glass-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            margin-top: 12px;
+        }
+
+        .glass-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(123, 63, 242, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="visualizer"></canvas>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="impulse-flash" id="impulseFlash"></div>
+
+    <!-- HUD Display -->
+    <div class="hud" id="hud">
+        <div class="hud-row">
+            <span class="hud-label">SCROLL:</span>
+            <span class="hud-value" id="hudScroll">0.00</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-label">DENSITY:</span>
+            <span class="hud-value" id="hudDensity">2.50</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-label">CHAOS:</span>
+            <span class="hud-value" id="hudChaos">0.30</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-label">GEOMETRY:</span>
+            <span class="hud-value" id="hudGeom">TETRA</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-label">HUE:</span>
+            <span class="hud-value" id="hudHue">270°</span>
+        </div>
+    </div>
+
+    <!-- Scroll Sections -->
+    <div class="scroll-container" id="scrollContainer">
+
+        <!-- Section 1: Introduction -->
+        <section class="section" id="section1">
+            <div class="glass-panel">
+                <h2>Quantum Flux Engine</h2>
+                <p>Welcome to the VIB34D KIFS Raymarching System. This visualizer uses
+                   Kaleidoscopic Iterated Function Systems to generate infinite fractal
+                   geometry in real-time.</p>
+                <p>Scroll to see how parameters choreograph with page progression.
+                   The fog clears as you interact - this is <strong>Inverse Density</strong>.</p>
+                <button class="glass-btn" onclick="triggerImpulse('click', 1.0)">Trigger Impulse</button>
+            </div>
+        </section>
+
+        <!-- Section 2: Geometry Types -->
+        <section class="section" id="section2">
+            <div class="glass-panel">
+                <h2>Geometry Morphing</h2>
+                <p>The KIFS algorithm supports multiple base geometries. Each produces
+                   distinct fractal patterns through iterative folding operations.</p>
+                <div>
+                    <button class="glass-btn active" id="btnTetra" onclick="setGeometry(0)">Tetrahedral</button>
+                    <button class="glass-btn" id="btnBox" onclick="setGeometry(1)">Box Fold</button>
+                    <button class="glass-btn" id="btnSponge" onclick="setGeometry(2)">Menger Sponge</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Chaos Control -->
+        <section class="section" id="section3">
+            <div class="glass-panel">
+                <h2>Chaos Parameter</h2>
+                <p>Chaos controls the mutation intensity within the fractal iterations.
+                   Higher values create more organic, unpredictable structures.</p>
+                <div class="control-group">
+                    <label class="control-label">Chaos Intensity</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="chaosSlider" min="0" max="100" value="30">
+                        <span class="slider-value" id="chaosValue">0.30</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Density & Fog -->
+        <section class="section" id="section4">
+            <div class="glass-panel">
+                <h2>Inverse Density</h2>
+                <p>The unique "fog clears on interaction" effect. Idle state maintains
+                   high density (thick quantum foam). Interaction triggers low density
+                   revealing crystal-clear geometry.</p>
+                <div class="control-group">
+                    <label class="control-label">Base Density</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="densitySlider" min="20" max="250" value="250">
+                        <span class="slider-value" id="densityValue">2.50</span>
+                    </div>
+                </div>
+                <button class="glass-btn" onclick="clearFog()">Clear Fog</button>
+                <button class="glass-btn" onclick="resetFog()">Reset Fog</button>
+            </div>
+        </section>
+
+        <!-- Section 5: Color Spectrum -->
+        <section class="section" id="section5">
+            <div class="glass-panel">
+                <h2>Spectral Shift</h2>
+                <p>Hue rotation creates continuous color evolution. The visualizer
+                   automatically shifts through the spectrum as you scroll.</p>
+                <div class="control-group">
+                    <label class="control-label">Hue Rotation (0-360°)</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="hueSlider" min="0" max="360" value="270">
+                        <span class="slider-value" id="hueValue">270°</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: 4D Rotation -->
+        <section class="section" id="section6">
+            <div class="glass-panel">
+                <h2>4D Rotation</h2>
+                <p>Move your mouse to control rotation through hyperspace.
+                   The XZ and YZ planes respond to pointer position, creating
+                   the illusion of 4-dimensional movement.</p>
+                <p style="font-size: 14px; color: rgba(255,255,255,0.5);">
+                    Try moving your mouse while watching the geometry twist
+                    through impossible angles.
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 7: Event System -->
+        <section class="section" id="section7">
+            <div class="glass-panel">
+                <h2>Impulse Events</h2>
+                <p>UI interactions trigger visual responses. Type in the field below
+                   to see the visualizer react to each keystroke.</p>
+                <input type="text" class="glass-input" id="textInput" placeholder="Type here to trigger impulses...">
+                <div class="control-group">
+                    <label class="control-label">Impulse Intensity</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="impulseSlider" min="10" max="100" value="50">
+                        <span class="slider-value" id="impulseValue">0.50</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 8: Complete System -->
+        <section class="section" id="section8">
+            <div class="glass-panel">
+                <h2>Holistic Choreography</h2>
+                <p>You've experienced the full VIB34D KIFS system. Every scroll position,
+                   every click, every keystroke choreographs the visualizer through
+                   GSAP-driven parameter morphing.</p>
+                <p>This is <strong>Quantum Glassmorphism</strong> - where UI and visualization
+                   become inseparable expressions of the same data flow.</p>
+                <button class="glass-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">Return to Origin</button>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+    // ============================================================================
+    // QUANTUM FLUX VISUALIZER ENGINE v4.2 - VIB34D KIFS RAYMARCHING
+    // Full implementation with GSAP scroll choreography
+    // ============================================================================
+
+    const canvas = document.getElementById('visualizer');
+    const gl = canvas.getContext('webgl2');
+
+    if (!gl) {
+        console.error('WebGL2 not supported');
+        document.body.innerHTML = '<h1 style="color:#fff;text-align:center;padding:100px">WebGL2 Required</h1>';
+    }
+
+    // ==========================================================================
+    // SHADER PARAMETERS - Reactive to scroll, mouse, and UI events
+    // ==========================================================================
+
+    const params = {
+        // Geometry
+        geometryType: 0,        // 0=Tetra, 1=Box, 2=Sponge
+
+        // Visual density (INVERSE: high=fog, low=clear)
+        density: 2.5,           // 0.3-2.5 range
+        targetDensity: 2.5,
+
+        // Fractal parameters
+        chaos: 0.3,             // 0-1 mutation intensity
+        morph: 0.0,             // 0-1 geometry blend
+        iterations: 6,          // KIFS iteration count
+
+        // Color
+        hue: 0.75,              // 0-1 (maps to 0-360°)
+        saturation: 0.7,
+        intensity: 0.8,
+
+        // Animation
+        speed: 1.0,
+        time: 0,
+
+        // Interaction
+        mouseX: 0.5,
+        mouseY: 0.5,
+        impulse: 0,
+        impulseDecay: 0.92,
+
+        // Audio reactivity placeholders
+        audioBass: 0,
+        audioMid: 0,
+        audioHigh: 0,
+
+        // Scroll
+        scrollProgress: 0
+    };
+
+    // Target params for smooth lerping
+    const targets = { ...params };
+
+    // ==========================================================================
+    // VERTEX SHADER - Simple fullscreen quad
+    // ==========================================================================
+
+    const vertexSource = `#version 300 es
+        in vec2 a_position;
+        void main() {
+            gl_Position = vec4(a_position, 0.0, 1.0);
+        }
+    `;
+
+    // ==========================================================================
+    // FRAGMENT SHADER - KIFS RAYMARCHING with full parameter support
+    // ==========================================================================
+
+    const fragmentSource = `#version 300 es
+        precision highp float;
+
+        uniform vec2 u_resolution;
+        uniform float u_time;
+        uniform float u_density;
+        uniform float u_chaos;
+        uniform float u_morph;
+        uniform float u_hue;
+        uniform float u_saturation;
+        uniform float u_intensity;
+        uniform float u_impulse;
+        uniform float u_speed;
+        uniform vec2 u_mouse;
+        uniform int u_geometryType;
+        uniform float u_audioBass;
+        uniform float u_audioMid;
+        uniform float u_audioHigh;
+
+        out vec4 fragColor;
+
+        // ======================================================================
+        // UTILITY FUNCTIONS
+        // ======================================================================
+
+        #define PI 3.14159265359
+        #define TAU 6.28318530718
+
+        // 2D Rotation matrix
+        mat2 rot(float a) {
+            float c = cos(a), s = sin(a);
+            return mat2(c, -s, s, c);
+        }
+
+        // HSV to RGB conversion
+        vec3 hsv2rgb(vec3 c) {
+            vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
+            vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+            return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+        }
+
+        // Smooth minimum for blending
+        float smin(float a, float b, float k) {
+            float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+            return mix(b, a, h) - k * h * (1.0 - h);
+        }
+
+        // ======================================================================
+        // KIFS FRACTAL DISTANCE FUNCTIONS
+        // ======================================================================
+
+        // Tetrahedral fold - creates sierpinski-like patterns
+        vec3 tetraFold(vec3 p) {
+            if (p.x + p.y < 0.0) p.xy = -p.yx;
+            if (p.x + p.z < 0.0) p.xz = -p.zx;
+            if (p.y + p.z < 0.0) p.yz = -p.zy;
+            return p;
+        }
+
+        // Box fold - creates mandelbox-like patterns
+        vec3 boxFold(vec3 p, float foldingLimit) {
+            return clamp(p, -foldingLimit, foldingLimit) * 2.0 - p;
+        }
+
+        // Menger sponge fold
+        vec3 mengerFold(vec3 p, float scale) {
+            p = abs(p);
+            if (p.x < p.y) p.xy = p.yx;
+            if (p.x < p.z) p.xz = p.zx;
+            if (p.y < p.z) p.yz = p.zy;
+            return p;
+        }
+
+        // Main KIFS distance function
+        float sdQuantumFractal(vec3 p) {
+            // Audio-reactive scale
+            float scale = 1.8 + (u_audioBass * 0.3) + (u_audioMid * 0.1);
+
+            // Offset affected by morph and chaos
+            vec3 offset = vec3(1.0, 1.0, 1.0) * (0.8 + u_morph + (u_audioMid * 0.2));
+
+            // Audio jitter on high frequencies
+            float jitter = u_audioHigh * 0.15;
+
+            // 4D ROTATION via mouse position
+            p.xz *= rot(u_time * 0.1 * u_speed + u_mouse.x * TAU + jitter);
+            p.yz *= rot(u_mouse.y * TAU - jitter);
+            p.xy *= rot(u_time * 0.05 * u_speed);
+
+            float s = 1.0;
+
+            // KIFS iterations
+            for (int i = 0; i < 6; i++) {
+                // Apply fold based on geometry type
+                if (u_geometryType == 0) {
+                    p = tetraFold(p);
+                } else if (u_geometryType == 1) {
+                    p = boxFold(p, 1.0 + u_chaos * 0.5);
+                } else {
+                    p = mengerFold(p, scale);
+                }
+
+                // Scale and translate
+                p.z -= offset.z * 0.5;
+                p.z = -abs(p.z);
+                p.z += offset.z * 0.5;
+
+                p = p * scale - offset * (scale - 1.0);
+                s *= scale;
+
+                // Late-iteration chaos rotation
+                if (i > 2) {
+                    p.xy *= rot(u_chaos * 0.5 + (u_audioHigh * 0.4));
+                }
+            }
+
+            // Return distance estimate
+            return length(p) / s;
+        }
+
+        // ======================================================================
+        // RAYMARCHING ENGINE
+        // ======================================================================
+
+        float raymarch(vec3 ro, vec3 rd) {
+            float t = 0.0;
+            float maxDist = 20.0;
+
+            for (int i = 0; i < 80; i++) {
+                vec3 p = ro + rd * t;
+                float d = sdQuantumFractal(p);
+
+                if (d < 0.001 || t > maxDist) break;
+
+                t += d * 0.8; // Step ratio for stability
+            }
+
+            return t;
+        }
+
+        // ======================================================================
+        // MAIN RENDER
+        // ======================================================================
+
+        void main() {
+            vec2 uv = (gl_FragCoord.xy - u_resolution * 0.5) / u_resolution.y;
+
+            // Camera setup with depth oscillation
+            vec3 ro = vec3(0.0, 0.0, -3.5 + sin(u_time * 0.2 * u_speed) * 0.3);
+            vec3 rd = normalize(vec3(uv, 1.0));
+
+            // Global rotation
+            float globalRot = u_time * 0.08 * u_speed;
+            rd.xz *= rot(globalRot);
+            ro.xz *= rot(globalRot);
+
+            // Raymarch
+            float t = raymarch(ro, rd);
+
+            // ============================================================
+            // INVERSE DENSITY LOGIC
+            // High density = thick fog = less visible
+            // Interaction/impulse CLEARS the fog
+            // ============================================================
+
+            float effectiveDensity = u_density - u_impulse * 2.0;
+            effectiveDensity = max(effectiveDensity, 0.2);
+
+            // Fog and glow calculations
+            float fog = 1.0 - exp(-t * effectiveDensity * 0.08);
+            float glow = 1.0 / (1.0 + t * t * 0.12);
+
+            // Orbit trap for additional coloring
+            float orbitTrap = 1.0 / (1.0 + t * 0.5);
+
+            // ============================================================
+            // COLOR COMPUTATION
+            // ============================================================
+
+            // Impulse boosts intensity temporarily
+            float effectiveIntensity = u_intensity + u_impulse * 0.4;
+
+            // Hue shifts with glow and impulse
+            float hueShift = u_hue + glow * 0.08 + u_impulse * 0.1 + u_audioMid * 0.05;
+
+            // Saturation drops slightly on impulse for "flash" effect
+            float sat = u_saturation - u_impulse * 0.3;
+
+            vec3 color = hsv2rgb(vec3(
+                hueShift,
+                sat,
+                effectiveIntensity * glow
+            ));
+
+            // Secondary color layer for depth
+            vec3 deepColor = hsv2rgb(vec3(
+                hueShift + 0.5,
+                sat * 0.5,
+                effectiveIntensity * 0.3
+            ));
+
+            color = mix(color, deepColor, fog * 0.5);
+
+            // Edge glow (fresnel-like)
+            float edge = 1.0 - glow;
+            vec3 edgeColor = hsv2rgb(vec3(hueShift + 0.2, 0.9, 0.8));
+            color += edgeColor * edge * 0.15 * (1.0 + u_impulse);
+
+            // Mix with fog color
+            vec3 fogColor = vec3(0.02, 0.02, 0.03);
+            color = mix(color, fogColor, fog);
+
+            // Vignette
+            float vignette = 1.0 - length(uv) * 0.5;
+            color *= vignette;
+
+            // Scanlines (subtle)
+            float scanline = 0.95 + 0.05 * sin(gl_FragCoord.y * 2.0);
+            color *= scanline;
+
+            // Chromatic aberration on impulse
+            if (u_impulse > 0.1) {
+                vec2 offset = uv * u_impulse * 0.02;
+                // This is a simplified chromatic aberration hint
+                color.r *= 1.0 + length(offset) * 2.0;
+                color.b *= 1.0 - length(offset) * 1.5;
+            }
+
+            fragColor = vec4(color, 1.0);
+        }
+    `;
+
+    // ==========================================================================
+    // WEBGL SETUP
+    // ==========================================================================
+
+    function compileShader(type, source) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+            return null;
+        }
+        return shader;
+    }
+
+    const vertexShader = compileShader(gl.VERTEX_SHADER, vertexSource);
+    const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentSource);
+
+    const program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error('Program link error:', gl.getProgramInfoLog(program));
+    }
+
+    gl.useProgram(program);
+
+    // Fullscreen quad vertices
+    const vertices = new Float32Array([
+        -1, -1,  1, -1,  -1, 1,
+        -1,  1,  1, -1,   1, 1
+    ]);
+
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    const posLoc = gl.getAttribLocation(program, 'a_position');
+    gl.enableVertexAttribArray(posLoc);
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+    // Uniform locations
+    const uniforms = {};
+    const uniformNames = [
+        'u_resolution', 'u_time', 'u_density', 'u_chaos', 'u_morph',
+        'u_hue', 'u_saturation', 'u_intensity', 'u_impulse', 'u_speed',
+        'u_mouse', 'u_geometryType', 'u_audioBass', 'u_audioMid', 'u_audioHigh'
+    ];
+    uniformNames.forEach(name => {
+        uniforms[name] = gl.getUniformLocation(program, name);
+    });
+
+    // ==========================================================================
+    // RESIZE HANDLER
+    // ==========================================================================
+
+    function resize() {
+        const dpr = Math.min(window.devicePixelRatio, 2);
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        canvas.style.width = window.innerWidth + 'px';
+        canvas.style.height = window.innerHeight + 'px';
+        gl.viewport(0, 0, canvas.width, canvas.height);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ==========================================================================
+    // GSAP SCROLL CHOREOGRAPHY
+    // ==========================================================================
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Main scroll progress tracking
+    ScrollTrigger.create({
+        trigger: '#scrollContainer',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.5,
+        onUpdate: (self) => {
+            params.scrollProgress = self.progress;
+            choreographByScroll(self.progress);
+        }
+    });
+
+    // Section-specific animations
+    const sections = document.querySelectorAll('.section');
+    sections.forEach((section, index) => {
+        const panel = section.querySelector('.glass-panel');
+
+        gsap.fromTo(panel,
+            { opacity: 0, y: 60 },
+            {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                ease: 'power2.out',
+                scrollTrigger: {
+                    trigger: section,
+                    start: 'top 70%',
+                    end: 'top 20%',
+                    scrub: 0.3,
+                    onEnter: () => triggerImpulse('section', 0.3),
+                    onEnterBack: () => triggerImpulse('section', 0.2)
+                }
+            }
+        );
+    });
+
+    // ==========================================================================
+    // SCROLL CHOREOGRAPHY - Maps scroll progress to visualizer parameters
+    // ==========================================================================
+
+    function choreographByScroll(progress) {
+        // Update HUD
+        document.getElementById('hudScroll').textContent = progress.toFixed(2);
+        document.getElementById('progressBar').style.width = (progress * 100) + '%';
+
+        // ====== GEOMETRY TRANSITIONS ======
+        // 0-25%: Tetra | 25-50%: Box | 50-75%: Sponge | 75-100%: Back to Tetra
+        if (progress < 0.25) {
+            targets.geometryType = 0;
+            document.getElementById('hudGeom').textContent = 'TETRA';
+        } else if (progress < 0.5) {
+            targets.geometryType = 1;
+            document.getElementById('hudGeom').textContent = 'BOX';
+        } else if (progress < 0.75) {
+            targets.geometryType = 2;
+            document.getElementById('hudGeom').textContent = 'SPONGE';
+        } else {
+            targets.geometryType = 0;
+            document.getElementById('hudGeom').textContent = 'TETRA';
+        }
+
+        // ====== HUE ROTATION ======
+        // Full spectrum rotation through scroll
+        targets.hue = progress;
+        document.getElementById('hudHue').textContent = Math.round(progress * 360) + '°';
+
+        // ====== CHAOS WAVE ======
+        // Oscillates through scroll with sine wave
+        targets.chaos = 0.3 + Math.sin(progress * Math.PI * 2) * 0.4;
+        document.getElementById('hudChaos').textContent = targets.chaos.toFixed(2);
+
+        // ====== DENSITY SECTIONS ======
+        // High density (foggy) at start, clears in middle, builds again at end
+        if (progress < 0.2) {
+            targets.density = 2.5 - progress * 5; // Clear as we scroll down
+        } else if (progress < 0.8) {
+            targets.density = 1.5 + Math.sin((progress - 0.2) * Math.PI / 0.6) * 0.8;
+        } else {
+            targets.density = 1.5 + (progress - 0.8) * 5; // Build fog at end
+        }
+        document.getElementById('hudDensity').textContent = targets.density.toFixed(2);
+
+        // ====== INTENSITY ======
+        // Peaks in the middle sections
+        targets.intensity = 0.6 + Math.sin(progress * Math.PI) * 0.4;
+
+        // ====== SPEED ======
+        // Slower at extremes, faster in middle
+        targets.speed = 0.5 + Math.sin(progress * Math.PI) * 0.8;
+    }
+
+    // ==========================================================================
+    // IMPULSE EVENT SYSTEM
+    // ==========================================================================
+
+    const impulseFlash = document.getElementById('impulseFlash');
+    let impulseIntensity = 0.5;
+
+    function triggerImpulse(type, intensity = null) {
+        const actualIntensity = intensity ?? impulseIntensity;
+        targets.impulse = Math.min(targets.impulse + actualIntensity, 1.5);
+
+        // Visual flash
+        gsap.fromTo(impulseFlash,
+            { opacity: actualIntensity * 0.5 },
+            { opacity: 0, duration: 0.4, ease: 'power2.out' }
+        );
+
+        // Dispatch custom event for external listeners
+        window.dispatchEvent(new CustomEvent('visualizer-impulse', {
+            detail: { type, intensity: actualIntensity }
+        }));
+    }
+
+    // Click anywhere triggers impulse
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.glass-panel')) {
+            triggerImpulse('click', 0.8);
+        }
+    });
+
+    // ==========================================================================
+    // MOUSE TRACKING (4D Rotation Control)
+    // ==========================================================================
+
+    document.addEventListener('mousemove', (e) => {
+        targets.mouseX = e.clientX / window.innerWidth;
+        targets.mouseY = e.clientY / window.innerHeight;
+
+        // Subtle impulse on fast movement
+        const speed = Math.abs(e.movementX) + Math.abs(e.movementY);
+        if (speed > 50) {
+            triggerImpulse('mouse', 0.1);
+        }
+    });
+
+    // Touch support
+    document.addEventListener('touchmove', (e) => {
+        const touch = e.touches[0];
+        targets.mouseX = touch.clientX / window.innerWidth;
+        targets.mouseY = touch.clientY / window.innerHeight;
+    });
+
+    // ==========================================================================
+    // UI CONTROL HANDLERS
+    // ==========================================================================
+
+    function setGeometry(type) {
+        targets.geometryType = type;
+        triggerImpulse('geometry', 0.6);
+
+        // Update button states
+        ['btnTetra', 'btnBox', 'btnSponge'].forEach((id, i) => {
+            document.getElementById(id).classList.toggle('active', i === type);
+        });
+
+        const names = ['TETRA', 'BOX', 'SPONGE'];
+        document.getElementById('hudGeom').textContent = names[type];
+    }
+
+    function clearFog() {
+        targets.density = 0.3;
+        triggerImpulse('clear', 1.0);
+    }
+
+    function resetFog() {
+        targets.density = 2.5;
+    }
+
+    // Slider handlers
+    document.getElementById('chaosSlider').addEventListener('input', (e) => {
+        targets.chaos = e.target.value / 100;
+        document.getElementById('chaosValue').textContent = targets.chaos.toFixed(2);
+        triggerImpulse('slider', 0.1);
+    });
+
+    document.getElementById('densitySlider').addEventListener('input', (e) => {
+        targets.density = e.target.value / 100;
+        document.getElementById('densityValue').textContent = targets.density.toFixed(2);
+    });
+
+    document.getElementById('hueSlider').addEventListener('input', (e) => {
+        targets.hue = e.target.value / 360;
+        document.getElementById('hueValue').textContent = e.target.value + '°';
+    });
+
+    document.getElementById('impulseSlider').addEventListener('input', (e) => {
+        impulseIntensity = e.target.value / 100;
+        document.getElementById('impulseValue').textContent = impulseIntensity.toFixed(2);
+    });
+
+    // Text input triggers impulse on keystrokes
+    document.getElementById('textInput').addEventListener('input', (e) => {
+        triggerImpulse('keystroke', impulseIntensity * 0.3);
+    });
+
+    document.getElementById('textInput').addEventListener('focus', () => {
+        triggerImpulse('focus', 0.4);
+    });
+
+    // ==========================================================================
+    // RENDER LOOP
+    // ==========================================================================
+
+    function render() {
+        params.time += 0.016 * params.speed;
+
+        // Smooth lerp all parameters
+        const lerpFactor = 0.08;
+        params.density += (targets.density - params.density) * lerpFactor;
+        params.chaos += (targets.chaos - params.chaos) * lerpFactor;
+        params.morph += (targets.morph - params.morph) * lerpFactor;
+        params.hue += (targets.hue - params.hue) * lerpFactor;
+        params.saturation += (targets.saturation - params.saturation) * lerpFactor;
+        params.intensity += (targets.intensity - params.intensity) * lerpFactor;
+        params.speed += (targets.speed - params.speed) * lerpFactor;
+        params.mouseX += (targets.mouseX - params.mouseX) * 0.1;
+        params.mouseY += (targets.mouseY - params.mouseY) * 0.1;
+
+        // Geometry type snaps (integer)
+        params.geometryType = Math.round(targets.geometryType);
+
+        // Impulse decay
+        params.impulse = targets.impulse;
+        targets.impulse *= params.impulseDecay;
+        if (targets.impulse < 0.01) targets.impulse = 0;
+
+        // Set uniforms
+        gl.uniform2f(uniforms.u_resolution, canvas.width, canvas.height);
+        gl.uniform1f(uniforms.u_time, params.time);
+        gl.uniform1f(uniforms.u_density, params.density);
+        gl.uniform1f(uniforms.u_chaos, params.chaos);
+        gl.uniform1f(uniforms.u_morph, params.morph);
+        gl.uniform1f(uniforms.u_hue, params.hue);
+        gl.uniform1f(uniforms.u_saturation, params.saturation);
+        gl.uniform1f(uniforms.u_intensity, params.intensity);
+        gl.uniform1f(uniforms.u_impulse, params.impulse);
+        gl.uniform1f(uniforms.u_speed, params.speed);
+        gl.uniform2f(uniforms.u_mouse, params.mouseX, params.mouseY);
+        gl.uniform1i(uniforms.u_geometryType, params.geometryType);
+        gl.uniform1f(uniforms.u_audioBass, params.audioBass);
+        gl.uniform1f(uniforms.u_audioMid, params.audioMid);
+        gl.uniform1f(uniforms.u_audioHigh, params.audioHigh);
+
+        // Draw
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        requestAnimationFrame(render);
+    }
+
+    render();
+
+    // ==========================================================================
+    // EXPOSE API FOR EXTERNAL CONTROL
+    // ==========================================================================
+
+    window.QuantumVisualizer = {
+        params,
+        targets,
+        triggerImpulse,
+        setGeometry,
+        clearFog,
+        resetFog,
+        setHue: (h) => { targets.hue = h; },
+        setChaos: (c) => { targets.chaos = c; },
+        setDensity: (d) => { targets.density = d; }
+    };
+
+    console.log('%c[QuantumVisualizer] VIB34D KIFS Engine v4.2 Initialized', 'color: #7B3FF2; font-weight: bold;');
+    console.log('API available at window.QuantumVisualizer');
+
+    </script>
+
+    <!--
+    ════════════════════════════════════════════════════════════════════════════
+    Visual Codex Pattern: Quantum Flux Visualizer - VIB34D KIFS Raymarching
+    Category: Visualizer Systems (Patterns 18, 19, 20, 21)
+
+    Features:
+    - KIFS (Kaleidoscopic Iterated Function System) raymarching
+    - 3 geometry modes: Tetrahedral, Box Fold, Menger Sponge
+    - Inverse Density fog system (interaction clears fog)
+    - 4D rotation via mouse/touch
+    - GSAP ScrollTrigger choreography (800vh scroll)
+    - Impulse event system (click, keystroke, section enter)
+    - Full parameter morphing: density, chaos, hue, intensity, speed
+    - Quantum Glassmorphism UI panels
+    - HUD telemetry display
+
+    Author: Paul Phillips
+    © 2025 Clear Seas Solutions LLC
+
+    "The Revolution Will Not be in a Structured Format"
+    ════════════════════════════════════════════════════════════════════════════
+    -->
+</body>
+</html>

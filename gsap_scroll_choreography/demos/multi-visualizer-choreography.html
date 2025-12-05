@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Visualizer Choreography - VIB34D Holistic System</title>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #7B3FF2;
+            --secondary: #4FC3F7;
+            --accent: #fbbf24;
+            --glass-bg: rgba(15, 15, 17, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: #0A0A0B;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* =====================================================
+           MULTI-CANVAS LAYER SYSTEM
+           5 Layers: BG -> Shadow -> Content -> Highlight -> Accent
+           ===================================================== */
+
+        .canvas-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #layer-bg { z-index: 0; }
+        #layer-shadow { z-index: 1; opacity: 0.3; }
+        #layer-content { z-index: 2; }
+        #layer-highlight { z-index: 3; opacity: 0.5; mix-blend-mode: screen; }
+        #layer-accent { z-index: 4; opacity: 0.3; mix-blend-mode: overlay; }
+
+        /* Scroll Container - 1200vh for extended choreography */
+        .scroll-container {
+            position: relative;
+            height: 1200vh;
+            z-index: 10;
+        }
+
+        /* Pinned Sections */
+        .pinned-section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 450px;
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+        }
+
+        .glass-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-card p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        /* Card grid layout */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            padding: 80px;
+            height: 100vh;
+            align-content: center;
+        }
+
+        .card-grid .glass-card {
+            max-width: none;
+        }
+
+        /* Carousel Section */
+        .carousel-section {
+            height: 400vh;
+            position: relative;
+        }
+
+        .carousel-track {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .carousel-inner {
+            display: flex;
+            gap: 40px;
+            padding: 0 100px;
+            will-change: transform;
+        }
+
+        .carousel-card {
+            flex-shrink: 0;
+            width: 400px;
+            height: 500px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .carousel-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+            color: var(--secondary);
+        }
+
+        .carousel-card p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        /* Expanding Cards Section */
+        .expanding-section {
+            min-height: 200vh;
+            padding: 100px;
+        }
+
+        .expand-trigger {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 60px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 32px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            overflow: hidden;
+        }
+
+        .expand-trigger:hover {
+            border-color: var(--primary);
+        }
+
+        .expand-trigger h3 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+            color: var(--secondary);
+        }
+
+        .expand-trigger .preview {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+        }
+
+        .expand-trigger .content {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+
+        .expand-trigger.expanded .content {
+            max-height: 500px;
+            opacity: 1;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* HUD Overlay */
+        .hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            font-family: 'SF Mono', monospace;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .hud-row { display: flex; gap: 8px; margin-bottom: 4px; }
+        .hud-label { color: rgba(123, 63, 242, 0.6); }
+        .hud-value { color: var(--secondary); }
+
+        /* Visualizer Position Indicators */
+        .viz-indicators {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+            z-index: 100;
+        }
+
+        .viz-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+
+        .viz-indicator.active {
+            background: var(--primary);
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            width: 0%;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 5-Layer Canvas System -->
+    <canvas id="layer-bg" class="canvas-layer"></canvas>
+    <canvas id="layer-shadow" class="canvas-layer"></canvas>
+    <canvas id="layer-content" class="canvas-layer"></canvas>
+    <canvas id="layer-highlight" class="canvas-layer"></canvas>
+    <canvas id="layer-accent" class="canvas-layer"></canvas>
+
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- HUD -->
+    <div class="hud">
+        <div class="hud-row">
+            <span class="hud-label">SCROLL:</span>
+            <span class="hud-value" id="hudScroll">0.00</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-label">MODE:</span>
+            <span class="hud-value" id="hudMode">INTRO</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-label">VIZ-A:</span>
+            <span class="hud-value" id="hudVizA">CENTER</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-label">VIZ-B:</span>
+            <span class="hud-value" id="hudVizB">CORNER</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-label">VIZ-C:</span>
+            <span class="hud-value" id="hudVizC">DISTRIBUTED</span>
+        </div>
+    </div>
+
+    <!-- Visualizer Position Indicators -->
+    <div class="viz-indicators">
+        <div class="viz-indicator active" id="indA" title="Visualizer A"></div>
+        <div class="viz-indicator" id="indB" title="Visualizer B"></div>
+        <div class="viz-indicator" id="indC" title="Visualizer C"></div>
+    </div>
+
+    <!-- Scroll Content -->
+    <div class="scroll-container" id="scrollContainer">
+
+        <!-- Section 1: Hero - All visualizers centered -->
+        <section class="pinned-section" id="section-hero">
+            <div class="glass-card">
+                <h2>Multi-Visualizer System</h2>
+                <p>Three distinct visualizers choreograph together, each responding
+                   to scroll progress with complementary behaviors.</p>
+                <p>Watch how they morph positions, blend modes, and parameters
+                   as you scroll through different content types.</p>
+            </div>
+        </section>
+
+        <!-- Section 2: Grid Layout - Visualizers distribute -->
+        <section class="pinned-section" id="section-grid">
+            <div class="card-grid">
+                <div class="glass-card">
+                    <h2>Primary Flow</h2>
+                    <p>The main visualizer anchors the experience, providing
+                       the dominant visual rhythm.</p>
+                </div>
+                <div class="glass-card">
+                    <h2>Secondary Pulse</h2>
+                    <p>A complementary visualizer creates depth through
+                       offset timing and color variation.</p>
+                </div>
+                <div class="glass-card">
+                    <h2>Accent Sparkle</h2>
+                    <p>The accent layer adds highlights and micro-animations
+                       that respond to interactions.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Carousel -->
+        <section class="carousel-section" id="section-carousel">
+            <div class="carousel-track">
+                <div class="carousel-inner" id="carouselInner">
+                    <div class="carousel-card">
+                        <h3>Carousel Card 1</h3>
+                        <p>Visualizers track the carousel movement, creating
+                           parallax depth effects.</p>
+                    </div>
+                    <div class="carousel-card">
+                        <h3>Carousel Card 2</h3>
+                        <p>Each card entrance triggers impulse events that
+                           ripple through all three layers.</p>
+                    </div>
+                    <div class="carousel-card">
+                        <h3>Carousel Card 3</h3>
+                        <p>Color schemes shift per card, creating section-based
+                           visual identity.</p>
+                    </div>
+                    <div class="carousel-card">
+                        <h3>Carousel Card 4</h3>
+                        <p>The scrub-based animation ensures smooth transitions
+                           regardless of scroll speed.</p>
+                    </div>
+                    <div class="carousel-card">
+                        <h3>Carousel Card 5</h3>
+                        <p>At the end of the carousel, visualizers reconverge
+                           to center position.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Expanding Cards -->
+        <section class="expanding-section" id="section-expand">
+            <div class="expand-trigger" data-index="0">
+                <h3>Expansion Card A</h3>
+                <p class="preview">Click to expand and see visualizer reaction</p>
+                <div class="content">
+                    <p>When expanded, the primary visualizer zooms in while
+                       secondary and accent layers fade to supporting roles.
+                       This creates focus hierarchy through visual weight.</p>
+                    <p>The expansion animation is tied to GSAP timeline,
+                       coordinating card height, visualizer scale, and
+                       parameter morphing in a single choreographed motion.</p>
+                </div>
+            </div>
+
+            <div class="expand-trigger" data-index="1">
+                <h3>Expansion Card B</h3>
+                <p class="preview">Click to expand and see visualizer reaction</p>
+                <div class="content">
+                    <p>Different expansion patterns create variety. This card
+                       triggers the secondary visualizer to prominence while
+                       the primary recedes.</p>
+                    <p>Color schemes cross-fade, demonstrating how multiple
+                       systems can harmonize through shared timing.</p>
+                </div>
+            </div>
+
+            <div class="expand-trigger" data-index="2">
+                <h3>Expansion Card C</h3>
+                <p class="preview">Click to expand and see visualizer reaction</p>
+                <div class="content">
+                    <p>The accent visualizer takes center stage here,
+                       demonstrating that any layer can become primary
+                       based on content context.</p>
+                    <p>This flexibility allows the same visualizer system
+                       to support diverse content hierarchies.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Finale -->
+        <section class="pinned-section" id="section-finale">
+            <div class="glass-card">
+                <h2>Holistic Choreography</h2>
+                <p>You've experienced multi-visualizer coordination through
+                   scroll, carousel, and expansion patterns.</p>
+                <p>Each visualizer maintains its identity while contributing
+                   to the unified visual narrative.</p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+    // ============================================================================
+    // MULTI-VISUALIZER CHOREOGRAPHY SYSTEM
+    // VIB34D 5-Layer Glassmorphic Rendering with GSAP Integration
+    // ============================================================================
+
+    // ==========================================================================
+    // CANVAS & WEBGL SETUP
+    // ==========================================================================
+
+    const layers = {
+        bg: { canvas: document.getElementById('layer-bg'), gl: null },
+        shadow: { canvas: document.getElementById('layer-shadow'), gl: null },
+        content: { canvas: document.getElementById('layer-content'), gl: null },
+        highlight: { canvas: document.getElementById('layer-highlight'), gl: null },
+        accent: { canvas: document.getElementById('layer-accent'), gl: null }
+    };
+
+    // Initialize WebGL for each layer
+    Object.keys(layers).forEach(key => {
+        layers[key].gl = layers[key].canvas.getContext('webgl2');
+    });
+
+    // ==========================================================================
+    // SHARED SHADER CODE
+    // ==========================================================================
+
+    const vertexSource = `#version 300 es
+        in vec2 a_position;
+        void main() { gl_Position = vec4(a_position, 0.0, 1.0); }
+    `;
+
+    // Each layer has slightly different fragment shader behavior
+    function createFragmentShader(layerType) {
+        return `#version 300 es
+        precision highp float;
+
+        uniform vec2 u_resolution;
+        uniform float u_time;
+        uniform vec2 u_position;     // Visualizer position (0-1)
+        uniform float u_scale;       // Visualizer scale
+        uniform float u_hue;
+        uniform float u_intensity;
+        uniform float u_chaos;
+        uniform float u_impulse;
+        uniform int u_geometryType;
+
+        out vec4 fragColor;
+
+        #define PI 3.14159265359
+
+        mat2 rot(float a) { return mat2(cos(a), -sin(a), sin(a), cos(a)); }
+
+        vec3 hsv2rgb(vec3 c) {
+            vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
+            vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+            return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+        }
+
+        float sdBox(vec3 p, vec3 b) {
+            vec3 q = abs(p) - b;
+            return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+        }
+
+        float sdSphere(vec3 p, float r) {
+            return length(p) - r;
+        }
+
+        float sdOctahedron(vec3 p, float s) {
+            p = abs(p);
+            return (p.x + p.y + p.z - s) * 0.57735027;
+        }
+
+        // KIFS-lite fractal
+        float fractal(vec3 p) {
+            float scale = 1.8 + u_chaos * 0.5;
+            vec3 offset = vec3(1.0);
+            float s = 1.0;
+
+            for (int i = 0; i < 5; i++) {
+                p = abs(p);
+                if (p.x < p.y) p.xy = p.yx;
+                if (p.x < p.z) p.xz = p.zx;
+                if (p.y < p.z) p.yz = p.zy;
+
+                p.z -= offset.z * 0.5;
+                p.z = -abs(p.z);
+                p.z += offset.z * 0.5;
+
+                p = p * scale - offset * (scale - 1.0);
+                s *= scale;
+            }
+
+            return length(p) / s;
+        }
+
+        float map(vec3 p) {
+            // Rotate based on time
+            p.xz *= rot(u_time * 0.1);
+            p.yz *= rot(u_time * 0.07);
+
+            if (u_geometryType == 0) {
+                return fractal(p);
+            } else if (u_geometryType == 1) {
+                return sdOctahedron(p, 1.0 + u_chaos * 0.3);
+            } else {
+                return sdSphere(p, 1.0 + sin(u_time) * 0.1);
+            }
+        }
+
+        void main() {
+            // UV centered on visualizer position
+            vec2 uv = (gl_FragCoord.xy - u_resolution * 0.5) / u_resolution.y;
+            vec2 vizCenter = (u_position - 0.5) * 2.0;
+            uv = (uv - vizCenter) / u_scale;
+
+            vec3 ro = vec3(0.0, 0.0, -3.0);
+            vec3 rd = normalize(vec3(uv, 1.0));
+
+            float t = 0.0;
+            for (int i = 0; i < 50; i++) {
+                vec3 p = ro + rd * t;
+                float d = map(p);
+                if (d < 0.001 || t > 10.0) break;
+                t += d;
+            }
+
+            float glow = 1.0 / (1.0 + t * t * 0.2);
+
+            ${layerType === 'bg' ? `
+                // Background: Deep, muted, slow
+                glow *= 0.3;
+                float hueOffset = 0.0;
+            ` : layerType === 'shadow' ? `
+                // Shadow: Darker, offset
+                glow *= 0.5;
+                float hueOffset = 0.5;
+            ` : layerType === 'content' ? `
+                // Content: Primary, vibrant
+                glow *= 1.0;
+                float hueOffset = 0.0;
+            ` : layerType === 'highlight' ? `
+                // Highlight: Bright, offset timing
+                glow *= 1.2;
+                float hueOffset = 0.1;
+            ` : `
+                // Accent: Sparkle, high frequency
+                glow *= 0.8 + sin(u_time * 10.0 + t * 5.0) * 0.3;
+                float hueOffset = 0.2;
+            `}
+
+            // Boost on impulse
+            glow *= 1.0 + u_impulse * 0.5;
+
+            vec3 color = hsv2rgb(vec3(
+                u_hue + hueOffset + glow * 0.1,
+                0.7,
+                u_intensity * glow
+            ));
+
+            // Vignette from visualizer center
+            float dist = length(uv);
+            float vignette = 1.0 - smoothstep(0.0, 2.0, dist);
+            color *= vignette;
+
+            // Fade edges
+            float alpha = smoothstep(3.0, 1.5, dist) * vignette;
+
+            fragColor = vec4(color, alpha);
+        }
+        `;
+    }
+
+    // ==========================================================================
+    // PROGRAM SETUP FOR EACH LAYER
+    // ==========================================================================
+
+    function setupProgram(layer, layerType) {
+        const gl = layer.gl;
+        if (!gl) return;
+
+        function compileShader(type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Shader error:', gl.getShaderInfoLog(shader));
+            }
+            return shader;
+        }
+
+        const vs = compileShader(gl.VERTEX_SHADER, vertexSource);
+        const fs = compileShader(gl.FRAGMENT_SHADER, createFragmentShader(layerType));
+
+        const program = gl.createProgram();
+        gl.attachShader(program, vs);
+        gl.attachShader(program, fs);
+        gl.linkProgram(program);
+
+        layer.program = program;
+
+        // Setup geometry
+        const vertices = new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]);
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+        gl.useProgram(program);
+        const posLoc = gl.getAttribLocation(program, 'a_position');
+        gl.enableVertexAttribArray(posLoc);
+        gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+        // Get uniform locations
+        layer.uniforms = {};
+        ['u_resolution', 'u_time', 'u_position', 'u_scale', 'u_hue',
+         'u_intensity', 'u_chaos', 'u_impulse', 'u_geometryType'].forEach(name => {
+            layer.uniforms[name] = gl.getUniformLocation(program, name);
+        });
+    }
+
+    // Initialize all layers
+    setupProgram(layers.bg, 'bg');
+    setupProgram(layers.shadow, 'shadow');
+    setupProgram(layers.content, 'content');
+    setupProgram(layers.highlight, 'highlight');
+    setupProgram(layers.accent, 'accent');
+
+    // ==========================================================================
+    // VISUALIZER STATE
+    // ==========================================================================
+
+    const visualizers = {
+        A: {
+            position: { x: 0.5, y: 0.5 },
+            scale: 1.0,
+            hue: 0.75,
+            intensity: 0.8,
+            chaos: 0.3,
+            impulse: 0,
+            geometryType: 0
+        },
+        B: {
+            position: { x: 0.2, y: 0.3 },
+            scale: 0.6,
+            hue: 0.55,
+            intensity: 0.6,
+            chaos: 0.5,
+            impulse: 0,
+            geometryType: 1
+        },
+        C: {
+            position: { x: 0.8, y: 0.7 },
+            scale: 0.4,
+            hue: 0.15,
+            intensity: 0.5,
+            chaos: 0.7,
+            impulse: 0,
+            geometryType: 2
+        }
+    };
+
+    const targets = {
+        A: { ...visualizers.A },
+        B: { ...visualizers.B },
+        C: { ...visualizers.C }
+    };
+
+    let globalTime = 0;
+    let scrollProgress = 0;
+    let currentMode = 'intro';
+
+    // ==========================================================================
+    // GSAP SCROLL CHOREOGRAPHY
+    // ==========================================================================
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Main scroll progress
+    ScrollTrigger.create({
+        trigger: '#scrollContainer',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.3,
+        onUpdate: (self) => {
+            scrollProgress = self.progress;
+            choreographByScroll(self.progress);
+        }
+    });
+
+    // Glass card entrance animations
+    document.querySelectorAll('.glass-card').forEach(card => {
+        gsap.fromTo(card,
+            { opacity: 0, y: 40, scale: 0.95 },
+            {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                duration: 1,
+                ease: 'power2.out',
+                scrollTrigger: {
+                    trigger: card.closest('.pinned-section') || card,
+                    start: 'top 70%',
+                    end: 'top 30%',
+                    scrub: 0.3,
+                    onEnter: () => triggerImpulse('section', 0.3)
+                }
+            }
+        );
+    });
+
+    // Carousel horizontal scroll
+    const carouselInner = document.getElementById('carouselInner');
+    const carouselCards = carouselInner.children.length;
+    const totalScroll = (carouselCards - 1) * 440; // card width + gap
+
+    gsap.to(carouselInner, {
+        x: -totalScroll,
+        ease: 'none',
+        scrollTrigger: {
+            trigger: '#section-carousel',
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 1,
+            onUpdate: (self) => {
+                // Carousel position affects visualizer B
+                const carouselProgress = self.progress;
+                targets.B.position.x = 0.3 + carouselProgress * 0.4;
+                targets.B.hue = 0.5 + carouselProgress * 0.3;
+            }
+        }
+    });
+
+    // Expanding cards
+    document.querySelectorAll('.expand-trigger').forEach((trigger, index) => {
+        trigger.addEventListener('click', () => {
+            const isExpanded = trigger.classList.toggle('expanded');
+
+            // Different visualizer reactions per card
+            if (isExpanded) {
+                if (index === 0) {
+                    targets.A.scale = 1.5;
+                    targets.B.scale = 0.3;
+                    targets.C.scale = 0.2;
+                } else if (index === 1) {
+                    targets.A.scale = 0.4;
+                    targets.B.scale = 1.3;
+                    targets.C.scale = 0.3;
+                } else {
+                    targets.A.scale = 0.3;
+                    targets.B.scale = 0.4;
+                    targets.C.scale = 1.4;
+                }
+
+                triggerImpulse('expand', 0.8);
+            } else {
+                // Reset to scroll-based state
+                choreographByScroll(scrollProgress);
+            }
+        });
+    });
+
+    // ==========================================================================
+    // SCROLL CHOREOGRAPHY LOGIC
+    // ==========================================================================
+
+    function choreographByScroll(progress) {
+        // Update HUD
+        document.getElementById('hudScroll').textContent = progress.toFixed(2);
+        document.getElementById('progressBar').style.width = (progress * 100) + '%';
+
+        // Determine mode and positions
+        if (progress < 0.1) {
+            // INTRO: All centered, converged
+            currentMode = 'INTRO';
+            targets.A.position = { x: 0.5, y: 0.5 };
+            targets.B.position = { x: 0.45, y: 0.48 };
+            targets.C.position = { x: 0.55, y: 0.52 };
+            targets.A.scale = 1.0;
+            targets.B.scale = 0.8;
+            targets.C.scale = 0.6;
+
+            document.getElementById('hudVizA').textContent = 'CENTER';
+            document.getElementById('hudVizB').textContent = 'CENTER';
+            document.getElementById('hudVizC').textContent = 'CENTER';
+
+        } else if (progress < 0.25) {
+            // GRID: Distributed to corners
+            currentMode = 'GRID';
+            const t = (progress - 0.1) / 0.15;
+
+            targets.A.position = { x: 0.25, y: 0.5 };
+            targets.B.position = { x: 0.5, y: 0.5 };
+            targets.C.position = { x: 0.75, y: 0.5 };
+            targets.A.scale = 0.7 + t * 0.1;
+            targets.B.scale = 0.7 + t * 0.1;
+            targets.C.scale = 0.7 + t * 0.1;
+
+            document.getElementById('hudVizA').textContent = 'LEFT';
+            document.getElementById('hudVizB').textContent = 'CENTER';
+            document.getElementById('hudVizC').textContent = 'RIGHT';
+
+        } else if (progress < 0.6) {
+            // CAROUSEL: B tracks carousel, A/C corners
+            currentMode = 'CAROUSEL';
+            const carouselT = (progress - 0.25) / 0.35;
+
+            targets.A.position = { x: 0.15, y: 0.2 };
+            targets.C.position = { x: 0.85, y: 0.8 };
+            // B position updated by carousel ScrollTrigger
+            targets.A.scale = 0.5;
+            targets.C.scale = 0.5;
+
+            targets.A.hue = 0.75;
+            targets.C.hue = 0.15;
+
+            document.getElementById('hudVizA').textContent = 'TOP-LEFT';
+            document.getElementById('hudVizB').textContent = 'TRACKING';
+            document.getElementById('hudVizC').textContent = 'BOTTOM-RIGHT';
+
+        } else if (progress < 0.85) {
+            // EXPAND: Based on card state, use defaults if no card expanded
+            currentMode = 'EXPAND';
+
+            targets.A.position = { x: 0.3, y: 0.4 };
+            targets.B.position = { x: 0.5, y: 0.6 };
+            targets.C.position = { x: 0.7, y: 0.5 };
+            targets.A.scale = 0.8;
+            targets.B.scale = 0.6;
+            targets.C.scale = 0.5;
+
+            document.getElementById('hudVizA').textContent = 'LEFT-UP';
+            document.getElementById('hudVizB').textContent = 'CENTER-DOWN';
+            document.getElementById('hudVizC').textContent = 'RIGHT';
+
+        } else {
+            // FINALE: Reconverge with flourish
+            currentMode = 'FINALE';
+            const t = (progress - 0.85) / 0.15;
+
+            targets.A.position = { x: 0.5, y: 0.5 };
+            targets.B.position = { x: 0.5, y: 0.5 };
+            targets.C.position = { x: 0.5, y: 0.5 };
+            targets.A.scale = 1.0 + t * 0.5;
+            targets.B.scale = 0.8 + t * 0.4;
+            targets.C.scale = 0.6 + t * 0.3;
+
+            targets.A.intensity = 0.8 + t * 0.3;
+            targets.B.intensity = 0.6 + t * 0.3;
+            targets.C.intensity = 0.5 + t * 0.3;
+
+            document.getElementById('hudVizA').textContent = 'CONVERGE';
+            document.getElementById('hudVizB').textContent = 'CONVERGE';
+            document.getElementById('hudVizC').textContent = 'CONVERGE';
+        }
+
+        document.getElementById('hudMode').textContent = currentMode;
+
+        // Hue rotation through scroll
+        targets.A.hue = 0.75 + progress * 0.25;
+        targets.B.hue = 0.55 + progress * 0.3;
+        targets.C.hue = 0.15 + progress * 0.35;
+
+        // Update indicators
+        const activeThreshold = 0.6;
+        document.getElementById('indA').classList.toggle('active', targets.A.scale > activeThreshold);
+        document.getElementById('indB').classList.toggle('active', targets.B.scale > activeThreshold);
+        document.getElementById('indC').classList.toggle('active', targets.C.scale > activeThreshold);
+    }
+
+    // ==========================================================================
+    // IMPULSE SYSTEM
+    // ==========================================================================
+
+    function triggerImpulse(type, intensity) {
+        targets.A.impulse = Math.min(targets.A.impulse + intensity, 1.5);
+        targets.B.impulse = Math.min(targets.B.impulse + intensity * 0.8, 1.2);
+        targets.C.impulse = Math.min(targets.C.impulse + intensity * 0.6, 1.0);
+    }
+
+    // Click anywhere triggers impulse
+    document.addEventListener('click', () => triggerImpulse('click', 0.4));
+
+    // Mouse movement
+    document.addEventListener('mousemove', (e) => {
+        const speed = Math.abs(e.movementX) + Math.abs(e.movementY);
+        if (speed > 30) {
+            triggerImpulse('mouse', 0.1);
+        }
+
+        // Accent follows mouse
+        targets.C.position.x += (e.clientX / window.innerWidth - targets.C.position.x) * 0.1;
+        targets.C.position.y += (e.clientY / window.innerHeight - targets.C.position.y) * 0.1;
+    });
+
+    // ==========================================================================
+    // RESIZE
+    // ==========================================================================
+
+    function resize() {
+        const dpr = Math.min(window.devicePixelRatio, 2);
+        const width = window.innerWidth * dpr;
+        const height = window.innerHeight * dpr;
+
+        Object.values(layers).forEach(layer => {
+            layer.canvas.width = width;
+            layer.canvas.height = height;
+            layer.canvas.style.width = window.innerWidth + 'px';
+            layer.canvas.style.height = window.innerHeight + 'px';
+            if (layer.gl) {
+                layer.gl.viewport(0, 0, width, height);
+            }
+        });
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ==========================================================================
+    // RENDER LOOP
+    // ==========================================================================
+
+    function render() {
+        globalTime += 0.016;
+
+        // Lerp all parameters
+        const lerpFactor = 0.08;
+        ['A', 'B', 'C'].forEach(key => {
+            const v = visualizers[key];
+            const t = targets[key];
+
+            v.position.x += (t.position.x - v.position.x) * lerpFactor;
+            v.position.y += (t.position.y - v.position.y) * lerpFactor;
+            v.scale += (t.scale - v.scale) * lerpFactor;
+            v.hue += (t.hue - v.hue) * lerpFactor;
+            v.intensity += (t.intensity - v.intensity) * lerpFactor;
+            v.chaos += (t.chaos - v.chaos) * lerpFactor;
+
+            // Impulse decay
+            v.impulse = t.impulse;
+            t.impulse *= 0.92;
+            if (t.impulse < 0.01) t.impulse = 0;
+        });
+
+        // Render each layer with its designated visualizer
+        const layerVizMap = {
+            bg: 'A',
+            shadow: 'A',
+            content: 'A',
+            highlight: 'B',
+            accent: 'C'
+        };
+
+        Object.entries(layers).forEach(([layerKey, layer]) => {
+            if (!layer.gl || !layer.program) return;
+
+            const gl = layer.gl;
+            const viz = visualizers[layerVizMap[layerKey]];
+
+            gl.useProgram(layer.program);
+
+            gl.uniform2f(layer.uniforms.u_resolution, layer.canvas.width, layer.canvas.height);
+            gl.uniform1f(layer.uniforms.u_time, globalTime);
+            gl.uniform2f(layer.uniforms.u_position, viz.position.x, viz.position.y);
+            gl.uniform1f(layer.uniforms.u_scale, viz.scale);
+            gl.uniform1f(layer.uniforms.u_hue, viz.hue);
+            gl.uniform1f(layer.uniforms.u_intensity, viz.intensity);
+            gl.uniform1f(layer.uniforms.u_chaos, viz.chaos);
+            gl.uniform1f(layer.uniforms.u_impulse, viz.impulse);
+            gl.uniform1i(layer.uniforms.u_geometryType, viz.geometryType);
+
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+        });
+
+        requestAnimationFrame(render);
+    }
+
+    render();
+
+    // ==========================================================================
+    // API
+    // ==========================================================================
+
+    window.MultiVisualizer = {
+        visualizers,
+        targets,
+        triggerImpulse,
+        setMode: (mode) => {
+            const modeProgress = {
+                intro: 0.05,
+                grid: 0.17,
+                carousel: 0.4,
+                expand: 0.7,
+                finale: 0.9
+            };
+            if (modeProgress[mode]) {
+                choreographByScroll(modeProgress[mode]);
+            }
+        }
+    };
+
+    console.log('%c[MultiVisualizer] 5-Layer Holistic System Initialized', 'color: #7B3FF2; font-weight: bold;');
+
+    </script>
+
+    <!--
+    ════════════════════════════════════════════════════════════════════════════
+    Visual Codex Pattern: Multi-Visualizer Choreography System
+    Category: VIB34D 5-Layer Glassmorphic Rendering
+
+    Features:
+    - 5-layer canvas system (bg, shadow, content, highlight, accent)
+    - 3 independent visualizers with position/scale/color choreography
+    - Mode-based state machine (INTRO, GRID, CAROUSEL, EXPAND, FINALE)
+    - GSAP ScrollTrigger with 1200vh extended scroll
+    - Horizontal carousel with visualizer tracking
+    - Expanding cards with visualizer hierarchy shifts
+    - Cross-layer impulse propagation
+    - Mouse-following accent visualizer
+    - Blend mode compositing (screen, overlay)
+
+    Author: Paul Phillips
+    © 2025 Clear Seas Solutions LLC
+
+    "The Revolution Will Not be in a Structured Format"
+    ════════════════════════════════════════════════════════════════════════════
+    -->
+</body>
+</html>
