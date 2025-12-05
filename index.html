@@ -1,38 +1,863 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Codex Gallery</title>
-    <meta http-equiv="refresh" content="0; url=gallery-proper-system.html">
-    <style>
-        body {
-            background: #0a0a0f;
-            color: #00ffff;
-            font-family: 'Courier New', monospace;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .loader {
-            text-align: center;
-        }
-        .loader h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            text-shadow: 0 0 20px #00ffff;
-        }
-        .loader p {
-            color: #ff00ff;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Codex - Paul Phillips Pattern Library</title>
+  <style>
+    :root {
+      --bg-dark: #0A0A0B;
+      --glass-bg: rgba(15, 15, 17, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-border-hover: rgba(255, 255, 255, 0.2);
+      --primary: #7B3FF2;
+      --secondary: #4FC3F7;
+      --text-primary: rgba(255, 255, 255, 0.95);
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --glow: 0 0 30px rgba(123, 63, 242, 0.3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background */
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(123, 63, 242, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(79, 195, 247, 0.1) 0%, transparent 50%);
+      z-index: -1;
+      animation: bgShift 20s ease-in-out infinite;
+    }
+
+    @keyframes bgShift {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 60px 20px 40px;
+      background: linear-gradient(180deg, rgba(123, 63, 242, 0.1) 0%, transparent 100%);
+    }
+
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+      animation: textShimmer 3s linear infinite;
+      background-size: 200% auto;
+    }
+
+    @keyframes textShimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 20px;
+      position: sticky;
+      top: 0;
+      background: rgba(10, 10, 11, 0.9);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .nav-tab {
+      padding: 12px 24px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .nav-tab:hover, .nav-tab.active {
+      background: rgba(123, 63, 242, 0.2);
+      border-color: var(--primary);
+      color: var(--text-primary);
+    }
+
+    /* Main Content */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .section {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 30px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    /* Demo Grid */
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 24px;
+    }
+
+    .demo-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .demo-card:hover {
+      border-color: var(--glass-border-hover);
+      box-shadow: var(--glow);
+      transform: translateY(-4px);
+    }
+
+    .demo-preview {
+      width: 100%;
+      height: 220px;
+      border: none;
+      background: #000;
+      pointer-events: none;
+    }
+
+    .demo-info {
+      padding: 20px;
+    }
+
+    .demo-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .demo-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .demo-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tag {
+      padding: 4px 10px;
+      background: rgba(123, 63, 242, 0.2);
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--secondary);
+    }
+
+    .demo-link {
+      display: inline-block;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--primary), #9B5BF7);
+      border-radius: 8px;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .demo-link:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(123, 63, 242, 0.4);
+    }
+
+    /* Stats */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      padding: 30px;
+      background: var(--glass-bg);
+      border-radius: 16px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      border-top: 1px solid var(--glass-border);
+      margin-top: 60px;
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .demo-grid {
+        grid-template-columns: 1fr;
+      }
+      .stats-bar {
+        gap: 20px;
+      }
+      .stat-value {
+        font-size: 2rem;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="loader">
-        <h1>⚡ VISUAL CODEX</h1>
-        <p>Loading enhanced 4D polytopal gallery system...</p>
+  <div class="bg-gradient"></div>
+
+  <header>
+    <h1>Visual Codex</h1>
+    <p class="subtitle">Paul Phillips' Pattern Library - 4D Visualizations, GSAP Choreography, Holographic UI Systems</p>
+  </header>
+
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('gsap')">GSAP Choreography</button>
+    <button class="nav-tab" onclick="showSection('visualizers')">4D Visualizers</button>
+    <button class="nav-tab" onclick="showSection('effects')">Effects & Systems</button>
+    <button class="nav-tab" onclick="showSection('galleries')">Galleries</button>
+    <button class="nav-tab" onclick="showSection('demos')">All Demos</button>
+  </nav>
+
+  <div class="container">
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-value">65+</div>
+        <div class="stat-label">HTML Demos</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">21</div>
+        <div class="stat-label">GSAP Patterns</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">17</div>
+        <div class="stat-label">Effect Systems</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">12</div>
+        <div class="stat-label">Galleries</div>
+      </div>
     </div>
+
+    <!-- GSAP Section -->
+    <section id="gsap" class="section active">
+      <h2 class="section-title">Chapter 5: GSAP Scroll Choreography</h2>
+      <div class="demo-grid">
+        <div class="demo-card">
+          <iframe class="demo-preview" src="gsap_scroll_choreography/demos/timeline-scrolltrigger-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Timeline & ScrollTrigger</h3>
+            <p class="demo-desc">Scroll-tied timelines with pinning, scrub control, and staggered reveals.</p>
+            <div class="demo-tags">
+              <span class="tag">GSAP</span>
+              <span class="tag">ScrollTrigger</span>
+              <span class="tag">Pin</span>
+            </div>
+            <a href="gsap_scroll_choreography/demos/timeline-scrolltrigger-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="gsap_scroll_choreography/demos/three-phase-animation-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Three-Phase Animation</h3>
+            <p class="demo-desc">ENTRANCE → LOCK → EXIT structure for dramatic scroll reveals.</p>
+            <div class="demo-tags">
+              <span class="tag">Three-Phase</span>
+              <span class="tag">Scroll</span>
+              <span class="tag">Cards</span>
+            </div>
+            <a href="gsap_scroll_choreography/demos/three-phase-animation-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="gsap_scroll_choreography/demos/chromatic-aberration-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Chromatic Aberration</h3>
+            <p class="demo-desc">RGB channel split effects for text and elements with glitch aesthetics.</p>
+            <div class="demo-tags">
+              <span class="tag">RGB Split</span>
+              <span class="tag">Glitch</span>
+              <span class="tag">Text FX</span>
+            </div>
+            <a href="gsap_scroll_choreography/demos/chromatic-aberration-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="gsap_scroll_choreography/demos/particle-system-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Particle Systems</h3>
+            <p class="demo-desc">Click-triggered explosions, confetti, and star burst effects.</p>
+            <div class="demo-tags">
+              <span class="tag">Particles</span>
+              <span class="tag">Explosion</span>
+              <span class="tag">Click</span>
+            </div>
+            <a href="gsap_scroll_choreography/demos/particle-system-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="gsap_scroll_choreography/demos/visualizer-binding-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Visualizer Binding</h3>
+            <p class="demo-desc">Scroll-driven WebGL shader parameters with real-time morphing.</p>
+            <div class="demo-tags">
+              <span class="tag">WebGL</span>
+              <span class="tag">Scroll</span>
+              <span class="tag">Morph</span>
+            </div>
+            <a href="gsap_scroll_choreography/demos/visualizer-binding-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="gsap_scroll_choreography/demos/holographic-visualizer-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Holographic Visualizer</h3>
+            <p class="demo-desc">KIFS fractal raymarching with impulse events and inverse fog.</p>
+            <div class="demo-tags">
+              <span class="tag">WebGL</span>
+              <span class="tag">KIFS</span>
+              <span class="tag">Fractals</span>
+            </div>
+            <a href="gsap_scroll_choreography/demos/holographic-visualizer-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="gsap_scroll_choreography/demos/quantum-glassmorphism-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Quantum Glassmorphism</h3>
+            <p class="demo-desc">Dark glass design system with blur, glow, and hover states.</p>
+            <div class="demo-tags">
+              <span class="tag">Glass UI</span>
+              <span class="tag">Dark Mode</span>
+              <span class="tag">CSS</span>
+            </div>
+            <a href="gsap_scroll_choreography/demos/quantum-glassmorphism-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visualizers Section -->
+    <section id="visualizers" class="section">
+      <h2 class="section-title">4D Visualizer Systems</h2>
+      <div class="demo-grid">
+        <div class="demo-card">
+          <iframe class="demo-preview" src="effects/vib34d-complete-system.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">VIB34D Complete System</h3>
+            <p class="demo-desc">Full 4D visualization framework with multi-geometry support.</p>
+            <div class="demo-tags">
+              <span class="tag">4D</span>
+              <span class="tag">WebGL</span>
+              <span class="tag">Framework</span>
+            </div>
+            <a href="effects/vib34d-complete-system.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="effects/hypercube-core-webgl-framework.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Hypercube Core WebGL</h3>
+            <p class="demo-desc">High-performance 4D hypercube with shader management.</p>
+            <div class="demo-tags">
+              <span class="tag">Hypercube</span>
+              <span class="tag">Shaders</span>
+              <span class="tag">4D Math</span>
+            </div>
+            <a href="effects/hypercube-core-webgl-framework.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="effects/insane-hyperdimensional-matrix.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Insane Hyperdimensional Matrix</h3>
+            <p class="demo-desc">Mind-bending 8D projections with fractal tessellations.</p>
+            <div class="demo-tags">
+              <span class="tag">8D</span>
+              <span class="tag">Fractals</span>
+              <span class="tag">Chaos</span>
+            </div>
+            <a href="effects/insane-hyperdimensional-matrix.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="effects/mvep-moire-hypercube.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">MVEP Moiré Hypercube</h3>
+            <p class="demo-desc">Moiré interference patterns with RGB separation.</p>
+            <div class="demo-tags">
+              <span class="tag">Moiré</span>
+              <span class="tag">RGB</span>
+              <span class="tag">Audio</span>
+            </div>
+            <a href="effects/mvep-moire-hypercube.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="effects/elegant-4d-flow-visualizer.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Elegant 4D Flow</h3>
+            <p class="demo-desc">Sophisticated organic particle systems with 4D projections.</p>
+            <div class="demo-tags">
+              <span class="tag">Particles</span>
+              <span class="tag">Organic</span>
+              <span class="tag">Flow</span>
+            </div>
+            <a href="effects/elegant-4d-flow-visualizer.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="effects/holographic-visualizer.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Holographic Visualizer</h3>
+            <p class="demo-desc">Multi-layer RGB holographic particle system.</p>
+            <div class="demo-tags">
+              <span class="tag">Holographic</span>
+              <span class="tag">Multi-Layer</span>
+              <span class="tag">RGB</span>
+            </div>
+            <a href="effects/holographic-visualizer.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Effects Section -->
+    <section id="effects" class="section">
+      <h2 class="section-title">Effects & UI Systems</h2>
+      <div class="demo-grid">
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/css-glassmorphism-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Glassmorphism</h3>
+            <p class="demo-desc">Glass-like UI with backdrop blur and transparency.</p>
+            <div class="demo-tags">
+              <span class="tag">Glass</span>
+              <span class="tag">Blur</span>
+              <span class="tag">CSS</span>
+            </div>
+            <a href="demos/css-glassmorphism-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/css-glitch-effects-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Glitch Effects</h3>
+            <p class="demo-desc">Digital glitch animations with RGB displacement.</p>
+            <div class="demo-tags">
+              <span class="tag">Glitch</span>
+              <span class="tag">Animation</span>
+              <span class="tag">CSS</span>
+            </div>
+            <a href="demos/css-glitch-effects-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/css-vaporwave-aesthetics-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Vaporwave Aesthetics</h3>
+            <p class="demo-desc">Retro-futuristic neon gradients and grid patterns.</p>
+            <div class="demo-tags">
+              <span class="tag">Vaporwave</span>
+              <span class="tag">Retro</span>
+              <span class="tag">Neon</span>
+            </div>
+            <a href="demos/css-vaporwave-aesthetics-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/neoskeuomorphic-cards-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Neoskeuomorphic Cards</h3>
+            <p class="demo-desc">Modern skeuomorphic UI with depth and texture.</p>
+            <div class="demo-tags">
+              <span class="tag">Neoskeuomorphic</span>
+              <span class="tag">Cards</span>
+              <span class="tag">3D</span>
+            </div>
+            <a href="demos/neoskeuomorphic-cards-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/holographic-depth-layers-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Holographic Depth Layers</h3>
+            <p class="demo-desc">Multi-layer parallax with holographic effects.</p>
+            <div class="demo-tags">
+              <span class="tag">Parallax</span>
+              <span class="tag">Depth</span>
+              <span class="tag">Holographic</span>
+            </div>
+            <a href="demos/holographic-depth-layers-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/holographic-progress-indicators-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Progress Indicators</h3>
+            <p class="demo-desc">Animated holographic progress bars and spinners.</p>
+            <div class="demo-tags">
+              <span class="tag">Progress</span>
+              <span class="tag">Animation</span>
+              <span class="tag">UI</span>
+            </div>
+            <a href="demos/holographic-progress-indicators-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/vib34d-editor-dashboard-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">VIB34D Editor Dashboard</h3>
+            <p class="demo-desc">Real-time parameter control dashboard for 4D visualizations.</p>
+            <div class="demo-tags">
+              <span class="tag">Dashboard</span>
+              <span class="tag">Controls</span>
+              <span class="tag">4D</span>
+            </div>
+            <a href="demos/vib34d-editor-dashboard-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="effects/narrative-choreography-engine.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Narrative Choreography</h3>
+            <p class="demo-desc">JSON-driven scroll story transformations.</p>
+            <div class="demo-tags">
+              <span class="tag">Scroll</span>
+              <span class="tag">Narrative</span>
+              <span class="tag">JSON</span>
+            </div>
+            <a href="effects/narrative-choreography-engine.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Galleries Section -->
+    <section id="galleries" class="section">
+      <h2 class="section-title">Gallery Experiences</h2>
+      <div class="demo-grid">
+        <div class="demo-card">
+          <iframe class="demo-preview" src="gallery-proper-system.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Proper Gallery System</h3>
+            <p class="demo-desc">Complete gallery with iframe previews and navigation.</p>
+            <div class="demo-tags">
+              <span class="tag">Gallery</span>
+              <span class="tag">System</span>
+              <span class="tag">Navigation</span>
+            </div>
+            <a href="gallery-proper-system.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="gallery-crystal-perfected.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Crystal Perfected</h3>
+            <p class="demo-desc">Premium crystal-themed gallery experience.</p>
+            <div class="demo-tags">
+              <span class="tag">Crystal</span>
+              <span class="tag">Premium</span>
+              <span class="tag">Gallery</span>
+            </div>
+            <a href="gallery-crystal-perfected.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="gallery-parallax-system.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Parallax Gallery</h3>
+            <p class="demo-desc">Depth-layered parallax scrolling gallery.</p>
+            <div class="demo-tags">
+              <span class="tag">Parallax</span>
+              <span class="tag">Scroll</span>
+              <span class="tag">Depth</span>
+            </div>
+            <a href="gallery-parallax-system.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="gallery-treasure-experience.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Treasure Experience</h3>
+            <p class="demo-desc">Interactive treasure-hunt style gallery.</p>
+            <div class="demo-tags">
+              <span class="tag">Interactive</span>
+              <span class="tag">Experience</span>
+              <span class="tag">Discovery</span>
+            </div>
+            <a href="gallery-treasure-experience.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="gallery-mobile-native.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Mobile Native Gallery</h3>
+            <p class="demo-desc">Touch-optimized mobile gallery experience.</p>
+            <div class="demo-tags">
+              <span class="tag">Mobile</span>
+              <span class="tag">Touch</span>
+              <span class="tag">Native</span>
+            </div>
+            <a href="gallery-mobile-native.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="gallery-snap-scroll.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Snap Scroll Gallery</h3>
+            <p class="demo-desc">CSS scroll-snap based gallery navigation.</p>
+            <div class="demo-tags">
+              <span class="tag">Snap</span>
+              <span class="tag">CSS</span>
+              <span class="tag">Scroll</span>
+            </div>
+            <a href="gallery-snap-scroll.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- All Demos Section -->
+    <section id="demos" class="section">
+      <h2 class="section-title">Complete Demo Index</h2>
+      <div class="demo-grid">
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/active-holographic-systems-mega-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Holographic Systems Mega</h3>
+            <p class="demo-desc">Complete holographic systems showcase.</p>
+            <div class="demo-tags">
+              <span class="tag">Holographic</span>
+              <span class="tag">Mega</span>
+            </div>
+            <a href="demos/active-holographic-systems-mega-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/vib34d-production-spectacular-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">VIB34D Production Spectacular</h3>
+            <p class="demo-desc">Production-ready 4D visualization showcase.</p>
+            <div class="demo-tags">
+              <span class="tag">Production</span>
+              <span class="tag">Spectacular</span>
+            </div>
+            <a href="demos/vib34d-production-spectacular-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/vib3code-reactive-core-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">VIB3CODE Reactive Core</h3>
+            <p class="demo-desc">Audio-reactive hypercube visualization.</p>
+            <div class="demo-tags">
+              <span class="tag">Reactive</span>
+              <span class="tag">Audio</span>
+            </div>
+            <a href="demos/vib3code-reactive-core-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/moire-hypercube-codex-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Moiré Hypercube Codex</h3>
+            <p class="demo-desc">Advanced moiré pattern generation.</p>
+            <div class="demo-tags">
+              <span class="tag">Moiré</span>
+              <span class="tag">Codex</span>
+            </div>
+            <a href="demos/moire-hypercube-codex-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/polytopal-consciousness-shader-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Polytopal Consciousness</h3>
+            <p class="demo-desc">Abstract consciousness shader visualization.</p>
+            <div class="demo-tags">
+              <span class="tag">Polytopal</span>
+              <span class="tag">Shader</span>
+            </div>
+            <a href="demos/polytopal-consciousness-shader-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/vib34d-morphing-blog-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Morphing Blog</h3>
+            <p class="demo-desc">Blog layout with morphing 4D backgrounds.</p>
+            <div class="demo-tags">
+              <span class="tag">Blog</span>
+              <span class="tag">Morphing</span>
+            </div>
+            <a href="demos/vib34d-morphing-blog-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/css-cyberpunk-ui-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Cyberpunk UI</h3>
+            <p class="demo-desc">Cyberpunk-themed interface components.</p>
+            <div class="demo-tags">
+              <span class="tag">Cyberpunk</span>
+              <span class="tag">UI</span>
+            </div>
+            <a href="demos/css-cyberpunk-ui-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <iframe class="demo-preview" src="demos/holographic-particle-system-demo.html" loading="lazy"></iframe>
+          <div class="demo-info">
+            <h3 class="demo-title">Holographic Particles</h3>
+            <p class="demo-desc">Advanced holographic particle effects.</p>
+            <div class="demo-tags">
+              <span class="tag">Particles</span>
+              <span class="tag">Holographic</span>
+            </div>
+            <a href="demos/holographic-particle-system-demo.html" class="demo-link" target="_blank">Open Demo</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>
+      <strong>Visual Codex</strong> - A Paul Phillips Manifestation<br>
+      © 2025 Clear Seas Solutions LLC<br><br>
+      <a href="https://github.com/Domusgpt/VISUAL-CODEX-V2">GitHub Repository</a> |
+      <a href="https://parserator.com">Parserator.com</a>
+    </p>
+  </footer>
+
+  <script>
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      // Show selected section
+      document.getElementById(sectionId).classList.add('active');
+      // Update tabs
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // Enable iframe interaction on hover
+    document.querySelectorAll('.demo-card').forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        card.querySelector('.demo-preview').style.pointerEvents = 'auto';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.querySelector('.demo-preview').style.pointerEvents = 'none';
+      });
+    });
+  </script>
+
+  <!--
+  Visual Codex - Paul Phillips Pattern Library
+  A Paul Phillips Manifestation
+  © 2025 Clear Seas Solutions LLC
+  -->
 </body>
 </html>
