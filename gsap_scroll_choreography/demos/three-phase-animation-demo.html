@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Three-Phase Animation Demo - Visual Codex</title>
+  <title>Three-Phase Animation - Visual Codex Showcase</title>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
@@ -12,6 +12,7 @@
     :root {
       --primary: #7B3FF2;
       --secondary: #4FC3F7;
+      --accent: #FF6B9D;
       --bg-dark: #0A0A0B;
       --glass-bg: rgba(15, 15, 17, 0.8);
     }
@@ -21,11 +22,11 @@
     html, body {
       background: var(--bg-dark);
       color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
       overflow-x: hidden;
     }
 
-    /* Animated Background */
+    /* Animated Background with Moving Gradients */
     .bg-gradient {
       position: fixed;
       top: 0;
@@ -33,93 +34,145 @@
       width: 100%;
       height: 100%;
       background:
-        radial-gradient(circle at 30% 40%, rgba(123, 63, 242, 0.2) 0%, transparent 50%),
-        radial-gradient(circle at 70% 60%, rgba(79, 195, 247, 0.15) 0%, transparent 50%);
+        radial-gradient(ellipse at 30% 40%, rgba(123, 63, 242, 0.25) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 60%, rgba(79, 195, 247, 0.2) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 90%, rgba(255, 107, 157, 0.1) 0%, transparent 50%);
       z-index: -1;
+      animation: bgPulse 15s ease-in-out infinite;
     }
 
-    /* Phase Indicator */
+    @keyframes bgPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.05); }
+    }
+
+    /* Noise Overlay */
+    .noise {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.03;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    /* Phase Indicator - Premium Design */
     .phase-indicator {
       position: fixed;
       top: 30px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 16px;
+      gap: 8px;
       z-index: 1000;
-      padding: 12px 20px;
+      padding: 8px 12px;
       background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(30px);
+      border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     }
 
     .indicator {
-      padding: 10px 16px;
+      padding: 12px 20px;
       text-align: center;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.05);
+      border-radius: 30px;
+      background: transparent;
       font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      color: rgba(255,255,255,0.5);
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      color: rgba(255,255,255,0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .indicator::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      opacity: 0;
+      transition: opacity 0.4s;
+      z-index: -1;
     }
 
     .indicator.active {
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
       color: #fff;
-      box-shadow: 0 4px 20px rgba(123, 63, 242, 0.4);
+      transform: scale(1.05);
     }
 
-    .indicator span {
-      display: block;
-      font-size: 9px;
-      opacity: 0.7;
-      margin-top: 4px;
+    .indicator.active::before {
+      opacity: 1;
     }
 
-    /* Progress Ring */
-    .progress-ring {
+    .indicator.active .indicator-dot {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .indicator-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #fff;
+      margin: 6px auto 0;
+      transform: scale(0);
+      opacity: 0;
+      transition: all 0.3s;
+    }
+
+    /* Progress Ring - Premium */
+    .progress-container {
       position: fixed;
-      bottom: 30px;
-      right: 30px;
-      width: 70px;
-      height: 70px;
+      bottom: 40px;
+      right: 40px;
       z-index: 1000;
+    }
+
+    .progress-ring {
+      width: 90px;
+      height: 90px;
+      filter: drop-shadow(0 4px 20px rgba(123, 63, 242, 0.3));
     }
 
     .progress-ring circle {
       fill: none;
-      stroke-width: 4;
+      stroke-width: 3;
     }
 
     .progress-ring .bg {
-      stroke: rgba(255,255,255,0.1);
+      stroke: rgba(255,255,255,0.08);
     }
 
     .progress-ring .progress {
-      stroke: url(#gradient);
+      stroke: url(#ring-gradient);
       stroke-linecap: round;
-      stroke-dasharray: 220;
-      stroke-dashoffset: 220;
+      stroke-dasharray: 251;
+      stroke-dashoffset: 251;
       transform: rotate(-90deg);
       transform-origin: center;
-      transition: stroke-dashoffset 0.1s;
     }
 
     .progress-text {
-      position: fixed;
-      bottom: 55px;
-      right: 52px;
-      font-size: 12px;
-      font-weight: 600;
-      z-index: 1001;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
     }
 
     /* Pinned Section */
     .pin-section {
-      height: 400vh; /* 4x viewport for scroll distance */
+      height: 400vh;
       position: relative;
     }
 
@@ -130,79 +183,138 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      perspective: 1200px;
+      perspective: 1500px;
     }
 
-    /* The Card */
+    /* The Phase Card - Premium Design */
     .phase-card {
-      width: min(450px, 90vw);
-      padding: 50px 40px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(30px);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 28px;
+      width: min(500px, 85vw);
+      padding: 60px 50px;
+      background: linear-gradient(135deg, rgba(20, 20, 25, 0.9), rgba(15, 15, 17, 0.95));
+      backdrop-filter: blur(40px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 32px;
       text-align: center;
       transform-style: preserve-3d;
       will-change: transform, opacity;
+      box-shadow:
+        0 30px 60px rgba(0,0,0,0.4),
+        0 0 0 1px rgba(255,255,255,0.05) inset,
+        0 -1px 0 rgba(255,255,255,0.1) inset;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .phase-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    }
+
+    .phase-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 0deg, transparent, rgba(123, 63, 242, 0.1), transparent, rgba(79, 195, 247, 0.1), transparent);
+      animation: cardShine 8s linear infinite;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .phase-card.glowing::after {
+      opacity: 1;
+    }
+
+    @keyframes cardShine {
+      to { transform: rotate(360deg); }
     }
 
     .phase-card h2 {
-      font-size: clamp(1.8rem, 5vw, 2.5rem);
-      margin-bottom: 20px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      font-size: clamp(2rem, 6vw, 3rem);
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, var(--secondary) 50%, var(--primary) 100%);
+      background-size: 200% auto;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      animation: textShimmer 3s linear infinite;
+    }
+
+    @keyframes textShimmer {
+      to { background-position: 200% center; }
     }
 
     .phase-card p {
       color: rgba(255,255,255,0.7);
-      font-size: 1.1rem;
-      line-height: 1.6;
-      margin-bottom: 24px;
+      font-size: 1.15rem;
+      line-height: 1.7;
+      margin-bottom: 30px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .phase-label {
-      display: inline-block;
-      padding: 8px 20px;
-      background: rgba(123, 63, 242, 0.2);
-      border: 1px solid rgba(123, 63, 242, 0.4);
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 1px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 28px;
+      background: linear-gradient(135deg, rgba(123, 63, 242, 0.2), rgba(79, 195, 247, 0.2));
+      border: 1px solid rgba(123, 63, 242, 0.3);
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
       color: var(--secondary);
+      transition: all 0.3s;
     }
 
-    /* Glow effect during LOCK phase */
+    .phase-label .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--secondary);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.5); opacity: 0.5; }
+    }
+
+    /* Glow Effect */
     .card-glow {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 500px;
-      height: 500px;
+      width: 600px;
+      height: 600px;
       transform: translate(-50%, -50%);
-      background: radial-gradient(circle, rgba(123, 63, 242, 0.3) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(123, 63, 242, 0.4) 0%, rgba(79, 195, 247, 0.2) 30%, transparent 70%);
       opacity: 0;
       pointer-events: none;
       z-index: -1;
+      filter: blur(40px);
     }
 
-    /* Info */
-    .info {
+    /* Floating Particles */
+    .particle {
       position: fixed;
-      bottom: 30px;
-      left: 30px;
-      font-size: 13px;
-      color: rgba(255,255,255,0.4);
-      z-index: 1000;
-      line-height: 1.6;
+      width: 4px;
+      height: 4px;
+      background: var(--primary);
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
     }
 
-    .info strong {
-      color: var(--primary);
-    }
-
-    /* Intro and Outro sections */
+    /* Intro and Outro Sections */
     .intro-section, .outro-section {
       height: 100vh;
       display: flex;
@@ -212,65 +324,192 @@
       padding: 40px;
     }
 
-    .intro-section h1 {
-      font-size: clamp(2rem, 6vw, 3.5rem);
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 16px;
+    .intro-content, .outro-content {
+      max-width: 700px;
     }
 
-    .intro-section p, .outro-section p {
+    .intro-section h1 {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 0%, var(--primary) 50%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .intro-section p {
       color: rgba(255,255,255,0.6);
-      font-size: 1.2rem;
+      font-size: 1.3rem;
+      line-height: 1.6;
       max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .scroll-hint {
+      margin-top: 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .scroll-hint span {
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+    }
+
+    .scroll-arrow {
+      width: 24px;
+      height: 40px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      position: relative;
+    }
+
+    .scroll-arrow::after {
+      content: '';
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 2px;
+      animation: scrollBounce 1.5s ease-in-out infinite;
+    }
+
+    @keyframes scrollBounce {
+      0%, 100% { top: 8px; opacity: 1; }
+      50% { top: 20px; opacity: 0.3; }
     }
 
     .outro-section {
       flex-direction: column;
-      gap: 20px;
+      gap: 30px;
     }
 
-    .outro-section .checkmark {
-      width: 80px;
-      height: 80px;
+    .success-icon {
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--primary), var(--secondary));
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 40px;
+      font-size: 50px;
+      box-shadow: 0 20px 60px rgba(123, 63, 242, 0.4);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    .outro-section h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .outro-section p {
+      color: rgba(255,255,255,0.6);
+      font-size: 1.1rem;
+    }
+
+    /* Info Panel */
+    .info-panel {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      padding: 20px 24px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      z-index: 1000;
+      line-height: 1.6;
+    }
+
+    .info-panel strong {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .info-panel .codex-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding: 6px 12px;
+      background: rgba(123, 63, 242, 0.2);
+      border-radius: 20px;
+      font-size: 11px;
+      color: var(--secondary);
+      letter-spacing: 0.5px;
+    }
+
+    /* Mobile Adjustments */
+    @media (max-width: 768px) {
+      .info-panel { display: none; }
+      .progress-container { bottom: 20px; right: 20px; }
+      .progress-ring { width: 70px; height: 70px; }
+      .phase-indicator { top: 20px; padding: 6px 10px; gap: 4px; }
+      .indicator { padding: 8px 14px; font-size: 9px; }
     }
   </style>
 </head>
 <body>
   <div class="bg-gradient"></div>
+  <div class="noise"></div>
 
   <!-- Phase Indicator -->
   <div class="phase-indicator">
-    <div class="indicator" id="ind-entrance">ENTRANCE<span>0-30%</span></div>
-    <div class="indicator" id="ind-lock">LOCK<span>30-70%</span></div>
-    <div class="indicator" id="ind-exit">EXIT<span>70-100%</span></div>
+    <div class="indicator" id="ind-entrance">
+      ENTRANCE
+      <div class="indicator-dot"></div>
+    </div>
+    <div class="indicator" id="ind-lock">
+      LOCK
+      <div class="indicator-dot"></div>
+    </div>
+    <div class="indicator" id="ind-exit">
+      EXIT
+      <div class="indicator-dot"></div>
+    </div>
   </div>
 
   <!-- Progress Ring -->
-  <svg class="progress-ring" viewBox="0 0 80 80">
-    <defs>
-      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style="stop-color:#7B3FF2"/>
-        <stop offset="100%" style="stop-color:#4FC3F7"/>
-      </linearGradient>
-    </defs>
-    <circle class="bg" cx="40" cy="40" r="35"/>
-    <circle class="progress" id="progress-circle" cx="40" cy="40" r="35"/>
-  </svg>
-  <div class="progress-text" id="progress-text">0%</div>
+  <div class="progress-container">
+    <svg class="progress-ring" viewBox="0 0 90 90">
+      <defs>
+        <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#7B3FF2"/>
+          <stop offset="50%" style="stop-color:#4FC3F7"/>
+          <stop offset="100%" style="stop-color:#FF6B9D"/>
+        </linearGradient>
+      </defs>
+      <circle class="bg" cx="45" cy="45" r="40"/>
+      <circle class="progress" id="progress-circle" cx="45" cy="45" r="40"/>
+    </svg>
+    <div class="progress-text" id="progress-text">0%</div>
+  </div>
 
-  <!-- Intro -->
+  <!-- Intro Section -->
   <section class="intro-section">
-    <div>
+    <div class="intro-content">
       <h1>Three-Phase Animation</h1>
-      <p>Scroll down to experience the ENTRANCE → LOCK → EXIT lifecycle pattern</p>
+      <p>Experience the ENTRANCE → LOCK → EXIT lifecycle pattern. Content appears, holds focus, then gracefully exits.</p>
+      <div class="scroll-hint">
+        <span>Scroll to Begin</span>
+        <div class="scroll-arrow"></div>
+      </div>
     </div>
   </section>
 
@@ -280,22 +519,28 @@
       <div class="card-glow" id="card-glow"></div>
       <div class="phase-card" id="card">
         <h2 id="card-title">Phase Card</h2>
-        <p id="card-desc">Watch as this card moves through three distinct phases of animation</p>
-        <div class="phase-label" id="phase-label">WAITING</div>
+        <p id="card-desc">Watch as this card moves through three distinct phases of scroll-driven animation</p>
+        <div class="phase-label" id="phase-label">
+          <span class="pulse"></span>
+          WAITING
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Outro -->
+  <!-- Outro Section -->
   <section class="outro-section">
-    <div class="checkmark">✓</div>
-    <h2 style="font-size: 2rem; color: #fff;">Animation Complete</h2>
+    <div class="success-icon">✓</div>
+    <h2>Animation Complete</h2>
     <p>You've experienced the full three-phase lifecycle. Scroll back up to replay!</p>
   </section>
 
-  <div class="info">
+  <div class="info-panel">
     <strong>Pattern 09:</strong> Three-Phase Animation<br>
-    Visual Codex - GSAP Scroll Choreography
+    ENTRANCE → LOCK → EXIT Lifecycle
+    <div class="codex-badge">
+      Visual Codex • Chapter 5
+    </div>
   </div>
 
   <script>
@@ -315,11 +560,51 @@
       exit: document.getElementById('ind-exit')
     };
 
+    // Create floating particles
+    for (let i = 0; i < 20; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = Math.random() * 100 + 'vw';
+      particle.style.top = Math.random() * 100 + 'vh';
+      document.body.appendChild(particle);
+
+      gsap.to(particle, {
+        y: -window.innerHeight,
+        opacity: 0.5,
+        duration: 10 + Math.random() * 20,
+        repeat: -1,
+        delay: Math.random() * 10,
+        ease: 'none'
+      });
+    }
+
     function setActivePhase(phase, label) {
       Object.values(indicators).forEach(ind => ind.classList.remove('active'));
       if (indicators[phase]) indicators[phase].classList.add('active');
-      phaseLabel.textContent = label;
+      phaseLabel.innerHTML = `<span class="pulse"></span>${label}`;
     }
+
+    // Intro animation
+    gsap.from('.intro-content h1', {
+      y: 80,
+      opacity: 0,
+      duration: 1.2,
+      ease: 'power3.out'
+    });
+
+    gsap.from('.intro-content p', {
+      y: 40,
+      opacity: 0,
+      duration: 1,
+      delay: 0.3,
+      ease: 'power2.out'
+    });
+
+    gsap.from('.scroll-hint', {
+      opacity: 0,
+      duration: 1,
+      delay: 0.8
+    });
 
     // Create the pinned timeline
     const tl = gsap.timeline({
@@ -328,45 +613,49 @@
         start: "top top",
         end: "bottom bottom",
         pin: ".pin-container",
-        scrub: 0.8,
+        scrub: 0.5,
         onUpdate: (self) => {
           const p = self.progress;
 
-          // Update progress ring
-          const offset = 220 - (p * 220);
+          // Update progress ring (circumference = 2 * PI * 40 ≈ 251)
+          const offset = 251 - (p * 251);
           progressCircle.style.strokeDashoffset = offset;
           progressText.textContent = Math.round(p * 100) + '%';
 
-          // Update phase indicator and label
+          // Update phase indicator and card content
           if (p < 0.3) {
             setActivePhase('entrance', 'ENTERING');
             cardTitle.textContent = 'Emerging...';
-            cardDesc.textContent = 'The card enters from the void, rotating into view';
+            cardDesc.textContent = 'The card enters with a smooth Y-axis reveal and subtle rotation';
+            card.classList.remove('glowing');
           } else if (p < 0.7) {
             setActivePhase('lock', 'LOCKED');
             cardTitle.textContent = 'Center Stage';
-            cardDesc.textContent = 'Content is front and center with full user attention';
+            cardDesc.textContent = 'Content is front and center with full user attention. Breathing animation indicates active state.';
+            card.classList.add('glowing');
           } else {
             setActivePhase('exit', 'EXITING');
             cardTitle.textContent = 'Departing...';
-            cardDesc.textContent = 'The card gracefully exits, making room for what\'s next';
+            cardDesc.textContent = 'The card gracefully exits upward, making room for what comes next';
+            card.classList.remove('glowing');
           }
         }
       }
     });
 
     // ====== PHASE 1: ENTRANCE (0% - 30%) ======
-    // Card emerges from below with rotation
     tl.fromTo(card,
       {
-        y: 200,
-        rotateX: -30,
-        scale: 0.7,
+        y: 250,
+        rotateX: -25,
+        rotateY: 10,
+        scale: 0.6,
         opacity: 0
       },
       {
         y: 0,
         rotateX: 0,
+        rotateY: 0,
         scale: 1,
         opacity: 1,
         duration: 0.3,
@@ -375,46 +664,51 @@
     );
 
     // ====== PHASE 2: LOCK (30% - 70%) ======
-    // Subtle breathing and glow - content stays visible
+    // Subtle breathing + glow activation
     tl.to(cardGlow, {
-      opacity: 1,
-      scale: 1.2,
+      opacity: 0.8,
+      scale: 1.3,
+      duration: 0.1,
+      ease: "sine.inOut"
+    })
+    .to(card, {
+      scale: 1.03,
+      boxShadow: "0 40px 80px rgba(123, 63, 242, 0.3), 0 0 60px rgba(79, 195, 247, 0.2)",
+      duration: 0.1,
+      ease: "sine.inOut"
+    })
+    .to(card, {
+      scale: 1,
+      rotateY: -3,
       duration: 0.1,
       ease: "sine.inOut"
     })
     .to(card, {
       scale: 1.02,
-      boxShadow: "0 20px 60px rgba(123, 63, 242, 0.3)",
+      rotateY: 3,
       duration: 0.1,
       ease: "sine.inOut"
     })
     .to(card, {
       scale: 1,
-      duration: 0.1,
-      ease: "sine.inOut"
-    })
-    .to(card, {
-      scale: 1.01,
-      duration: 0.1,
-      ease: "sine.inOut"
-    })
-    .to(card, {
-      scale: 1,
+      rotateY: 0,
       duration: 0.1,
       ease: "sine.inOut"
     });
 
     // ====== PHASE 3: EXIT (70% - 100%) ======
-    // Card exits upward with rotation
     tl.to(cardGlow, {
       opacity: 0,
-      duration: 0.05
+      scale: 0.8,
+      duration: 0.08
     }, "-=0.05")
     .to(card, {
-      y: -200,
+      y: -250,
       rotateX: 20,
-      scale: 0.7,
+      rotateY: -10,
+      scale: 0.6,
       opacity: 0,
+      boxShadow: "0 0 0 rgba(0,0,0,0)",
       duration: 0.3,
       ease: "power2.in"
     });
@@ -430,19 +724,35 @@
         scrub: true
       }
     });
+
+    // Outro reveal
+    gsap.from('.outro-section > *', {
+      y: 50,
+      opacity: 0,
+      stagger: 0.2,
+      scrollTrigger: {
+        trigger: '.outro-section',
+        start: 'top 80%',
+        end: 'top 30%',
+        scrub: 1
+      }
+    });
   </script>
 
   <!--
-  Visual Codex Pattern: Three-Phase Animation
+  Visual Codex Pattern: Three-Phase Animation (SHOWCASE VERSION)
   Category: GSAP Scroll Choreography
   Pattern: 09 - ENTRANCE → LOCK → EXIT
 
-  Key Improvements:
-  - Proper pinning keeps card in viewport
-  - Y-axis animation (not Z) for visible movement
-  - Subtle scale changes during LOCK phase
-  - Dynamic content updates per phase
-  - Smooth transitions between phases
+  Features:
+  - Proper ScrollTrigger pinning
+  - Y-axis animation (stays in viewport)
+  - Glassmorphic card with animated glow
+  - Phase indicators with transitions
+  - Progress ring with gradient stroke
+  - Floating particle system
+  - Mobile responsive design
+  - Premium UI polish
 
   Author: Paul Phillips
   © 2025 Clear Seas Solutions LLC

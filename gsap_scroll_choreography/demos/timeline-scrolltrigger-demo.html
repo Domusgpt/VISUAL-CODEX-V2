@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Timeline & ScrollTrigger Demo - Visual Codex</title>
+  <title>Timeline & ScrollTrigger - Visual Codex Showcase</title>
 
-  <!-- GSAP from CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
@@ -13,192 +12,465 @@
     :root {
       --primary: #7B3FF2;
       --secondary: #4FC3F7;
+      --accent: #FF6B9D;
       --bg-dark: #0A0A0B;
-      --text: #fff;
+      --glass-bg: rgba(15, 15, 17, 0.8);
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       background: var(--bg-dark);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #fff;
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
       overflow-x: hidden;
     }
 
-    .section {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px;
-    }
-
-    .hero-section {
-      background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
-    }
-
-    .content-section {
-      background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
-    }
-
-    .cards-section {
-      background: linear-gradient(135deg, #1a1a2e, #2a1a3e);
-    }
-
-    .title {
-      font-size: clamp(2rem, 8vw, 5rem);
-      font-weight: 700;
-      text-align: center;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .subtitle {
-      font-size: 1.2rem;
-      color: rgba(255,255,255,0.7);
-      margin-top: 20px;
-      text-align: center;
-    }
-
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 24px;
-      max-width: 1200px;
-      width: 100%;
-    }
-
-    .card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 16px;
-      padding: 32px;
-      backdrop-filter: blur(10px);
-    }
-
-    .card h3 {
-      font-size: 1.4rem;
-      margin-bottom: 12px;
-      color: var(--primary);
-    }
-
-    .card p {
-      color: rgba(255,255,255,0.7);
-      line-height: 1.6;
-    }
-
-    .pinned-section {
-      height: 300vh;
-      background: linear-gradient(180deg, #2a1a3e, #0f0f1a, #1a1a2e);
-    }
-
-    .pinned-content {
-      position: sticky;
+    /* Ambient Background */
+    .bg-gradient {
+      position: fixed;
       top: 0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(123, 63, 242, 0.2) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(79, 195, 247, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(255, 107, 157, 0.08) 0%, transparent 60%);
+      z-index: -1;
+      animation: bgShift 30s ease-in-out infinite;
     }
 
+    @keyframes bgShift {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    /* Noise Overlay */
+    .noise {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.025;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    /* Progress Bar */
     .progress-bar {
       position: fixed;
       top: 0;
       left: 0;
       height: 4px;
-      background: var(--primary);
       width: 0%;
-      z-index: 100;
+      background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+      z-index: 10000;
+      box-shadow: 0 0 20px var(--primary);
     }
 
-    .scroll-indicator {
-      position: fixed;
-      bottom: 40px;
+    /* Sections */
+    .section {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 40px;
+      position: relative;
+    }
+
+    .section-content {
+      max-width: 800px;
+      text-align: center;
+    }
+
+    /* Hero */
+    .hero-section {
+      background: linear-gradient(180deg, transparent 0%, rgba(20, 20, 25, 0.5) 100%);
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 10vw, 7rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 0.95;
+      margin-bottom: 24px;
+    }
+
+    .hero-title span {
+      display: block;
+      background: linear-gradient(135deg, #fff 0%, var(--secondary) 50%, var(--primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.3rem;
+      color: rgba(255,255,255,0.6);
+      max-width: 500px;
+      margin: 0 auto 40px;
+      line-height: 1.6;
+    }
+
+    .scroll-cta {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,0.4);
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .scroll-arrow {
+      width: 24px;
+      height: 40px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      position: relative;
+    }
+
+    .scroll-arrow::after {
+      content: '';
+      position: absolute;
+      top: 8px;
       left: 50%;
       transform: translateX(-50%);
-      color: rgba(255,255,255,0.5);
-      font-size: 14px;
-      animation: bounce 2s infinite;
+      width: 4px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 2px;
+      animation: scrollBounce 1.5s ease-in-out infinite;
     }
 
-    @keyframes bounce {
-      0%, 100% { transform: translateX(-50%) translateY(0); }
-      50% { transform: translateX(-50%) translateY(-10px); }
+    @keyframes scrollBounce {
+      0%, 100% { top: 8px; opacity: 1; }
+      50% { top: 20px; opacity: 0.3; }
     }
 
-    .footer {
-      padding: 40px;
+    /* Cards Section */
+    .cards-section {
+      background: linear-gradient(180deg, rgba(20, 20, 25, 0.3) 0%, transparent 50%, rgba(20, 20, 25, 0.3) 100%);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    .feature-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 40px 32px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(123, 63, 242, 0.3);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.3), 0 0 40px rgba(123, 63, 242, 0.15);
+    }
+
+    .card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .feature-card p {
+      color: rgba(255,255,255,0.6);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    /* Pinned Section */
+    .pinned-section {
+      height: 350vh;
+      background: linear-gradient(180deg, transparent 0%, rgba(42, 26, 62, 0.3) 25%, rgba(42, 26, 62, 0.3) 75%, transparent 100%);
+    }
+
+    .pinned-content {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      perspective: 1200px;
+    }
+
+    .pinned-card {
+      width: min(600px, 85vw);
+      padding: 60px 50px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(30px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 32px;
       text-align: center;
+      transform-style: preserve-3d;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+    }
+
+    .pinned-card h2 {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 800;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, var(--primary) 50%, var(--secondary) 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 4s linear infinite;
+    }
+
+    @keyframes textShimmer {
+      to { background-position: 200% center; }
+    }
+
+    .pinned-card p {
+      color: rgba(255,255,255,0.6);
+      font-size: 1.1rem;
+      line-height: 1.6;
+      max-width: 450px;
+      margin: 0 auto;
+    }
+
+    .phase-badge {
+      display: inline-block;
+      margin-top: 24px;
+      padding: 10px 24px;
+      background: linear-gradient(135deg, rgba(123, 63, 242, 0.2), rgba(79, 195, 247, 0.2));
+      border: 1px solid rgba(123, 63, 242, 0.3);
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--secondary);
+    }
+
+    /* Footer Section */
+    .footer-section {
+      padding: 60px 40px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(20, 20, 25, 0.5) 0%, transparent 100%);
+    }
+
+    .footer-content {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .completion-badge {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      box-shadow: 0 20px 40px rgba(123, 63, 242, 0.3);
+    }
+
+    .footer-section h3 {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .footer-section p {
       color: rgba(255,255,255,0.5);
-      font-size: 14px;
+      font-size: 1rem;
+    }
+
+    /* Info Panel */
+    .info-panel {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      padding: 16px 20px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      z-index: 1000;
+      line-height: 1.5;
+    }
+
+    .info-panel strong { color: var(--primary); }
+
+    .codex-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 4px 10px;
+      background: rgba(123, 63, 242, 0.2);
+      border-radius: 12px;
+      font-size: 10px;
+      color: var(--secondary);
+    }
+
+    /* Stats Panel */
+    .stats-panel {
+      position: fixed;
+      top: 30px;
+      right: 30px;
+      padding: 16px 24px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      font-family: monospace;
+      font-size: 12px;
+      z-index: 1000;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      margin: 4px 0;
+    }
+
+    .stat-label { color: rgba(255,255,255,0.5); }
+    .stat-value { color: var(--secondary); font-weight: 600; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(var(--primary), var(--secondary));
+      border-radius: 3px;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .info-panel { display: none; }
+      .stats-panel { top: 20px; right: 20px; padding: 12px 16px; }
+      .card-grid { gap: 16px; }
+      .feature-card { padding: 30px 24px; }
     }
   </style>
 </head>
 <body>
+  <div class="bg-gradient"></div>
+  <div class="noise"></div>
   <div class="progress-bar" id="progress"></div>
+
+  <!-- Stats Panel -->
+  <div class="stats-panel">
+    <div class="stat-row">
+      <span class="stat-label">Progress:</span>
+      <span class="stat-value" id="scroll-progress">0%</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Section:</span>
+      <span class="stat-value" id="current-section">Hero</span>
+    </div>
+  </div>
 
   <!-- Hero Section -->
   <section class="section hero-section">
-    <div>
-      <h1 class="title" id="hero-title">Timeline & ScrollTrigger</h1>
-      <p class="subtitle" id="hero-subtitle">GSAP scroll animation patterns from Visual Codex</p>
-    </div>
-  </section>
-
-  <!-- Content Section -->
-  <section class="section content-section">
-    <div style="text-align: center; max-width: 600px;">
-      <h2 class="title" style="font-size: 2.5rem;">Scroll-Tied Animations</h2>
-      <p class="subtitle">Watch elements animate as you scroll. The progress bar above tracks your position.</p>
+    <div class="section-content">
+      <h1 class="hero-title">
+        <span id="hero-line-1">Timeline</span>
+        <span id="hero-line-2">&</span>
+        <span id="hero-line-3">ScrollTrigger</span>
+      </h1>
+      <p class="hero-subtitle" id="hero-sub">Master the art of scroll-driven animation with GSAP's powerful ScrollTrigger plugin</p>
+      <div class="scroll-cta" id="scroll-cta">
+        <span>Scroll to Explore</span>
+        <div class="scroll-arrow"></div>
+      </div>
     </div>
   </section>
 
   <!-- Cards Section -->
   <section class="section cards-section">
     <div class="card-grid">
-      <div class="card">
+      <div class="feature-card">
+        <div class="card-icon">⏱️</div>
         <h3>Timeline Creation</h3>
-        <p>Scroll-tied timelines sync animation progress with scroll position using the scrub parameter.</p>
+        <p>Scroll-tied timelines sync animation progress with scroll position using the scrub parameter for buttery smooth effects.</p>
       </div>
-      <div class="card">
-        <h3>Callback System</h3>
-        <p>onEnter, onLeave, onEnterBack, and onLeaveBack provide precise control over animations.</p>
+      <div class="feature-card">
+        <div class="card-icon">🎯</div>
+        <h3>Trigger Points</h3>
+        <p>Define precise start and end points with viewport-relative positions like "top center" and "bottom 80%".</p>
       </div>
-      <div class="card">
+      <div class="feature-card">
+        <div class="card-icon">📌</div>
         <h3>Pinning</h3>
-        <p>Lock elements in place while scrolling continues, creating immersive transitions.</p>
+        <p>Lock elements in place while scrolling continues, creating immersive transitions and parallax effects.</p>
       </div>
-      <div class="card">
+      <div class="feature-card">
+        <div class="card-icon">✨</div>
         <h3>Stagger Effects</h3>
-        <p>Sequential reveals with configurable delays create visual flow and hierarchy.</p>
+        <p>Sequential reveals with configurable delays create visual flow, hierarchy, and dramatic entrances.</p>
       </div>
     </div>
   </section>
 
   <!-- Pinned Section -->
   <section class="pinned-section">
-    <div class="pinned-content">
-      <h2 class="title" id="pinned-title" style="font-size: 3rem;">Pinned Section</h2>
-      <p class="subtitle" id="pinned-sub">This content stays fixed while you scroll through 300vh of space</p>
+    <div class="pinned-content" id="pinned-content">
+      <div class="pinned-card" id="pinned-card">
+        <h2 id="pinned-title">Pinned Section</h2>
+        <p id="pinned-desc">This content stays fixed while you scroll through 350vh of space. Watch as it transforms!</p>
+        <div class="phase-badge" id="pinned-badge">PHASE 1</div>
+      </div>
     </div>
   </section>
 
-  <div class="scroll-indicator">Scroll to explore</div>
+  <!-- Footer -->
+  <section class="section footer-section">
+    <div class="footer-content">
+      <div class="completion-badge">✓</div>
+      <h3>Demo Complete</h3>
+      <p>You've explored timeline creation, scroll triggers, pinning, and stagger effects. Scroll back up to replay!</p>
+    </div>
+  </section>
 
-  <footer class="footer">
-    Visual Codex Chapter 5 - GSAP Scroll Choreography<br>
-    A Paul Phillips Manifestation | Clear Seas Solutions LLC
-  </footer>
+  <div class="info-panel">
+    <strong>Patterns 01-03:</strong> Timeline & ScrollTrigger<br>
+    Creation, Triggers & Pinning
+    <div class="codex-badge">Visual Codex • Chapter 5</div>
+  </div>
 
   <script>
     gsap.registerPlugin(ScrollTrigger);
+
+    const scrollProgressEl = document.getElementById('scroll-progress');
+    const currentSectionEl = document.getElementById('current-section');
 
     // Progress bar
     gsap.to("#progress", {
@@ -208,93 +480,194 @@
         trigger: document.body,
         start: "top top",
         end: "bottom bottom",
-        scrub: 0.3
+        scrub: 0.2,
+        onUpdate: (self) => {
+          scrollProgressEl.textContent = Math.round(self.progress * 100) + '%';
+        }
       }
     });
 
-    // Hero entrance
-    gsap.from("#hero-title", {
-      y: 100,
+    // Hero entrance animations
+    gsap.from("#hero-line-1", {
+      y: 120,
       opacity: 0,
-      duration: 1,
+      duration: 1.2,
       ease: "power3.out"
     });
 
-    gsap.from("#hero-subtitle", {
-      y: 50,
+    gsap.from("#hero-line-2", {
+      y: 80,
       opacity: 0,
       duration: 1,
-      delay: 0.3,
+      delay: 0.2,
+      ease: "power3.out"
+    });
+
+    gsap.from("#hero-line-3", {
+      y: 120,
+      opacity: 0,
+      duration: 1.2,
+      delay: 0.4,
+      ease: "power3.out"
+    });
+
+    gsap.from("#hero-sub", {
+      y: 40,
+      opacity: 0,
+      duration: 0.8,
+      delay: 0.8,
       ease: "power2.out"
     });
 
+    gsap.from("#scroll-cta", {
+      opacity: 0,
+      duration: 1,
+      delay: 1.2
+    });
+
     // Hero exit on scroll
-    gsap.to("#hero-title", {
-      y: -100,
+    gsap.to(".hero-section .section-content", {
+      y: -150,
       opacity: 0,
       scrollTrigger: {
         trigger: ".hero-section",
         start: "center center",
         end: "bottom top",
-        scrub: 1
-      }
-    });
-
-    // Content section reveal
-    gsap.from(".content-section h2", {
-      scale: 0.8,
-      opacity: 0,
-      scrollTrigger: {
-        trigger: ".content-section",
-        start: "top center",
-        end: "center center",
-        scrub: 1
+        scrub: 1,
+        onEnter: () => currentSectionEl.textContent = 'Hero',
+        onEnterBack: () => currentSectionEl.textContent = 'Hero'
       }
     });
 
     // Cards stagger reveal
-    gsap.from(".card", {
-      y: 80,
+    gsap.from(".feature-card", {
+      y: 100,
       opacity: 0,
+      scale: 0.95,
       stagger: 0.15,
       scrollTrigger: {
         trigger: ".cards-section",
-        start: "top 70%",
+        start: "top 75%",
         end: "center center",
-        scrub: 0.5
+        scrub: 0.5,
+        onEnter: () => currentSectionEl.textContent = 'Features',
+        onEnterBack: () => currentSectionEl.textContent = 'Features'
       }
     });
 
-    // Pinned section animation
+    // Pinned section with multi-phase animation
+    const pinnedCard = document.getElementById('pinned-card');
+    const pinnedTitle = document.getElementById('pinned-title');
+    const pinnedDesc = document.getElementById('pinned-desc');
+    const pinnedBadge = document.getElementById('pinned-badge');
+
     const pinnedTl = gsap.timeline({
       scrollTrigger: {
         trigger: ".pinned-section",
         start: "top top",
         end: "bottom bottom",
-        scrub: 1,
-        pin: ".pinned-content"
+        scrub: 0.8,
+        pin: ".pinned-content",
+        onEnter: () => currentSectionEl.textContent = 'Pinned',
+        onEnterBack: () => currentSectionEl.textContent = 'Pinned',
+        onUpdate: (self) => {
+          const p = self.progress;
+          if (p < 0.33) {
+            pinnedTitle.textContent = 'Phase 1: Entrance';
+            pinnedDesc.textContent = 'The card scales up from below with rotation, establishing presence.';
+            pinnedBadge.textContent = 'ENTRANCE';
+          } else if (p < 0.66) {
+            pinnedTitle.textContent = 'Phase 2: Transform';
+            pinnedDesc.textContent = 'Now in full view, the card rotates and pulses, commanding attention.';
+            pinnedBadge.textContent = 'TRANSFORM';
+          } else {
+            pinnedTitle.textContent = 'Phase 3: Exit';
+            pinnedDesc.textContent = 'With a final spin, the card completes its journey and fades away.';
+            pinnedBadge.textContent = 'EXIT';
+          }
+        }
       }
     });
 
     pinnedTl
-      .from("#pinned-title", { scale: 0.5, opacity: 0 })
-      .from("#pinned-sub", { y: 30, opacity: 0 }, "-=0.3")
-      .to("#pinned-title", { scale: 1.2, color: "#4FC3F7" })
-      .to("#pinned-title", { rotation: 360, scale: 1 })
-      .to(["#pinned-title", "#pinned-sub"], { opacity: 0, y: -50 });
+      .from(pinnedCard, {
+        scale: 0.5,
+        y: 200,
+        rotateX: -30,
+        opacity: 0,
+        duration: 0.35
+      })
+      .to(pinnedCard, {
+        scale: 1.05,
+        boxShadow: "0 50px 100px rgba(123, 63, 242, 0.4)",
+        duration: 0.1
+      })
+      .to(pinnedCard, {
+        rotateY: 10,
+        duration: 0.1
+      })
+      .to(pinnedCard, {
+        rotateY: -10,
+        scale: 1.02,
+        duration: 0.1
+      })
+      .to(pinnedCard, {
+        rotateY: 0,
+        scale: 1,
+        duration: 0.1
+      })
+      .to(pinnedCard, {
+        rotation: 360,
+        scale: 0.8,
+        duration: 0.15
+      })
+      .to(pinnedCard, {
+        y: -200,
+        opacity: 0,
+        scale: 0.5,
+        duration: 0.1
+      });
 
-    // Hide scroll indicator after scroll
+    // Footer reveal
+    gsap.from(".footer-content > *", {
+      y: 60,
+      opacity: 0,
+      stagger: 0.15,
+      scrollTrigger: {
+        trigger: ".footer-section",
+        start: "top 70%",
+        end: "center center",
+        scrub: 1,
+        onEnter: () => currentSectionEl.textContent = 'Complete',
+        onEnterBack: () => currentSectionEl.textContent = 'Complete'
+      }
+    });
+
+    // Hide scroll indicator
     ScrollTrigger.create({
       trigger: ".hero-section",
-      start: "bottom 80%",
-      onEnter: () => gsap.to(".scroll-indicator", { opacity: 0, duration: 0.5 })
+      start: "bottom 70%",
+      onEnter: () => gsap.to("#scroll-cta", { opacity: 0, duration: 0.5 })
     });
+
+    // Stats panel entrance
+    gsap.from(".stats-panel", { x: 50, opacity: 0, duration: 0.6, delay: 1.4 });
+    gsap.from(".info-panel", { x: -50, opacity: 0, duration: 0.6, delay: 1.6 });
   </script>
 
   <!--
-  Visual Codex Pattern: Timeline & ScrollTrigger
+  Visual Codex Pattern: Timeline & ScrollTrigger (SHOWCASE VERSION)
   Category: GSAP Scroll Choreography
   Patterns: 01, 02, 03, 14
+
+  Features:
+  - Timeline creation with scrub
+  - ScrollTrigger with callbacks
+  - Pinned multi-phase animation
+  - Staggered card reveals
+  - Progress tracking
+  - Section indicators
+
   Author: Paul Phillips
   © 2025 Clear Seas Solutions LLC
   -->
