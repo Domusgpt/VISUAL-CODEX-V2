@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Codex Master Catalog - Complete Pattern Library</title>
+
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: rgba(15, 15, 25, 0.8);
+      --bg-card: rgba(20, 20, 35, 0.6);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(123, 63, 242, 0.4);
+      --text-primary: rgba(255, 255, 255, 0.95);
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --text-muted: rgba(255, 255, 255, 0.4);
+      --accent-purple: #7B3FF2;
+      --accent-cyan: #4FC3F7;
+      --accent-pink: #FF6EC7;
+      --accent-green: #00E676;
+      --accent-orange: #FF9800;
+      --glow-purple: 0 0 30px rgba(123, 63, 242, 0.3);
+      --glow-cyan: 0 0 30px rgba(79, 195, 247, 0.3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Background */
+    .ambient-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(123, 63, 242, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(79, 195, 247, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(255, 110, 199, 0.05) 0%, transparent 60%);
+      z-index: -2;
+      animation: ambientShift 20s ease-in-out infinite;
+    }
+
+    @keyframes ambientShift {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.1); }
+    }
+
+    /* Noise Overlay */
+    .noise-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      opacity: 0.03;
+      z-index: -1;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    /* Header */
+    .header {
+      padding: 60px 40px 40px;
+      text-align: center;
+      position: relative;
+    }
+
+    .header h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan), var(--accent-pink));
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 8s ease-in-out infinite;
+      margin-bottom: 16px;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .header .subtitle {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px 40px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      background: rgba(10, 10, 15, 0.95);
+      backdrop-filter: blur(20px);
+      z-index: 100;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .nav-tab {
+      padding: 12px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-tab:hover {
+      background: rgba(123, 63, 242, 0.15);
+      border-color: var(--border-glow);
+      color: var(--text-primary);
+      transform: translateY(-2px);
+    }
+
+    .nav-tab.active {
+      background: linear-gradient(135deg, rgba(123, 63, 242, 0.3), rgba(79, 195, 247, 0.2));
+      border-color: var(--accent-purple);
+      color: var(--text-primary);
+      box-shadow: var(--glow-purple);
+    }
+
+    .nav-tab .badge {
+      display: inline-block;
+      background: var(--accent-purple);
+      color: white;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-left: 8px;
+    }
+
+    /* Search */
+    .search-container {
+      padding: 20px 40px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 16px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 0 4px rgba(123, 63, 242, 0.2);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* Content Sections */
+    .content {
+      padding: 40px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .section {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .section-count {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* Category Groups */
+    .category-group {
+      margin-bottom: 48px;
+    }
+
+    .category-header {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      margin-bottom: 20px;
+      padding-left: 16px;
+      border-left: 3px solid var(--accent-cyan);
+    }
+
+    /* Pattern Grid */
+    .pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    /* Pattern Card */
+    .pattern-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      position: relative;
+    }
+
+    .pattern-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-glow);
+      box-shadow: var(--glow-purple);
+    }
+
+    .pattern-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .pattern-card:hover::before {
+      opacity: 1;
+    }
+
+    .card-content {
+      padding: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .card-version {
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .card-version.v1 {
+      background: rgba(255, 152, 0, 0.2);
+      color: var(--accent-orange);
+    }
+
+    .card-version.v2 {
+      background: rgba(123, 63, 242, 0.2);
+      color: var(--accent-purple);
+    }
+
+    .card-version.v3 {
+      background: rgba(0, 230, 118, 0.2);
+      color: var(--accent-green);
+    }
+
+    .card-description {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      color: var(--text-muted);
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      text-align: center;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-purple), rgba(123, 63, 242, 0.7));
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--glow-purple);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 60px 40px;
+      border-top: 1px solid var(--border-subtle);
+      margin-top: 60px;
+    }
+
+    .footer-brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+    }
+
+    .footer-text {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.8;
+    }
+
+    .footer-text a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+
+    .footer-text a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header { padding: 40px 20px 30px; }
+      .nav-tabs { padding: 15px 20px; }
+      .content { padding: 20px; }
+      .pattern-grid { grid-template-columns: 1fr; }
+      .stats-bar { gap: 24px; }
+    }
+
+    /* Hidden utility */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="ambient-bg"></div>
+  <div class="noise-overlay"></div>
+
+  <header class="header">
+    <h1>Visual Codex</h1>
+    <p class="subtitle">Complete Pattern Library - V1 + V2 + Chapter 5 GSAP</p>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-value" id="total-count">71</div>
+        <div class="stat-label">Total Patterns</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">3</div>
+        <div class="stat-label">Versions</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">8</div>
+        <div class="stat-label">Categories</div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="nav-tabs">
+    <button class="nav-tab active" data-tab="all">All <span class="badge">71</span></button>
+    <button class="nav-tab" data-tab="v1">V1 Legacy <span class="badge">43</span></button>
+    <button class="nav-tab" data-tab="v2">V2 Docs <span class="badge">21</span></button>
+    <button class="nav-tab" data-tab="v3">V3 GSAP <span class="badge">7</span></button>
+    <button class="nav-tab" data-tab="webgl">WebGL</button>
+    <button class="nav-tab" data-tab="css">CSS Effects</button>
+    <button class="nav-tab" data-tab="scroll">Scroll</button>
+  </nav>
+
+  <div class="search-container">
+    <input type="text" class="search-input" id="search" placeholder="Search patterns by name, tag, or description...">
+  </div>
+
+  <main class="content">
+    <!-- ALL PATTERNS SECTION -->
+    <section class="section active" id="section-all">
+
+      <!-- V3 GSAP CHAPTER 5 - NEW -->
+      <div class="category-group">
+        <h3 class="category-header">Chapter 5: GSAP Scroll Choreography (NEW)</h3>
+        <div class="pattern-grid">
+
+          <article class="pattern-card" data-version="v3" data-tags="gsap scroll animation three-phase">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Three-Phase Animation</h3>
+                <span class="card-version v3">V3</span>
+              </div>
+              <p class="card-description">Entrance → Lock → Exit scroll animation with pinning, progress ring, and phase indicators.</p>
+              <div class="card-tags">
+                <span class="tag">GSAP</span>
+                <span class="tag">ScrollTrigger</span>
+                <span class="tag">Pinning</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/VISUAL-CODEX-V2/gsap_scroll_choreography/demos/three-phase-animation-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+                <a href="gsap_scroll_choreography/gsap_core/09-three-phase-animation.md" class="btn btn-secondary" target="_blank">Docs</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v3" data-tags="gsap particles explosion effects">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Particle Systems</h3>
+                <span class="card-version v3">V3</span>
+              </div>
+              <p class="card-description">6 particle effects: Explosion, Confetti, Star Burst, Spark Trail, Ripple, and Fireworks.</p>
+              <div class="card-tags">
+                <span class="tag">GSAP</span>
+                <span class="tag">Particles</span>
+                <span class="tag">Effects</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/VISUAL-CODEX-V2/gsap_scroll_choreography/demos/particle-system-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+                <a href="gsap_scroll_choreography/gsap_core/10-particle-explosion-systems.md" class="btn btn-secondary" target="_blank">Docs</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v3" data-tags="gsap chromatic aberration rgb glitch">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Chromatic Aberration</h3>
+                <span class="card-version v3">V3</span>
+              </div>
+              <p class="card-description">RGB channel split effects with hover, scroll-driven, velocity-responsive, and continuous glitch modes.</p>
+              <div class="card-tags">
+                <span class="tag">GSAP</span>
+                <span class="tag">RGB Split</span>
+                <span class="tag">Glitch</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/VISUAL-CODEX-V2/gsap_scroll_choreography/demos/chromatic-aberration-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+                <a href="gsap_scroll_choreography/gsap_core/11-chromatic-aberration.md" class="btn btn-secondary" target="_blank">Docs</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v3" data-tags="gsap timeline scrolltrigger pinning">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Timeline ScrollTrigger</h3>
+                <span class="card-version v3">V3</span>
+              </div>
+              <p class="card-description">Multi-phase pinned animation with hero entrance, staggered cards, and section tracking.</p>
+              <div class="card-tags">
+                <span class="tag">GSAP</span>
+                <span class="tag">Timeline</span>
+                <span class="tag">Pinning</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/VISUAL-CODEX-V2/gsap_scroll_choreography/demos/timeline-scrolltrigger-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+                <a href="gsap_scroll_choreography/gsap_core/01-timeline-creation-patterns.md" class="btn btn-secondary" target="_blank">Docs</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v3" data-tags="gsap webgl visualizer binding parameters">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Visualizer Binding</h3>
+                <span class="card-version v3">V3</span>
+              </div>
+              <p class="card-description">Connect GSAP scroll progress to WebGL shader parameters for reactive visualizations.</p>
+              <div class="card-tags">
+                <span class="tag">GSAP</span>
+                <span class="tag">WebGL</span>
+                <span class="tag">Binding</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/VISUAL-CODEX-V2/gsap_scroll_choreography/demos/visualizer-binding-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+                <a href="gsap_scroll_choreography/gsap_core/08-visualizer-parameter-morphing.md" class="btn btn-secondary" target="_blank">Docs</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v3" data-tags="webgl holographic raymarching kifs fractals">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Holographic Visualizer</h3>
+                <span class="card-version v3">V3</span>
+              </div>
+              <p class="card-description">WebGL raymarching with KIFS fractals, fog density, and impulse event system.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">Raymarching</span>
+                <span class="tag">Fractals</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/VISUAL-CODEX-V2/gsap_scroll_choreography/demos/holographic-visualizer-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+                <a href="gsap_scroll_choreography/visualizer_systems/18-holographic-visualizer-system.md" class="btn btn-secondary" target="_blank">Docs</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v3" data-tags="glassmorphism ui design system dark mode">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Quantum Glassmorphism</h3>
+                <span class="card-version v3">V3</span>
+              </div>
+              <p class="card-description">Complete dark-mode glass design system with blur, glow, hover states, and form components.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Glassmorphism</span>
+                <span class="tag">UI Kit</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/VISUAL-CODEX-V2/gsap_scroll_choreography/demos/quantum-glassmorphism-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+                <a href="gsap_scroll_choreography/visualizer_systems/21-quantum-glassmorphism.md" class="btn btn-secondary" target="_blank">Docs</a>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+
+      <!-- V1 EFFECTS -->
+      <div class="category-group">
+        <h3 class="category-header">WebGL Visualizations (V1)</h3>
+        <div class="pattern-grid">
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl 4d hypercube visualizer">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">VIB34D Complete System</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Complete 4D polytopal visualization system with rotation controls and projection modes.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">4D</span>
+                <span class="tag">VIB34D</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/vib34d-complete-system.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl 4d hyperav audio">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Working 4D HyperAV</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">4D hypercube audio visualizer with real-time audio reactivity.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">Audio</span>
+                <span class="tag">4D</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/working-4d-hyperav.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl hypercube framework core">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Hypercube Core Framework</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Core WebGL framework for hypercube rendering with projection mathematics.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">Framework</span>
+                <span class="tag">Core</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/hypercube-core-framework.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl hyperdimensional matrix insane">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Hyperdimensional Matrix</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Extreme hyperdimensional matrix visualization with chaos parameters.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">Matrix</span>
+                <span class="tag">Chaos</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/insane-hyperdimensional-matrix.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl mvep moire hypercube">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">MVEP Moire Hypercube</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Multi-Visualizer Event Protocol with moiré interference patterns.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">MVEP</span>
+                <span class="tag">Moire</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/mvep-moire-hypercube.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl holographic visualizer">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Holographic Visualizer</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Classic holographic effect visualizer with glow and scanlines.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">Holographic</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/holographic-visualizer.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl elegant 4d flow">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Elegant 4D Flow</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Smooth 4D flow visualization with elegant particle streams.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">4D</span>
+                <span class="tag">Flow</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/elegant-4d-flow-visualizer.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl holographic pulse system">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Holographic Pulse System</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Pulsing holographic effect with rhythmic intensity variations.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">Pulse</span>
+                <span class="tag">Rhythm</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/holographic-pulse-system.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl color shift contrast">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Enhanced Color Shift</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Dynamic color shifting with enhanced contrast and saturation controls.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">Color</span>
+                <span class="tag">Contrast</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/enhanced-color-shift-contrast-system.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl multi canvas system">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Multi Canvas System</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Multiple synchronized canvas visualizers working in harmony.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">Multi-Canvas</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/multi-canvas-visualizer-system.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl narrative choreography">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Narrative Choreography Engine</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Story-driven visualization engine with choreographed sequences.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">Narrative</span>
+                <span class="tag">Engine</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/narrative-choreography-engine.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl tabbed visualizer system">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Tabbed Visualizer System</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Tab-based visualizer switching with smooth transitions.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">Tabbed</span>
+                <span class="tag">System</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/tabbed-visualizer-system.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl hypercube webgl framework">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Hypercube WebGL Framework</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Advanced WebGL framework for hypercube rendering.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">Framework</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/hypercube-core-webgl-framework.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl vib34d card bending">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">VIB34D Card Bending</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Advanced card bending system with 3D transforms.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">Cards</span>
+                <span class="tag">3D</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/vib34d-advanced-card-bending-system.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="webgl vib34d enhanced complete">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">VIB34D Enhanced System</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Enhanced version of the complete VIB34D system.</p>
+              <div class="card-tags">
+                <span class="tag">WebGL</span>
+                <span class="tag">VIB34D</span>
+                <span class="tag">Enhanced</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/effects/vib34d-complete-system-enhanced.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+
+      <!-- V1 DEMOS -->
+      <div class="category-group">
+        <h3 class="category-header">CSS Effects & UI Components (V1)</h3>
+        <div class="pattern-grid">
+
+          <article class="pattern-card" data-version="v1" data-tags="css neoskeuomorphic cards ui">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Neoskeuomorphic Cards</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Modern neoskeuomorphic card design with soft shadows and depth.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Cards</span>
+                <span class="tag">UI</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/neoskeuomorphic-cards-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css glassmorphism ui blur">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">CSS Glassmorphism</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Pure CSS glassmorphism with backdrop blur and translucency.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Glass</span>
+                <span class="tag">Blur</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/css-glassmorphism-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css holographic progress indicators">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Holographic Progress</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Holographic-styled progress indicators and loading states.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Progress</span>
+                <span class="tag">Loading</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/holographic-progress-indicators-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css state control dots indicator">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">State Control Dots</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Animated state indicator dots with color transitions.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">State</span>
+                <span class="tag">Dots</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/state-control-dots-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css vaporwave aesthetics retro">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Vaporwave Aesthetics</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Retro vaporwave aesthetic with gradients and grid lines.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Vaporwave</span>
+                <span class="tag">Retro</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/css-vaporwave-aesthetics-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css animated grid overlay">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Animated Grid Overlay</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Animated grid overlay effect for backgrounds.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Grid</span>
+                <span class="tag">Animation</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/animated-grid-overlay-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css cyberpunk ui neon">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Cyberpunk UI</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Cyberpunk-themed UI elements with neon accents.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Cyberpunk</span>
+                <span class="tag">Neon</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/css-cyberpunk-ui-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css glitch effects distortion">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">CSS Glitch Effects</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Pure CSS glitch effects with color channel splitting.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Glitch</span>
+                <span class="tag">Effects</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/css-glitch-effects-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css holographic particles system">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Holographic Particles</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">CSS-based holographic particle system.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Particles</span>
+                <span class="tag">Holographic</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/holographic-particle-system-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css holographic depth layers">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Holographic Depth Layers</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Layered holographic depth effect with parallax.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Depth</span>
+                <span class="tag">Layers</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/holographic-depth-layers-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css vib34d adaptive cards">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">VIB34D Adaptive Cards</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Adaptive card system with responsive VIB34D styling.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Cards</span>
+                <span class="tag">Adaptive</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/vib34d-adaptive-cards-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css moire hypercube codex">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Moire Hypercube Codex</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Moiré pattern hypercube visualization codex.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Moire</span>
+                <span class="tag">Hypercube</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/moire-hypercube-codex-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css hypercube lattice visualizer">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Hypercube Lattice Visualizer</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Lattice structure visualization for hypercubes.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Lattice</span>
+                <span class="tag">Visualizer</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/hypercube-lattice-visualizer-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css chaos overlay effects">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Chaos Overlay Effects</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Chaotic overlay effects with randomized parameters.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Chaos</span>
+                <span class="tag">Overlay</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/chaos-overlay-effects-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css system orchestration engine">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">System Orchestration Engine</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Orchestrated system for coordinating multiple effects.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">System</span>
+                <span class="tag">Engine</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/system-orchestration-engine-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css vib3code reactive core">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">VIB3Code Reactive Core</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Reactive core system for VIB3Code interactions.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Reactive</span>
+                <span class="tag">Core</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/vib3code-reactive-core-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css polytopal consciousness shader">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Polytopal Consciousness</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Shader-based polytopal consciousness visualization.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Shader</span>
+                <span class="tag">Polytopal</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/polytopal-consciousness-shader-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css millzmaleficarum codex">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Millzmaleficarum Codex</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Dark aesthetic codex visualization system.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Codex</span>
+                <span class="tag">Dark</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/millzmaleficarum-codex-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css vib34d morphing blog">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">VIB34D Morphing Blog</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Blog layout with morphing VIB34D transitions.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Blog</span>
+                <span class="tag">Morphing</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/vib34d-morphing-blog-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css vib3code digital magazine">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">VIB3Code Digital Magazine</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Digital magazine layout with VIB3Code styling.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Magazine</span>
+                <span class="tag">Layout</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/vib3code-digital-magazine-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css tech layout holographic">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Tech Layout Holographic</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Technology-focused layout with holographic elements.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Tech</span>
+                <span class="tag">Layout</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/tech-layout-active-holographic-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css holographic parallax systems mega">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Holographic Parallax Mega</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Mega collection of holographic parallax systems.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Parallax</span>
+                <span class="tag">Mega</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/holographic-parallax-systems-mega-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css active holographic systems mega 30">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Active Holographic Mega</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">30 variations of active holographic systems.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">30 Variants</span>
+                <span class="tag">Mega</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/active-holographic-systems-mega-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css vib34d editor dashboard">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">VIB34D Editor Dashboard</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Dashboard UI for VIB34D parameter editing.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Dashboard</span>
+                <span class="tag">Editor</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/vib34d-editor-dashboard-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="css vib34d production spectacular">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">VIB34D Production Spectacular</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Production-ready spectacular VIB34D showcase.</p>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Production</span>
+                <span class="tag">Showcase</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/demos/vib34d-production-spectacular-demo.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+
+      <!-- V1 GALLERIES -->
+      <div class="category-group">
+        <h3 class="category-header">Gallery Experiences (V1)</h3>
+        <div class="pattern-grid">
+
+          <article class="pattern-card" data-version="v1" data-tags="gallery mobile enhanced">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Mobile Enhanced Gallery</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Mobile-optimized gallery with 8 themed sections and 48 patterns.</p>
+              <div class="card-tags">
+                <span class="tag">Gallery</span>
+                <span class="tag">Mobile</span>
+                <span class="tag">48 Patterns</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/gallery-mobile-enhanced.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="gallery crystal perfected">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Crystal Perfected Gallery</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Perfected crystal-themed gallery experience.</p>
+              <div class="card-tags">
+                <span class="tag">Gallery</span>
+                <span class="tag">Crystal</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/gallery-crystal-perfected.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="gallery parallax system">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Parallax Gallery System</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Gallery with parallax scrolling effects.</p>
+              <div class="card-tags">
+                <span class="tag">Gallery</span>
+                <span class="tag">Parallax</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/gallery-parallax-system.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="gallery treasure experience">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Treasure Experience Gallery</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Treasure hunt-style gallery exploration.</p>
+              <div class="card-tags">
+                <span class="tag">Gallery</span>
+                <span class="tag">Experience</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/gallery-treasure-experience.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="gallery snap scroll">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Snap Scroll Gallery</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Gallery with CSS scroll snap for sections.</p>
+              <div class="card-tags">
+                <span class="tag">Gallery</span>
+                <span class="tag">Snap Scroll</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/gallery-snap-scroll.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pattern-card" data-version="v1" data-tags="gallery tactile scroll">
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">Tactile Scroll Gallery</h3>
+                <span class="card-version v1">V1</span>
+              </div>
+              <p class="card-description">Gallery with tactile feedback on scroll.</p>
+              <div class="card-tags">
+                <span class="tag">Gallery</span>
+                <span class="tag">Tactile</span>
+              </div>
+              <div class="card-actions">
+                <a href="https://domusgpt.github.io/visual-codex/gallery-tactile-scroll.html" class="btn btn-primary" target="_blank">Launch</a>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-brand">A Paul Phillips Manifestation</div>
+    <p class="footer-text">
+      Visual Codex Master Catalog - Complete Pattern Library<br>
+      V1 (43 patterns) + V2 (21 patterns) + V3 GSAP (7 patterns) = 71 Total<br><br>
+      <a href="mailto:Paul@clearseassolutions.com">Paul@clearseassolutions.com</a> |
+      <a href="https://parserator.com" target="_blank">Parserator.com</a><br><br>
+      &copy; 2025 Paul Phillips - Clear Seas Solutions LLC
+    </p>
+  </footer>
+
+  <script>
+    // Tab Navigation
+    const tabs = document.querySelectorAll('.nav-tab');
+    const sections = document.querySelectorAll('.section');
+    const cards = document.querySelectorAll('.pattern-card');
+    const searchInput = document.getElementById('search');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        // Update active tab
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        const filter = tab.dataset.tab;
+
+        // Filter cards
+        cards.forEach(card => {
+          const version = card.dataset.version;
+          const tags = card.dataset.tags || '';
+
+          let show = false;
+
+          if (filter === 'all') {
+            show = true;
+          } else if (filter === 'v1' && version === 'v1') {
+            show = true;
+          } else if (filter === 'v2' && version === 'v2') {
+            show = true;
+          } else if (filter === 'v3' && version === 'v3') {
+            show = true;
+          } else if (filter === 'webgl' && tags.includes('webgl')) {
+            show = true;
+          } else if (filter === 'css' && tags.includes('css')) {
+            show = true;
+          } else if (filter === 'scroll' && (tags.includes('scroll') || tags.includes('gsap'))) {
+            show = true;
+          }
+
+          card.classList.toggle('hidden', !show);
+        });
+      });
+    });
+
+    // Search
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+
+      cards.forEach(card => {
+        const title = card.querySelector('.card-title').textContent.toLowerCase();
+        const description = card.querySelector('.card-description').textContent.toLowerCase();
+        const tags = card.dataset.tags || '';
+
+        const matches = title.includes(query) ||
+                       description.includes(query) ||
+                       tags.includes(query);
+
+        card.classList.toggle('hidden', !matches);
+      });
+    });
+  </script>
+</body>
+</html>
