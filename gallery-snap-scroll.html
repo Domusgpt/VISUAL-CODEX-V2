@@ -1024,5 +1024,16 @@
             new StateManager();
         });
     </script>
+    <script src="js/phase45-dev-tools.js"></script>
+    <script>
+        window.Phase45DevConsole?.registerExperience({
+            id: 'gallery-snap-scroll',
+            name: 'Visual Codex Snap Scroll System',
+            phase: 4,
+            entry: 23,
+            modules: ['SnapSectionBuilder', 'BackgroundCanvasEngine', 'InputController'],
+            features: ['Deterministic snap navigation', 'Section minimap overlay', 'Adaptive accessibility mode']
+        });
+    </script>
 </body>
 </html>

@@ -820,5 +820,16 @@
             new Mobile6x7Gallery();
         }
     </script>
+    <script src="js/phase45-dev-tools.js"></script>
+    <script>
+        window.Phase45DevConsole?.registerExperience({
+            id: 'gallery-mobile-6x7',
+            name: 'Visual Codex Mobile 6×7 State System',
+            phase: 5,
+            entry: 28,
+            modules: ['Mobile6x7Gallery', 'StateHUD', 'BackgroundVisualizer'],
+            features: ['Seven-state touch sequencer', 'Performance watchdog throttling', 'Deep-link state handoffs']
+        });
+    </script>
 </body>
 </html>
