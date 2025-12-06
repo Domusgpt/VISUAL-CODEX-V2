@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JusDNCE Quantum Flux Visualizer - EXACT Implementation</title>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <!-- JusDNCE Rajdhani Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --brand-400: #a78bfa;
+            --brand-500: #8b5cf6;
+            --brand-600: #7c3aed;
+            --brand-700: #6d28d9;
+            --dark-bg: #0f0f11;
+            --dark-surface: #18181b;
+            --dark-border: #27272a;
+        }
+
+        body {
+            background-color: #050505;
+            color: #e4e4e7;
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+
+        /* Visualizer Canvas - Full Background */
+        #visualizer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Glass Panel - Exact JusDNCE Style */
+        .glass-panel {
+            background: rgba(15, 15, 17, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Glass Button - Exact JusDNCE Style */
+        .glass-button {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px 28px;
+            color: #e4e4e7;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .glass-button:active {
+            transform: translateY(0);
+        }
+
+        .glass-button.primary {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .glass-button.primary:hover {
+            background: rgba(139, 92, 246, 0.5);
+            border-color: var(--brand-400);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Scroll Container */
+        .scroll-container {
+            position: relative;
+            z-index: 10;
+            height: 600vh;
+        }
+
+        /* Sections */
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+        }
+
+        .section-content {
+            max-width: 500px;
+        }
+
+        .section-content h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--brand-400), #4FC3F7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-content p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 24px;
+        }
+
+        /* Interactive Controls Grid */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        /* Slider Styling */
+        .slider-group {
+            margin-bottom: 20px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .slider-value {
+            color: var(--brand-400);
+            font-weight: 600;
+        }
+
+        .slider {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--brand-500);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+
+        /* Input Field */
+        .glass-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: #e4e4e7;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .glass-input:focus {
+            border-color: var(--brand-500);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .glass-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* HUD */
+        .hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .hud-row { display: flex; gap: 8px; margin-bottom: 4px; }
+        .hud-label { color: rgba(139, 92, 246, 0.6); }
+        .hud-value { color: var(--brand-400); }
+
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--brand-600), var(--brand-400), #4FC3F7);
+            width: 0%;
+            z-index: 1000;
+        }
+
+        /* Glitch Hover Effect */
+        .glitch-hover:hover {
+            animation: glitchAnim 0.3s infinite;
+        }
+
+        @keyframes glitchAnim {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        /* Holo Reveal Animation */
+        @keyframes holoReveal {
+            0% {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+                clip-path: inset(0 100% 0 0);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+                clip-path: inset(0 0 0 0);
+            }
+        }
+
+        .holo-reveal {
+            animation: holoReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Alternating section positions */
+        .section:nth-child(odd) { justify-content: flex-start; }
+        .section:nth-child(even) { justify-content: flex-end; }
+    </style>
+</head>
+<body>
+
+    <canvas id="visualizer"></canvas>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- HUD -->
+    <div class="hud">
+        <div class="hud-row">
+            <span class="hud-label">SCROLL:</span>
+            <span class="hud-value" id="hudScroll">0.00</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-label">DENSITY:</span>
+            <span class="hud-value" id="hudDensity">2.00</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-label">INTERACTION:</span>
+            <span class="hud-value" id="hudInteraction">IDLE</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-label">HUE:</span>
+            <span class="hud-value" id="hudHue">200°</span>
+        </div>
+    </div>
+
+    <!-- Scroll Content -->
+    <div class="scroll-container" id="scrollContainer">
+
+        <!-- Section 1: Introduction -->
+        <section class="section">
+            <div class="section-content glass-panel" style="padding: 40px;">
+                <h2>Quantum Flux Engine</h2>
+                <p>This is the EXACT JusDNCE visualizer implementation.
+                   KIFS Raymarching with tetrahedral fractal geometry.</p>
+                <p>Watch the fog clear as you interact. This is
+                   <strong>Inverse Density</strong> - idle shows quantum foam,
+                   interaction reveals the crystal structure.</p>
+                <div class="controls-grid">
+                    <button class="glass-button primary" onclick="triggerInteraction('click')">Pulse</button>
+                    <button class="glass-button" onclick="triggerInteraction('burst')">Burst</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Interaction Demo -->
+        <section class="section">
+            <div class="section-content glass-panel" style="padding: 40px;">
+                <h2>UI Reactivity</h2>
+                <p>Every button, input, and slider triggers the visualizer.
+                   Type in the field below to see keystroke reactions.</p>
+                <input type="text" class="glass-input" id="textInput"
+                       placeholder="Type here to trigger impulses..."
+                       style="margin-bottom: 20px;">
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Chaos Intensity</span>
+                        <span class="slider-value" id="chaosValue">0.50</span>
+                    </div>
+                    <input type="range" class="slider" id="chaosSlider"
+                           min="0" max="100" value="50">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Speed</span>
+                        <span class="slider-value" id="speedValue">0.10</span>
+                    </div>
+                    <input type="range" class="slider" id="speedSlider"
+                           min="1" max="100" value="10">
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Color Control -->
+        <section class="section">
+            <div class="section-content glass-panel" style="padding: 40px;">
+                <h2>Spectral Control</h2>
+                <p>The visualizer supports full spectrum control.
+                   These buttons dispatch color-shift events.</p>
+                <div class="controls-grid">
+                    <button class="glass-button" onclick="shiftColor(200)" style="color: #4FC3F7;">Cyan</button>
+                    <button class="glass-button" onclick="shiftColor(280)" style="color: #a78bfa;">Purple</button>
+                    <button class="glass-button" onclick="shiftColor(40)" style="color: #fbbf24;">Gold</button>
+                    <button class="glass-button" onclick="shiftColor(340)" style="color: #f472b6;">Pink</button>
+                </div>
+                <div class="slider-group" style="margin-top: 24px;">
+                    <div class="slider-label">
+                        <span>Hue Rotation</span>
+                        <span class="slider-value" id="hueValue">200°</span>
+                    </div>
+                    <input type="range" class="slider" id="hueSlider"
+                           min="0" max="360" value="200">
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Audio Simulation -->
+        <section class="section">
+            <div class="section-content glass-panel" style="padding: 40px;">
+                <h2>Audio Reactivity</h2>
+                <p>The shader responds to bass, mid, and high frequencies.
+                   Simulate audio input to see the effects.</p>
+                <div class="controls-grid">
+                    <button class="glass-button" onclick="simulateAudio('bass')">Bass Pulse</button>
+                    <button class="glass-button" onclick="simulateAudio('mid')">Mid Structure</button>
+                    <button class="glass-button" onclick="simulateAudio('high')">High Sparkle</button>
+                    <button class="glass-button primary" onclick="simulateAudio('all')">Full Drop</button>
+                </div>
+                <p style="margin-top: 20px; font-size: 14px; color: rgba(255,255,255,0.5);">
+                    Bass = Domain warping + specular boost<br>
+                    Mid = Structure breathing + density clear<br>
+                    High = Sparkles + chromatic aberration
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 5: Camera Control -->
+        <section class="section">
+            <div class="section-content glass-panel" style="padding: 40px;">
+                <h2>4D Rotation</h2>
+                <p>Move your mouse to control rotation through hyperspace.
+                   The XZ and YZ planes respond to pointer position.</p>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Camera Dolly</span>
+                        <span class="slider-value" id="cameraValue">0.00</span>
+                    </div>
+                    <input type="range" class="slider" id="cameraSlider"
+                           min="-200" max="200" value="0">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Morph</span>
+                        <span class="slider-value" id="morphValue">0.00</span>
+                    </div>
+                    <input type="range" class="slider" id="morphSlider"
+                           min="0" max="100" value="0">
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Complete -->
+        <section class="section">
+            <div class="section-content glass-panel" style="padding: 40px;">
+                <h2>GSAP Integration</h2>
+                <p>This demo shows how GSAP ScrollTrigger choreographs
+                   all visualizer parameters based on scroll position.</p>
+                <p>The pattern is: Scroll → Progress (0-1) → Parameter Targets
+                   → Smooth LERP → Shader Uniforms → Render</p>
+                <button class="glass-button primary" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+                    Return to Top
+                </button>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+    // ============================================================================
+    // QUANTUM FLUX VISUALIZER ENGINE v4.2 - EXACT JUSDNCE IMPLEMENTATION
+    // Direct port from /tmp/JusDNCE-core2/components/Visualizer/HolographicVisualizer.ts
+    // ============================================================================
+
+    const canvas = document.getElementById('visualizer');
+    const gl = canvas.getContext('webgl', {
+        preserveDrawingBuffer: true,
+        alpha: false,
+        antialias: true
+    });
+
+    if (!gl) {
+        console.error('WebGL not supported');
+        document.body.innerHTML = '<h1 style="color:#fff;text-align:center;padding:100px">WebGL Required</h1>';
+    }
+
+    // ==========================================================================
+    // EXACT JUSDNCE SHADERS
+    // ==========================================================================
+
+    const VERTEX_SHADER = `
+        attribute vec2 a_position;
+        void main() {
+            gl_Position = vec4(a_position, 0.0, 1.0);
+        }
+    `;
+
+    // This is the EXACT fragment shader from JusDNCE HolographicVisualizer.ts
+    const FRAGMENT_SHADER = `
+        precision highp float;
+
+        uniform vec2 u_resolution;
+        uniform float u_time;
+        uniform vec2 u_mouse;
+
+        // Params
+        uniform float u_geometryType;
+        uniform float u_density;
+        uniform float u_speed;
+        uniform vec3 u_color;
+        uniform float u_intensity;
+        uniform float u_chaos;
+        uniform float u_morph;
+        uniform float u_cameraZ;
+
+        // Audio
+        uniform float u_audioBass;
+        uniform float u_audioMid;
+        uniform float u_audioHigh;
+
+        #define MAX_STEPS 80
+        #define MAX_DIST 15.0
+        #define SURF_DIST 0.001
+
+        // --- MATH UTILS ---
+        mat2 rot(float a) {
+            float s = sin(a);
+            float c = cos(a);
+            return mat2(c, -s, s, c);
+        }
+
+        // Pseudo-random hash for sparkles
+        float hash(vec3 p) {
+            p = fract(p * 0.3183099 + 0.1);
+            p *= 17.0;
+            return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+        }
+
+        // --- KIFS (Kaleidoscopic IFS) FRACTAL ---
+        float sdQuantumFractal(vec3 p) {
+            float s = 1.0;
+
+            // REACTIVITY: Bass affects scale (Pulse), Mids affect structure (Breathing)
+            float scale = 1.5 + (u_audioBass * 0.2) + (u_audioMid * 0.05);
+
+            // REACTIVITY: Mids shift the fractal offset, changing internal geometry
+            vec3 offset = vec3(1.0, 1.0, 1.0) * (0.8 + u_morph + (u_audioMid * 0.15));
+
+            // Interaction Rotation (4D Spin)
+            // REACTIVITY: Highs add jitter/vibration to rotation
+            float jitter = u_audioHigh * 0.1;
+            p.xz *= rot(u_time * 0.1 + u_mouse.x * 2.0 + jitter);
+            p.yz *= rot(u_mouse.y * 2.0 - jitter);
+
+            // Fold Iterations
+            for(int i = 0; i < 5; i++) {
+                p = abs(p); // Fold space
+                if(p.x < p.y) p.xy = p.yx;
+                if(p.x < p.z) p.xz = p.zx;
+                if(p.y < p.z) p.yz = p.zy;
+
+                // Tetrahedral Symmetry
+                p.z -= offset.z * 0.5;
+                p.z = -abs(p.z);
+                p.z += offset.z * 0.5;
+
+                p = p * scale - offset * (scale - 1.0);
+                s *= scale;
+
+                // Add chaos twist on deeper levels
+                // REACTIVITY: Chaos increases with energy
+                if (i > 2) {
+                    p.xy *= rot(u_chaos + (u_audioHigh * 0.3));
+                }
+            }
+
+            // Distance to fractal surface
+            return length(p) / s;
+        }
+
+        // --- SCENE MAP ---
+        float GetDist(vec3 p) {
+            // REACTIVITY: Bass warps the domain significantly (Shockwave)
+            float warp = sin(p.y * 4.0 + u_time * 2.0) * (u_audioBass * 0.15);
+            p.z += warp;
+            p.x += sin(p.z * 3.0) * (u_audioBass * 0.08);
+
+            float d = sdQuantumFractal(p);
+            return d;
+        }
+
+        // --- RAYMARCHER ---
+        float RayMarch(vec3 ro, vec3 rd) {
+            float dO = 0.0;
+
+            for(int i = 0; i < MAX_STEPS; i++) {
+                vec3 p = ro + rd * dO;
+                float dS = GetDist(p);
+
+                // Volumetric Density Accumulation logic
+                dO += dS * 0.7; // Lower step size = denser fog
+
+                if(dO > MAX_DIST || abs(dS) < SURF_DIST) break;
+            }
+            return dO;
+        }
+
+        void main() {
+            vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
+
+            // CAMERA LOGIC with Dolly Zoom support
+            float baseZ = -2.8;
+            vec3 ro = vec3(0.0, 0.0, baseZ + u_cameraZ);
+            vec3 rd = normalize(vec3(uv, 1.0));
+
+            // Raymarch
+            float d = RayMarch(ro, rd);
+
+            vec3 col = vec3(0.0);
+
+            // QUANTUM COLORING
+            if(d < MAX_DIST) {
+                vec3 p = ro + rd * d;
+
+                // Facet Normals (Approx)
+                vec2 e = vec2(0.01, 0.0);
+                vec3 n = normalize(vec3(
+                    GetDist(p + e.xyy) - GetDist(p - e.xyy),
+                    GetDist(p + e.yxy) - GetDist(p - e.yxy),
+                    GetDist(p + e.yyx) - GetDist(p - e.yyx)
+                ));
+
+                // Iridescence based on normal and view angle
+                float fresnel = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
+
+                // REACTIVITY: Highs shift the base color (Spectral Shimmer)
+                vec3 tint = u_color + (vec3(u_audioHigh) * 0.4);
+                col = tint + (n * 0.1);
+
+                // Add Highlight (Gold/White)
+                // REACTIVITY: Bass boosts specular highlights massively
+                float shine = 2.0 + (u_audioBass * 6.0);
+                col += vec3(1.0, 0.95, 0.8) * fresnel * shine;
+
+                // Facet Edges
+                // REACTIVITY: Mids make edges sharper/brighter
+                float edgeWidth = 0.05 + (u_audioMid * 0.08);
+                float edge = smoothstep(edgeWidth, 0.0, GetDist(p + n * 0.02));
+                col += vec3(0.0, 1.0, 1.0) * edge * (1.0 + u_audioHigh * 2.0);
+
+                // Chromatic Aberration at edges based on Highs
+                col.r += u_audioHigh * 0.2 * fresnel;
+                col.b -= u_audioHigh * 0.2 * fresnel;
+            }
+
+            // QUANTUM FOAM (Volumetric Glow)
+            float glow = 0.0;
+
+            // Sample SDF at intervals
+            float samp = 0.0;
+            for(int i = 0; i < 5; i++) {
+                vec3 p = ro + rd * (samp + 0.5);
+                float dist = GetDist(p);
+                float fog = 1.0 / (1.0 + abs(dist) * 20.0);
+
+                // SPARKLES: High frequencies create energetic points in the fog
+                float sparkleNoise = hash(p * 20.0 + u_time * 2.0);
+                float sparkle = step(0.95, sparkleNoise) * u_audioHigh * 3.0;
+
+                glow += fog + sparkle;
+                samp += 0.5;
+            }
+
+            // REACTIVITY: Inverse Density (Structure Reveal)
+            // Music clears the thick fog, but energizes the remaining light
+            float audioClear = u_audioMid * 1.5;
+            float finalDensity = max(0.2, u_density - audioClear);
+
+            glow *= finalDensity;
+
+            // REACTIVITY: Bass drives the global intensity of the glow
+            col += u_color * glow * u_intensity * (0.6 + u_audioBass * 0.8);
+
+            // Audio Flash (Global brightness kick on bass)
+            col += u_color * u_audioBass * 0.15;
+
+            // Final Tone Mapping
+            col = pow(col, vec3(0.4545)); // Gamma correction
+
+            // Vignette
+            col *= 1.0 - length(uv) * 0.5;
+
+            gl_FragColor = vec4(col, 1.0);
+        }
+    `;
+
+    // ==========================================================================
+    // WEBGL SETUP
+    // ==========================================================================
+
+    function createShader(type, source) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            console.error('Shader error:', gl.getShaderInfoLog(shader));
+            return null;
+        }
+        return shader;
+    }
+
+    const vertexShader = createShader(gl.VERTEX_SHADER, VERTEX_SHADER);
+    const fragmentShader = createShader(gl.FRAGMENT_SHADER, FRAGMENT_SHADER);
+
+    const program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+
+    // Geometry
+    const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+    gl.useProgram(program);
+    const positionLocation = gl.getAttribLocation(program, 'a_position');
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+    // Uniforms
+    const uniforms = {
+        resolution: gl.getUniformLocation(program, 'u_resolution'),
+        time: gl.getUniformLocation(program, 'u_time'),
+        mouse: gl.getUniformLocation(program, 'u_mouse'),
+        density: gl.getUniformLocation(program, 'u_density'),
+        speed: gl.getUniformLocation(program, 'u_speed'),
+        color: gl.getUniformLocation(program, 'u_color'),
+        intensity: gl.getUniformLocation(program, 'u_intensity'),
+        chaos: gl.getUniformLocation(program, 'u_chaos'),
+        morph: gl.getUniformLocation(program, 'u_morph'),
+        cameraZ: gl.getUniformLocation(program, 'u_cameraZ'),
+        audioBass: gl.getUniformLocation(program, 'u_audioBass'),
+        audioMid: gl.getUniformLocation(program, 'u_audioMid'),
+        audioHigh: gl.getUniformLocation(program, 'u_audioHigh')
+    };
+
+    // ==========================================================================
+    // VISUALIZER STATE (Exact JusDNCE Pattern)
+    // ==========================================================================
+
+    const params = {
+        hue: 200,
+        saturation: 0.8,
+        intensity: 0.6,
+        geometryType: 0,
+        speed: 0.1,
+        chaos: 0.5,
+        morph: 0.0,
+        density: 2.0, // High density by default (Fog/Foam)
+        cameraZ: 0.0
+    };
+
+    const currentParams = { ...params };
+
+    const audioData = {
+        bass: 0,
+        mid: 0,
+        high: 0,
+        energy: 0
+    };
+
+    const targetAudio = { ...audioData };
+
+    const interactionState = {
+        isActive: 0.0, // 0 = Idle, 1 = Interacting
+        lastActivity: 0
+    };
+
+    const mouse = { x: 0, y: 0 };
+    const targetMouse = { x: 0, y: 0 };
+
+    const startTime = Date.now();
+
+    // ==========================================================================
+    // INTERACTION HANDLERS (JusDNCE Pattern)
+    // ==========================================================================
+
+    function triggerInteraction(type) {
+        interactionState.isActive = 1.0;
+        interactionState.lastActivity = Date.now();
+
+        // Dispatch custom event (JusDNCE pattern)
+        window.dispatchEvent(new CustomEvent('ui-interaction', {
+            detail: { type }
+        }));
+
+        // Also trigger audio simulation for visual feedback
+        if (type === 'burst') {
+            targetAudio.bass = 0.8;
+            targetAudio.mid = 0.6;
+            targetAudio.high = 0.9;
+        } else {
+            targetAudio.bass = 0.5;
+            targetAudio.mid = 0.3;
+        }
+    }
+
+    function shiftColor(hue) {
+        params.hue = hue;
+        triggerInteraction('color');
+
+        // Dispatch color-shift event (JusDNCE pattern)
+        window.dispatchEvent(new CustomEvent('color-shift', {
+            detail: { hue }
+        }));
+    }
+
+    function simulateAudio(type) {
+        interactionState.isActive = 1.0;
+        interactionState.lastActivity = Date.now();
+
+        if (type === 'bass') {
+            targetAudio.bass = 1.0;
+        } else if (type === 'mid') {
+            targetAudio.mid = 1.0;
+        } else if (type === 'high') {
+            targetAudio.high = 1.0;
+        } else if (type === 'all') {
+            targetAudio.bass = 1.0;
+            targetAudio.mid = 1.0;
+            targetAudio.high = 1.0;
+        }
+    }
+
+    // Mouse movement
+    window.addEventListener('mousemove', (e) => {
+        targetMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        targetMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+        interactionState.isActive = 1.0;
+        interactionState.lastActivity = Date.now();
+    });
+
+    window.addEventListener('touchmove', (e) => {
+        if (e.touches[0]) {
+            targetMouse.x = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+            targetMouse.y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+        }
+        interactionState.isActive = 1.0;
+        interactionState.lastActivity = Date.now();
+    });
+
+    // Input handlers
+    document.getElementById('textInput').addEventListener('input', () => {
+        triggerInteraction('keystroke');
+        targetAudio.high = 0.4;
+    });
+
+    document.getElementById('textInput').addEventListener('focus', () => {
+        triggerInteraction('focus');
+    });
+
+    document.getElementById('chaosSlider').addEventListener('input', (e) => {
+        params.chaos = e.target.value / 100;
+        document.getElementById('chaosValue').textContent = params.chaos.toFixed(2);
+        triggerInteraction('slider');
+    });
+
+    document.getElementById('speedSlider').addEventListener('input', (e) => {
+        params.speed = e.target.value / 100;
+        document.getElementById('speedValue').textContent = params.speed.toFixed(2);
+        triggerInteraction('slider');
+    });
+
+    document.getElementById('hueSlider').addEventListener('input', (e) => {
+        params.hue = parseInt(e.target.value);
+        document.getElementById('hueValue').textContent = params.hue + '°';
+        triggerInteraction('slider');
+    });
+
+    document.getElementById('cameraSlider').addEventListener('input', (e) => {
+        params.cameraZ = e.target.value / 100;
+        document.getElementById('cameraValue').textContent = params.cameraZ.toFixed(2);
+        triggerInteraction('slider');
+    });
+
+    document.getElementById('morphSlider').addEventListener('input', (e) => {
+        params.morph = e.target.value / 100;
+        document.getElementById('morphValue').textContent = params.morph.toFixed(2);
+        triggerInteraction('slider');
+    });
+
+    // ==========================================================================
+    // GSAP SCROLL CHOREOGRAPHY
+    // ==========================================================================
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    ScrollTrigger.create({
+        trigger: '#scrollContainer',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.5,
+        onUpdate: (self) => {
+            // Update HUD
+            document.getElementById('hudScroll').textContent = self.progress.toFixed(2);
+            document.getElementById('progressBar').style.width = (self.progress * 100) + '%';
+
+            // Hue rotation through scroll
+            const scrollHue = 200 + self.progress * 160;
+            params.hue = scrollHue;
+            document.getElementById('hudHue').textContent = Math.round(scrollHue) + '°';
+
+            // Chaos wave
+            params.chaos = 0.3 + Math.sin(self.progress * Math.PI * 2) * 0.4;
+        }
+    });
+
+    // Section animations
+    document.querySelectorAll('.section-content').forEach((content, index) => {
+        gsap.fromTo(content,
+            { opacity: 0, y: 30, scale: 0.98 },
+            {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                duration: 0.6,
+                ease: 'power2.out',
+                scrollTrigger: {
+                    trigger: content.closest('.section'),
+                    start: 'top 70%',
+                    end: 'top 30%',
+                    scrub: 0.3,
+                    onEnter: () => triggerInteraction('section')
+                }
+            }
+        );
+    });
+
+    // ==========================================================================
+    // RESIZE
+    // ==========================================================================
+
+    function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        canvas.width = Math.floor(window.innerWidth * dpr);
+        canvas.height = Math.floor(window.innerHeight * dpr);
+        canvas.style.width = window.innerWidth + 'px';
+        canvas.style.height = window.innerHeight + 'px';
+        gl.viewport(0, 0, canvas.width, canvas.height);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ==========================================================================
+    // RENDER LOOP (Exact JusDNCE Pattern)
+    // ==========================================================================
+
+    function hslToRgb(h, s, l) {
+        h = h / 360;
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        };
+        return {
+            r: hue2rgb(p, q, h + 1/3),
+            g: hue2rgb(p, q, h),
+            b: hue2rgb(p, q, h - 1/3)
+        };
+    }
+
+    function lerp(a, b, t) {
+        return a * (1 - t) + b * t;
+    }
+
+    function render() {
+        const time = (Date.now() - startTime) / 1000;
+
+        // Mouse smoothing
+        mouse.x += (targetMouse.x - mouse.x) * 0.1;
+        mouse.y += (targetMouse.y - mouse.y) * 0.1;
+
+        // Audio decay
+        targetAudio.bass *= 0.92;
+        targetAudio.mid *= 0.94;
+        targetAudio.high *= 0.9;
+
+        audioData.bass = lerp(audioData.bass, targetAudio.bass, 0.2);
+        audioData.mid = lerp(audioData.mid, targetAudio.mid, 0.2);
+        audioData.high = lerp(audioData.high, targetAudio.high, 0.2);
+
+        // --- INVERSE DENSITY LOGIC (Exact JusDNCE Pattern) ---
+        // If inactive for > 1 second, start decaying interaction state
+        if (Date.now() - interactionState.lastActivity > 1000) {
+            interactionState.isActive *= 0.95; // Slow decay back to idle
+        }
+
+        // Idle = High Density (2.5), Interaction = Low Density (0.4)
+        const targetDensity = lerp(2.5, 0.4, interactionState.isActive);
+        currentParams.density = lerp(currentParams.density, targetDensity, 0.05);
+
+        // Update HUD
+        document.getElementById('hudDensity').textContent = currentParams.density.toFixed(2);
+        document.getElementById('hudInteraction').textContent =
+            interactionState.isActive > 0.5 ? 'ACTIVE' : 'IDLE';
+
+        // Lerp other params
+        const t = 0.05;
+        currentParams.chaos = lerp(currentParams.chaos, params.chaos, t);
+        currentParams.speed = lerp(currentParams.speed, params.speed, t);
+        currentParams.intensity = lerp(currentParams.intensity, params.intensity, t);
+        currentParams.morph = lerp(currentParams.morph, params.morph, t);
+        currentParams.cameraZ = lerp(currentParams.cameraZ, params.cameraZ, t);
+        currentParams.hue = lerp(currentParams.hue, params.hue, t);
+
+        // Convert hue to RGB
+        const rgb = hslToRgb(currentParams.hue, currentParams.saturation, 0.6);
+
+        // Set uniforms
+        gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
+        gl.uniform1f(uniforms.time, time * currentParams.speed);
+        gl.uniform2f(uniforms.mouse, mouse.x, mouse.y);
+
+        gl.uniform1f(uniforms.density, currentParams.density);
+        gl.uniform1f(uniforms.speed, currentParams.speed);
+        gl.uniform3f(uniforms.color, rgb.r, rgb.g, rgb.b);
+        gl.uniform1f(uniforms.intensity, currentParams.intensity);
+        gl.uniform1f(uniforms.chaos, currentParams.chaos);
+        gl.uniform1f(uniforms.morph, currentParams.morph);
+        gl.uniform1f(uniforms.cameraZ, currentParams.cameraZ);
+
+        gl.uniform1f(uniforms.audioBass, audioData.bass);
+        gl.uniform1f(uniforms.audioMid, audioData.mid);
+        gl.uniform1f(uniforms.audioHigh, audioData.high);
+
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        requestAnimationFrame(render);
+    }
+
+    render();
+
+    // ==========================================================================
+    // API
+    // ==========================================================================
+
+    window.QuantumVisualizer = {
+        params,
+        currentParams,
+        audioData,
+        targetAudio,
+        interactionState,
+        triggerInteraction,
+        shiftColor,
+        simulateAudio
+    };
+
+    console.log('%c[QuantumVisualizer] JusDNCE EXACT v4.2 Initialized', 'color: #a78bfa; font-weight: bold');
+    console.log('API: window.QuantumVisualizer');
+
+    </script>
+
+    <!--
+    ════════════════════════════════════════════════════════════════════════════
+    EXACT JusDNCE Quantum Flux Visualizer Implementation
+    Ported directly from: JusDNCE-core2/components/Visualizer/HolographicVisualizer.ts
+
+    This is NOT a simplified version. This uses:
+    - The EXACT KIFS shader with tetrahedral folding
+    - The EXACT audio reactivity (bass=pulse, mid=structure, high=sparkles)
+    - The EXACT inverse density system (fog clears on interaction)
+    - The EXACT mouse 4D rotation
+    - The EXACT domain warping from bass
+    - The EXACT sparkle generation from hash function
+    - The EXACT chromatic aberration
+
+    UI Patterns from GlobalBackground.tsx:
+    - ui-interaction custom event dispatching
+    - color-shift custom event dispatching
+    - Interaction state decay (1 second timeout)
+    - Density lerping (2.5 → 0.4)
+
+    GSAP Integration:
+    - ScrollTrigger scrub choreography
+    - Section entrance triggers
+
+    Author: Paul Phillips
+    © 2025 Clear Seas Solutions LLC
+
+    "The Revolution Will Not be in a Structured Format"
+    ════════════════════════════════════════════════════════════════════════════
+    -->
+</body>
+</html>
