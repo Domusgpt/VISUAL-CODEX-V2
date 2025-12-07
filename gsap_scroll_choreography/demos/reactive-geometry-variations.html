@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reactive Geometry Variations - Visual Codex</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .variation-section {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .variation-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .variation-description {
+            max-width: 600px;
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 2rem;
+            z-index: 10;
+        }
+
+        .canvas-container {
+            width: 80vw;
+            max-width: 800px;
+            height: 60vh;
+            position: relative;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .canvas-container canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 1rem;
+            z-index: 10;
+        }
+
+        .control-btn {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(135deg, #8B7AB8, #5BA3DA);
+            border-color: transparent;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .slider-group label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .slider-group input[type="range"] {
+            width: 150px;
+            accent-color: #8B7AB8;
+        }
+
+        /* Variation-specific styles */
+        .variation-1 { background: linear-gradient(135deg, #0a0a15, #1a1a35); }
+        .variation-2 { background: linear-gradient(135deg, #150a0a, #351a1a); }
+        .variation-3 { background: linear-gradient(135deg, #0a150a, #1a351a); }
+        .variation-4 { background: linear-gradient(135deg, #0f0a15, #2a1a35); }
+
+        .nav-dots {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-dot:hover,
+        .nav-dot.active {
+            background: #8B7AB8;
+            transform: scale(1.3);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Dots -->
+    <nav class="nav-dots">
+        <div class="nav-dot active" data-section="0"></div>
+        <div class="nav-dot" data-section="1"></div>
+        <div class="nav-dot" data-section="2"></div>
+        <div class="nav-dot" data-section="3"></div>
+    </nav>
+
+    <!-- ===================================================
+         VARIATION 1: Button-Triggered Morphing
+         Use case: Product configurator, theme selector
+         =================================================== -->
+    <section class="variation-section variation-1" id="variation-1">
+        <h2 class="variation-title">Variation 1: Button-Triggered Morphing</h2>
+        <p class="variation-description">
+            Click buttons to trigger geometry changes. Useful for product configurators,
+            theme selectors, or any UI where discrete selections change the visual.
+        </p>
+
+        <div class="canvas-container">
+            <canvas id="canvas-1"></canvas>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn active" data-geometry="0">Hypercube</button>
+            <button class="control-btn" data-geometry="1">Torus</button>
+            <button class="control-btn" data-geometry="2">Octahedron</button>
+            <button class="control-btn" data-geometry="3">Sphere</button>
+            <button class="control-btn" data-geometry="4">Fractal</button>
+        </div>
+    </section>
+
+    <!-- ===================================================
+         VARIATION 2: Slider-Driven Parameters
+         Use case: Audio visualizer controls, settings panel
+         =================================================== -->
+    <section class="variation-section variation-2" id="variation-2">
+        <h2 class="variation-title">Variation 2: Slider-Driven Parameters</h2>
+        <p class="variation-description">
+            Use sliders to continuously adjust visualization parameters.
+            Perfect for audio visualizer settings or creative tool controls.
+        </p>
+
+        <div class="canvas-container">
+            <canvas id="canvas-2"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="slider-group">
+                <label>Chaos</label>
+                <input type="range" id="chaos-slider" min="0" max="100" value="30">
+            </div>
+            <div class="slider-group">
+                <label>Speed</label>
+                <input type="range" id="speed-slider" min="0" max="100" value="50">
+            </div>
+            <div class="slider-group">
+                <label>Density</label>
+                <input type="range" id="density-slider" min="0" max="100" value="40">
+            </div>
+            <div class="slider-group">
+                <label>Hue</label>
+                <input type="range" id="hue-slider" min="0" max="360" value="180">
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================
+         VARIATION 3: Hover-Reactive Cards
+         Use case: Portfolio gallery, feature showcase
+         =================================================== -->
+    <section class="variation-section variation-3" id="variation-3">
+        <h2 class="variation-title">Variation 3: Hover-Reactive Cards</h2>
+        <p class="variation-description">
+            Hover over cards to smoothly morph the geometry. Great for portfolios
+            where each item has a unique visual signature.
+        </p>
+
+        <div class="canvas-container">
+            <canvas id="canvas-3"></canvas>
+        </div>
+
+        <div class="controls" id="hover-cards">
+            <div class="control-btn hover-card" data-morph="0" style="background: linear-gradient(135deg, #C72C35, #E97132);">Fire</div>
+            <div class="control-btn hover-card" data-morph="1" style="background: linear-gradient(135deg, #5BA3DA, #65B891);">Water</div>
+            <div class="control-btn hover-card" data-morph="2" style="background: linear-gradient(135deg, #F5C645, #E97132);">Earth</div>
+            <div class="control-btn hover-card" data-morph="3" style="background: linear-gradient(135deg, #8B7AB8, #E6C7EB);">Air</div>
+        </div>
+    </section>
+
+    <!-- ===================================================
+         VARIATION 4: Scroll-Driven Journey
+         Use case: Storytelling, landing page hero
+         =================================================== -->
+    <section class="variation-section variation-4" id="variation-4" style="height: 300vh;">
+        <h2 class="variation-title" style="position: sticky; top: 2rem;">Variation 4: Scroll-Driven Journey</h2>
+        <p class="variation-description" style="position: sticky; top: 5rem;">
+            Scroll to morph the geometry through a journey. Perfect for
+            storytelling or landing page heroes.
+        </p>
+
+        <div class="canvas-container" style="position: sticky; top: 20vh;">
+            <canvas id="canvas-4"></canvas>
+        </div>
+
+        <div style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); font-family: monospace; color: rgba(255,255,255,0.5);">
+            Scroll Progress: <span id="scroll-progress">0%</span>
+        </div>
+    </section>
+
+    <script>
+    /**
+     * =====================================================
+     * REACTIVE GEOMETRY VARIATIONS
+     * 4 different use cases for the reactive GSAP pattern
+     * =====================================================
+     */
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // =====================================================
+    // BASE SHADER (simplified for variations)
+    // =====================================================
+    const vertexShader = `
+        attribute vec2 a_position;
+        void main() {
+            gl_Position = vec4(a_position, 0.0, 1.0);
+        }
+    `;
+
+    function getFragmentShader(colorScheme = 'chakra') {
+        const colorFunctions = {
+            chakra: `
+                vec3 getColor(float t) {
+                    t = mod(t, 7.0);
+                    if (t < 1.0) return mix(vec3(0.78, 0.17, 0.21), vec3(0.91, 0.44, 0.20), fract(t));
+                    else if (t < 2.0) return mix(vec3(0.91, 0.44, 0.20), vec3(0.96, 0.78, 0.27), fract(t));
+                    else if (t < 3.0) return mix(vec3(0.96, 0.78, 0.27), vec3(0.40, 0.72, 0.57), fract(t));
+                    else if (t < 4.0) return mix(vec3(0.40, 0.72, 0.57), vec3(0.36, 0.64, 0.85), fract(t));
+                    else if (t < 5.0) return mix(vec3(0.36, 0.64, 0.85), vec3(0.55, 0.48, 0.72), fract(t));
+                    else return mix(vec3(0.55, 0.48, 0.72), vec3(0.90, 0.78, 0.92), fract(t));
+                }
+            `,
+            fire: `
+                vec3 getColor(float t) {
+                    return mix(vec3(0.8, 0.2, 0.1), vec3(1.0, 0.8, 0.2), sin(t * 3.14159) * 0.5 + 0.5);
+                }
+            `,
+            water: `
+                vec3 getColor(float t) {
+                    return mix(vec3(0.1, 0.3, 0.6), vec3(0.2, 0.8, 0.7), sin(t * 3.14159) * 0.5 + 0.5);
+                }
+            `,
+            earth: `
+                vec3 getColor(float t) {
+                    return mix(vec3(0.4, 0.3, 0.2), vec3(0.8, 0.6, 0.3), sin(t * 3.14159) * 0.5 + 0.5);
+                }
+            `,
+            air: `
+                vec3 getColor(float t) {
+                    return mix(vec3(0.5, 0.4, 0.7), vec3(0.9, 0.8, 0.95), sin(t * 3.14159) * 0.5 + 0.5);
+                }
+            `,
+            custom: `
+                vec3 getColor(float t) {
+                    float h = u_hue / 360.0;
+                    float s = 0.7;
+                    float v = 0.9;
+                    vec3 c = vec3(h, s, v);
+                    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+                    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+                    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+                }
+            `
+        };
+
+        return `
+            precision highp float;
+
+            uniform vec2 u_resolution;
+            uniform float u_time;
+            uniform vec2 u_mouse;
+            uniform float u_geometry;
+            uniform float u_chaos;
+            uniform float u_speed;
+            uniform float u_density;
+            uniform float u_hue;
+            uniform float u_morph;
+
+            ${colorFunctions[colorScheme] || colorFunctions.chakra}
+
+            mat4 rotateXW(float theta) {
+                float c = cos(theta);
+                float s = sin(theta);
+                return mat4(c, 0, 0, -s, 0, 1, 0, 0, 0, 0, 1, 0, s, 0, 0, c);
+            }
+
+            mat4 rotateYW(float theta) {
+                float c = cos(theta);
+                float s = sin(theta);
+                return mat4(1, 0, 0, 0, 0, c, 0, -s, 0, 0, 1, 0, 0, s, 0, c);
+            }
+
+            vec3 project4D(vec4 p) {
+                float w = 2.5 / (2.5 + p.w);
+                return vec3(p.xyz * w);
+            }
+
+            float sdTorus(vec3 p, vec2 t) {
+                vec2 q = vec2(length(p.xz) - t.x, p.y);
+                return length(q) - t.y;
+            }
+
+            float sdSphere(vec3 p, float r) {
+                return length(p) - r;
+            }
+
+            float sdBox(vec3 p, vec3 b) {
+                vec3 d = abs(p) - b;
+                return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
+            }
+
+            float sdOctahedron(vec3 p, float s) {
+                p = abs(p);
+                return (p.x + p.y + p.z - s) * 0.57735027;
+            }
+
+            float hash(float n) {
+                return fract(sin(n) * 43758.5453123);
+            }
+
+            float noise(vec2 p) {
+                vec2 i = floor(p);
+                vec2 f = fract(p);
+                f = f * f * (3.0 - 2.0 * f);
+                float a = hash(i.x + i.y * 57.0);
+                float b = hash(i.x + 1.0 + i.y * 57.0);
+                float c = hash(i.x + (i.y + 1.0) * 57.0);
+                float d = hash(i.x + 1.0 + (i.y + 1.0) * 57.0);
+                return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+            }
+
+            float smin(float a, float b, float k) {
+                float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+                return mix(b, a, h) - k * h * (1.0 - h);
+            }
+
+            float scene(vec3 p) {
+                float time = u_time * 0.0001 * (0.5 + u_speed);
+
+                vec4 p4 = vec4(p, sin(time * 2.0) * 2.0);
+                p4 = rotateXW(time + u_mouse.x) * p4;
+                p4 = rotateYW(time * 0.7 + u_mouse.y) * p4;
+                vec3 p3 = project4D(p4);
+
+                // Chaos distortion
+                float chaosAmount = u_chaos * 0.5;
+                p3 += vec3(
+                    sin(p3.y * 5.0 + time * 3.0) * chaosAmount,
+                    sin(p3.z * 5.0 + time * 2.5) * chaosAmount,
+                    sin(p3.x * 5.0 + time * 1.8) * chaosAmount
+                );
+
+                // Geometry selection with morphing
+                float d1 = sdBox(p3, vec3(1.0));
+                float d2 = sdTorus(p3, vec2(1.5, 0.4));
+                float d3 = sdOctahedron(p3, 1.2);
+                float d4 = sdSphere(p3, 1.0);
+
+                float geom = u_geometry + u_morph;
+                float d;
+                if (geom < 1.0) d = mix(d1, d2, fract(geom));
+                else if (geom < 2.0) d = mix(d2, d3, fract(geom));
+                else if (geom < 3.0) d = mix(d3, d4, fract(geom));
+                else d = mix(d4, d1, fract(geom));
+
+                return d;
+            }
+
+            vec3 calcNormal(vec3 p) {
+                vec2 e = vec2(0.001, 0.0);
+                return normalize(vec3(
+                    scene(p + e.xyy) - scene(p - e.xyy),
+                    scene(p + e.yxy) - scene(p - e.yxy),
+                    scene(p + e.yyx) - scene(p - e.yyx)
+                ));
+            }
+
+            void main() {
+                vec2 uv = (gl_FragCoord.xy - u_resolution * 0.5) / u_resolution.y;
+
+                vec3 ro = vec3(
+                    (u_mouse.x - 0.5) * 2.0,
+                    (u_mouse.y - 0.5) * 2.0,
+                    5.0
+                );
+                vec3 rd = normalize(vec3(uv, -1.5));
+
+                float t = 0.0;
+                vec3 color = vec3(0.0);
+
+                for (int i = 0; i < 60; i++) {
+                    vec3 p = ro + rd * t;
+                    float d = scene(p);
+
+                    if (d < 0.001) {
+                        vec3 normal = calcNormal(p);
+                        float diff = max(dot(normal, normalize(vec3(1, 1, 0.5))), 0.0);
+
+                        float colorIndex = p.y * 2.0 + u_time * 0.001 + u_density;
+                        color = getColor(colorIndex) * (diff * 0.7 + 0.3);
+                        break;
+                    }
+
+                    color += getColor(t * 0.5 + u_time * 0.001) * 0.003 / (1.0 + d * d);
+
+                    if (t > 20.0) break;
+                    t += d * 0.7;
+                }
+
+                // Vignette
+                color *= 1.0 - length(uv) * 0.3;
+
+                // Tone mapping
+                color = color / (color + vec3(1.0));
+                color = pow(color, vec3(1.0 / 2.2));
+
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+    }
+
+    // =====================================================
+    // RENDERER CLASS
+    // =====================================================
+    class VariationRenderer {
+        constructor(canvas, colorScheme = 'chakra') {
+            this.canvas = canvas;
+            this.gl = canvas.getContext('webgl');
+            this.startTime = Date.now();
+
+            this.state = {
+                mouse: { x: 0.5, y: 0.5 },
+                geometry: 0,
+                chaos: 0.3,
+                speed: 0.5,
+                density: 0.4,
+                hue: 180,
+                morph: 0
+            };
+
+            this.initShaders(colorScheme);
+            this.initBuffers();
+            this.resize();
+            this.render();
+        }
+
+        initShaders(colorScheme) {
+            const gl = this.gl;
+
+            const vs = gl.createShader(gl.VERTEX_SHADER);
+            gl.shaderSource(vs, vertexShader);
+            gl.compileShader(vs);
+
+            const fs = gl.createShader(gl.FRAGMENT_SHADER);
+            gl.shaderSource(fs, getFragmentShader(colorScheme));
+            gl.compileShader(fs);
+
+            this.program = gl.createProgram();
+            gl.attachShader(this.program, vs);
+            gl.attachShader(this.program, fs);
+            gl.linkProgram(this.program);
+            gl.useProgram(this.program);
+
+            this.uniforms = {
+                resolution: gl.getUniformLocation(this.program, 'u_resolution'),
+                time: gl.getUniformLocation(this.program, 'u_time'),
+                mouse: gl.getUniformLocation(this.program, 'u_mouse'),
+                geometry: gl.getUniformLocation(this.program, 'u_geometry'),
+                chaos: gl.getUniformLocation(this.program, 'u_chaos'),
+                speed: gl.getUniformLocation(this.program, 'u_speed'),
+                density: gl.getUniformLocation(this.program, 'u_density'),
+                hue: gl.getUniformLocation(this.program, 'u_hue'),
+                morph: gl.getUniformLocation(this.program, 'u_morph')
+            };
+        }
+
+        initBuffers() {
+            const gl = this.gl;
+            const buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+
+            const pos = gl.getAttribLocation(this.program, 'a_position');
+            gl.enableVertexAttribArray(pos);
+            gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+        }
+
+        resize() {
+            const rect = this.canvas.parentElement.getBoundingClientRect();
+            this.canvas.width = rect.width;
+            this.canvas.height = rect.height;
+            this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        }
+
+        render() {
+            const gl = this.gl;
+            const time = Date.now() - this.startTime;
+
+            gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
+            gl.uniform1f(this.uniforms.time, time);
+            gl.uniform2f(this.uniforms.mouse, this.state.mouse.x, this.state.mouse.y);
+            gl.uniform1f(this.uniforms.geometry, this.state.geometry);
+            gl.uniform1f(this.uniforms.chaos, this.state.chaos);
+            gl.uniform1f(this.uniforms.speed, this.state.speed);
+            gl.uniform1f(this.uniforms.density, this.state.density);
+            gl.uniform1f(this.uniforms.hue, this.state.hue);
+            gl.uniform1f(this.uniforms.morph, this.state.morph);
+
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            requestAnimationFrame(() => this.render());
+        }
+    }
+
+    // =====================================================
+    // VARIATION 1: Button-Triggered
+    // =====================================================
+    const renderer1 = new VariationRenderer(document.getElementById('canvas-1'));
+
+    document.querySelectorAll('#variation-1 .control-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const geometry = parseInt(btn.dataset.geometry);
+
+            // Remove active from all
+            document.querySelectorAll('#variation-1 .control-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Animate geometry transition
+            gsap.to(renderer1.state, {
+                geometry: geometry,
+                duration: 0.8,
+                ease: 'power2.out'
+            });
+
+            // Click pulse effect
+            gsap.fromTo(renderer1.state,
+                { chaos: 0.8 },
+                { chaos: 0.3, duration: 0.5, ease: 'power2.out' }
+            );
+        });
+    });
+
+    // Mouse tracking for variation 1
+    document.getElementById('canvas-1').addEventListener('mousemove', (e) => {
+        const rect = e.target.getBoundingClientRect();
+        renderer1.state.mouse.x = (e.clientX - rect.left) / rect.width;
+        renderer1.state.mouse.y = 1 - (e.clientY - rect.top) / rect.height;
+    });
+
+    // =====================================================
+    // VARIATION 2: Slider-Driven
+    // =====================================================
+    const renderer2 = new VariationRenderer(document.getElementById('canvas-2'), 'custom');
+
+    document.getElementById('chaos-slider').addEventListener('input', (e) => {
+        renderer2.state.chaos = e.target.value / 100;
+    });
+
+    document.getElementById('speed-slider').addEventListener('input', (e) => {
+        renderer2.state.speed = e.target.value / 100;
+    });
+
+    document.getElementById('density-slider').addEventListener('input', (e) => {
+        renderer2.state.density = e.target.value / 100;
+    });
+
+    document.getElementById('hue-slider').addEventListener('input', (e) => {
+        renderer2.state.hue = parseFloat(e.target.value);
+    });
+
+    document.getElementById('canvas-2').addEventListener('mousemove', (e) => {
+        const rect = e.target.getBoundingClientRect();
+        renderer2.state.mouse.x = (e.clientX - rect.left) / rect.width;
+        renderer2.state.mouse.y = 1 - (e.clientY - rect.top) / rect.height;
+    });
+
+    // =====================================================
+    // VARIATION 3: Hover-Reactive
+    // =====================================================
+    const colorSchemes = ['fire', 'water', 'earth', 'air'];
+    let currentSchemeIndex = 0;
+    let renderer3 = new VariationRenderer(document.getElementById('canvas-3'), 'fire');
+
+    document.querySelectorAll('.hover-card').forEach((card, index) => {
+        card.addEventListener('mouseenter', () => {
+            // Smooth morph to this geometry
+            gsap.to(renderer3.state, {
+                morph: index * 0.5,
+                duration: 0.5,
+                ease: 'power2.out'
+            });
+        });
+
+        card.addEventListener('mouseleave', () => {
+            gsap.to(renderer3.state, {
+                morph: 0,
+                duration: 0.5,
+                ease: 'power2.out'
+            });
+        });
+    });
+
+    document.getElementById('canvas-3').addEventListener('mousemove', (e) => {
+        const rect = e.target.getBoundingClientRect();
+        renderer3.state.mouse.x = (e.clientX - rect.left) / rect.width;
+        renderer3.state.mouse.y = 1 - (e.clientY - rect.top) / rect.height;
+    });
+
+    // =====================================================
+    // VARIATION 4: Scroll-Driven
+    // =====================================================
+    const renderer4 = new VariationRenderer(document.getElementById('canvas-4'));
+
+    ScrollTrigger.create({
+        trigger: '#variation-4',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 1,
+        onUpdate: (self) => {
+            // Update geometry based on scroll
+            renderer4.state.geometry = self.progress * 4;
+            renderer4.state.density = self.progress * 7; // Color progression
+
+            // Display progress
+            document.getElementById('scroll-progress').textContent =
+                Math.round(self.progress * 100) + '%';
+        }
+    });
+
+    document.getElementById('canvas-4').addEventListener('mousemove', (e) => {
+        const rect = e.target.getBoundingClientRect();
+        renderer4.state.mouse.x = (e.clientX - rect.left) / rect.width;
+        renderer4.state.mouse.y = 1 - (e.clientY - rect.top) / rect.height;
+    });
+
+    // =====================================================
+    // NAVIGATION DOTS
+    // =====================================================
+    document.querySelectorAll('.nav-dot').forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            const section = document.getElementById(`variation-${index + 1}`);
+            gsap.to(window, {
+                scrollTo: section,
+                duration: 1,
+                ease: 'power2.inOut'
+            });
+        });
+    });
+
+    // Update active dot on scroll
+    const sections = document.querySelectorAll('.variation-section');
+    const dots = document.querySelectorAll('.nav-dot');
+
+    window.addEventListener('scroll', () => {
+        let current = 0;
+        sections.forEach((section, index) => {
+            const rect = section.getBoundingClientRect();
+            if (rect.top <= window.innerHeight / 2) {
+                current = index;
+            }
+        });
+
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === current);
+        });
+    });
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+        renderer1.resize();
+        renderer2.resize();
+        renderer3.resize();
+        renderer4.resize();
+    });
+    </script>
+
+    <!--
+    =====================================================
+    REACTIVE GEOMETRY VARIATIONS
+    =====================================================
+
+    4 different use cases demonstrating how to adapt
+    the reactive GSAP geometry pattern:
+
+    1. BUTTON-TRIGGERED MORPHING
+       - Discrete selections change geometry
+       - Use case: Product configurator, theme selector
+       - Key: gsap.to() for smooth geometry transition
+
+    2. SLIDER-DRIVEN PARAMETERS
+       - Continuous adjustment of visualization
+       - Use case: Audio visualizer controls, settings panel
+       - Key: Direct uniform binding to slider values
+
+    3. HOVER-REACTIVE CARDS
+       - Geometry morphs on hover, returns on leave
+       - Use case: Portfolio gallery, feature showcase
+       - Key: mouseenter/mouseleave with GSAP morph
+
+    4. SCROLL-DRIVEN JOURNEY
+       - Scroll progress drives entire visualization
+       - Use case: Storytelling, landing page hero
+       - Key: ScrollTrigger.scrub binds scroll to geometry
+
+    © 2025 Paul Phillips - Clear Seas Solutions LLC
+    =====================================================
+    -->
+</body>
+</html>

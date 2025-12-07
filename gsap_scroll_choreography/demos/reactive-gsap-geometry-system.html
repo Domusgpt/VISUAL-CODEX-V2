@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reactive GSAP Geometry System - Visual Codex</title>
+
+    <!-- GSAP from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <style>
+        /* ===========================================
+           REACTIVE GSAP GEOMETRY SYSTEM
+           Extracted from B-W-Blog-tenplate
+           © Paul Phillips - Clear Seas Solutions LLC
+           =========================================== */
+
+        :root {
+            --chakra-root: #C72C35;
+            --chakra-sacral: #E97132;
+            --chakra-solar: #F5C645;
+            --chakra-heart: #65B891;
+            --chakra-throat: #5BA3DA;
+            --chakra-thirdeye: #8B7AB8;
+            --chakra-crown: #E6C7EB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* WebGL Canvas Container */
+        .webgl-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            mix-blend-mode: screen;
+            opacity: 0.8;
+        }
+
+        /* Services Section */
+        .services-section {
+            min-height: 100vh;
+            padding: 4rem 2rem;
+            position: relative;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, var(--chakra-crown) 0%, var(--chakra-thirdeye) 50%, var(--chakra-throat) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Service Card - Click triggers geometry reaction */
+        .service-card {
+            background: linear-gradient(135deg, rgba(91, 163, 218, 0.1), rgba(91, 163, 218, 0.05));
+            border: 2px solid rgba(91, 163, 218, 0.3);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(91, 163, 218, 0.3);
+        }
+
+        .service-card.active {
+            border-color: var(--chakra-solar);
+            box-shadow: 0 0 40px var(--chakra-solar);
+        }
+
+        .service-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .service-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--chakra-throat);
+        }
+
+        .service-description {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+
+        /* 800vh Morphing Journey Section */
+        .morphing-journey {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .morphing-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            max-width: 800px;
+            padding: 2rem;
+        }
+
+        .morphing-title {
+            font-size: clamp(3rem, 10vw, 6rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 40px currentColor;
+            transition: color 1s ease;
+        }
+
+        .morphing-subtitle {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 300;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+        .morphing-description {
+            font-size: 1.25rem;
+            line-height: 1.7;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(139, 122, 184, 0.2), rgba(139, 122, 184, 0.1));
+            backdrop-filter: blur(20px);
+            border-radius: 1.5rem;
+            border: 2px solid rgba(139, 122, 184, 0.4);
+        }
+
+        /* Progress Indicator */
+        .progress-indicator {
+            position: fixed;
+            right: 2rem;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .progress-fill {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom,
+                var(--chakra-root),
+                var(--chakra-sacral),
+                var(--chakra-solar),
+                var(--chakra-heart),
+                var(--chakra-throat),
+                var(--chakra-thirdeye),
+                var(--chakra-crown)
+            );
+            transform-origin: top;
+            transform: scaleY(0);
+        }
+
+        /* Floating Particles */
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* State Labels */
+        .state-label {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            z-index: 100;
+        }
+
+        /* Documentation Panel */
+        .docs-panel {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            max-width: 400px;
+            font-size: 0.85rem;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .docs-panel h3 {
+            color: var(--chakra-solar);
+            margin-bottom: 0.75rem;
+        }
+
+        .docs-panel p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
+
+        .docs-panel code {
+            background: rgba(139, 122, 184, 0.3);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+        }
+
+        .toggle-docs {
+            position: fixed;
+            top: 1rem;
+            right: 4rem;
+            background: var(--chakra-thirdeye);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            z-index: 1001;
+        }
+    </style>
+</head>
+<body>
+    <!-- WebGL Background Canvas -->
+    <canvas id="webgl-canvas" class="webgl-background"></canvas>
+
+    <!-- Documentation Panel -->
+    <div class="docs-panel" id="docs-panel">
+        <h3>Reactive GSAP Geometry System</h3>
+        <p><strong>Click any service card</strong> to trigger geometry morphing.</p>
+        <p>Scroll progress drives: <code>u_scroll</code> uniform</p>
+        <p>Mouse position drives: <code>u_mouse</code> uniform</p>
+        <p>Click events trigger: <code>variant change + intensity pulse</code></p>
+    </div>
+
+    <button class="toggle-docs" onclick="toggleDocs()">Toggle Docs</button>
+
+    <!-- Services Section - Click triggers geometry reaction -->
+    <section class="services-section" id="services">
+        <h2 class="section-title">Sacred Services</h2>
+
+        <div class="services-grid">
+            <article class="service-card" data-variant="0" data-color="#C72C35">
+                <span class="service-icon">🔥</span>
+                <h3 class="service-title">Energy Healing</h3>
+                <p class="service-description">Ancient techniques to balance and restore your energetic body, clearing blockages and activating your natural healing abilities.</p>
+            </article>
+
+            <article class="service-card" data-variant="1" data-color="#E97132">
+                <span class="service-icon">🦅</span>
+                <h3 class="service-title">Shamanic Journeying</h3>
+                <p class="service-description">Guided spiritual exploration through altered states of consciousness to connect with spirit guides and ancestral wisdom.</p>
+            </article>
+
+            <article class="service-card" data-variant="2" data-color="#F5C645">
+                <span class="service-icon">💎</span>
+                <h3 class="service-title">Crystal Therapy</h3>
+                <p class="service-description">Harness the vibrational frequencies of sacred stones and crystals for healing, protection, and spiritual awakening.</p>
+            </article>
+
+            <article class="service-card" data-variant="3" data-color="#65B891">
+                <span class="service-icon">🎵</span>
+                <h3 class="service-title">Sound Healing</h3>
+                <p class="service-description">Experience the transformative power of sacred sounds, singing bowls, and vibrational medicine for deep cellular healing.</p>
+            </article>
+
+            <article class="service-card" data-variant="4" data-color="#5BA3DA">
+                <span class="service-icon">🌳</span>
+                <h3 class="service-title">Ancestral Clearing</h3>
+                <p class="service-description">Release inherited trauma and limiting patterns passed down through your ancestral lineage for generational healing.</p>
+            </article>
+
+            <article class="service-card" data-variant="5" data-color="#8B7AB8">
+                <span class="service-icon">✨</span>
+                <h3 class="service-title">Intuitive Readings</h3>
+                <p class="service-description">Receive guidance and clarity through intuitive insights, oracle wisdom, and connection to higher consciousness.</p>
+            </article>
+        </div>
+    </section>
+
+    <!-- 800vh Morphing Journey Section -->
+    <section class="morphing-journey" id="morphing-journey">
+        <div class="morphing-content">
+            <h1 class="morphing-title" id="morphing-title">Ancient Wisdom</h1>
+            <h2 class="morphing-subtitle" id="morphing-subtitle">The Journey Begins</h2>
+            <p class="morphing-description" id="morphing-description">
+                Every healing journey starts with a single step into the ancient wisdom that has guided humanity for millennia.
+            </p>
+        </div>
+
+        <!-- Floating particles (generated by JS) -->
+        <div id="particles-container"></div>
+    </section>
+
+    <!-- Progress Indicator -->
+    <div class="progress-indicator">
+        <div class="progress-fill" id="progress-fill"></div>
+    </div>
+
+    <!-- State Label -->
+    <div class="state-label" id="state-label">
+        Scroll to explore • 1 / 8
+    </div>
+
+    <script>
+    /**
+     * =====================================================
+     * REACTIVE GSAP GEOMETRY SYSTEM
+     * Extracted from B-W-Blog-tenplate by Paul Phillips
+     * © 2025 Clear Seas Solutions LLC
+     * =====================================================
+     *
+     * This pattern demonstrates:
+     * 1. WebGL geometry that reacts to scroll position (u_scroll uniform)
+     * 2. Mouse position driving camera/rotation (u_mouse uniform)
+     * 3. Click events triggering geometry variant changes
+     * 4. GSAP ScrollTrigger controlling 800vh experience
+     * 5. 4D rotation matrices for hypercube projections
+     */
+
+    // Register GSAP plugins
+    gsap.registerPlugin(ScrollTrigger);
+
+    // =====================================================
+    // STORY STATES (8 chakra-aligned phases)
+    // =====================================================
+    const STORY_STATES = [
+        { title: 'Ancient Wisdom', subtitle: 'The Journey Begins', color: '#C72C35' },
+        { title: 'Awakening', subtitle: 'Creative Energy Flows', color: '#E97132' },
+        { title: 'Personal Power', subtitle: 'Transformation Through Fire', color: '#F5C645' },
+        { title: 'Heart Opening', subtitle: 'Love & Compassion', color: '#65B891' },
+        { title: 'Truth Speaking', subtitle: 'Authentic Expression', color: '#5BA3DA' },
+        { title: 'Inner Vision', subtitle: 'Intuitive Awakening', color: '#8B7AB8' },
+        { title: 'Divine Connection', subtitle: 'Unity Consciousness', color: '#E6C7EB' },
+        { title: 'Integration', subtitle: 'Wholeness & Harmony', color: '#FFFFFF' }
+    ];
+
+    // =====================================================
+    // GLOBAL STATE
+    // =====================================================
+    const STATE = {
+        scrollProgress: 0,
+        currentVariant: 0,
+        currentState: 0,
+        mouse: { x: 0.5, y: 0.5 },
+        intensity: 0.5,
+        clickImpulse: 0
+    };
+
+    // =====================================================
+    // WEBGL SHADER SYSTEM
+    // =====================================================
+    class ReactiveGeometryRenderer {
+        constructor(canvas) {
+            this.canvas = canvas;
+            this.gl = canvas.getContext('webgl', {
+                alpha: true,
+                depth: false,
+                antialias: false,
+                preserveDrawingBuffer: false,
+                powerPreference: 'high-performance'
+            });
+
+            if (!this.gl) {
+                console.error('WebGL not supported');
+                return;
+            }
+
+            this.startTime = Date.now();
+            this.initShaders();
+            this.initBuffers();
+            this.resize();
+            this.bindEvents();
+            this.render();
+        }
+
+        // Vertex Shader
+        get vertexShaderSource() {
+            return `
+                attribute vec2 a_position;
+                void main() {
+                    gl_Position = vec4(a_position, 0.0, 1.0);
+                }
+            `;
+        }
+
+        // Fragment Shader - EXACT implementation from B-W-Blog-tenplate
+        get fragmentShaderSource() {
+            return `
+                precision highp float;
+
+                uniform vec2 u_resolution;
+                uniform float u_time;
+                uniform vec2 u_mouse;
+                uniform float u_variant;
+                uniform float u_intensity;
+                uniform float u_scroll;
+                uniform float u_impulse;
+
+                // Noise functions for organic distortion
+                float hash(float n) {
+                    return fract(sin(n) * 43758.5453123);
+                }
+
+                float noise(vec2 p) {
+                    vec2 i = floor(p);
+                    vec2 f = fract(p);
+                    f = f * f * (3.0 - 2.0 * f);
+
+                    float a = hash(i.x + i.y * 57.0);
+                    float b = hash(i.x + 1.0 + i.y * 57.0);
+                    float c = hash(i.x + (i.y + 1.0) * 57.0);
+                    float d = hash(i.x + 1.0 + (i.y + 1.0) * 57.0);
+
+                    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+                }
+
+                float fbm(vec2 p) {
+                    float value = 0.0;
+                    float amplitude = 0.5;
+                    float frequency = 1.0;
+
+                    for(int i = 0; i < 6; i++) {
+                        value += amplitude * noise(p * frequency);
+                        frequency *= 2.0;
+                        amplitude *= 0.5;
+                    }
+
+                    return value;
+                }
+
+                // 4D ROTATION MATRICES - The core of the hypercube system
+                mat4 rotateXW(float theta) {
+                    float c = cos(theta);
+                    float s = sin(theta);
+                    return mat4(c, 0, 0, -s, 0, 1, 0, 0, 0, 0, 1, 0, s, 0, 0, c);
+                }
+
+                mat4 rotateYW(float theta) {
+                    float c = cos(theta);
+                    float s = sin(theta);
+                    return mat4(1, 0, 0, 0, 0, c, 0, -s, 0, 0, 1, 0, 0, s, 0, c);
+                }
+
+                mat4 rotateZW(float theta) {
+                    float c = cos(theta);
+                    float s = sin(theta);
+                    return mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, c, -s, 0, 0, s, c);
+                }
+
+                // Project 4D to 3D (perspective projection)
+                vec3 project4D(vec4 p) {
+                    float w = 2.5 / (2.5 + p.w);
+                    return vec3(p.xyz * w);
+                }
+
+                // Signed Distance Functions
+                float sdTorus(vec3 p, vec2 t) {
+                    vec2 q = vec2(length(p.xz) - t.x, p.y);
+                    return length(q) - t.y;
+                }
+
+                float sdSphere(vec3 p, float r) {
+                    return length(p) - r;
+                }
+
+                float sdBox(vec3 p, vec3 b) {
+                    vec3 d = abs(p) - b;
+                    return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
+                }
+
+                float sdOctahedron(vec3 p, float s) {
+                    p = abs(p);
+                    return (p.x + p.y + p.z - s) * 0.57735027;
+                }
+
+                // Smooth minimum for blending
+                float smin(float a, float b, float k) {
+                    float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+                    return mix(b, a, h) - k * h * (1.0 - h);
+                }
+
+                // MAIN SCENE FUNCTION - Reactive to all inputs
+                float scene(vec3 p) {
+                    float time = u_time * 0.0002;
+
+                    // Apply click impulse - geometry "breathes" on click
+                    float impulseScale = 1.0 + u_impulse * 0.5;
+
+                    // Create 4D position with time/scroll driving W coordinate
+                    vec4 p4 = vec4(p, sin(time * 2.0 + u_scroll * 0.5) * 2.0);
+
+                    // REACTIVE 4D ROTATION - Mouse and scroll drive rotation
+                    p4 = rotateXW(time + u_mouse.x + u_impulse * 3.14159) * p4;
+                    p4 = rotateYW(time * 0.7 + u_mouse.y) * p4;
+                    p4 = rotateZW(time * 0.5 + u_scroll * 0.1) * p4;
+
+                    vec3 p3 = project4D(p4);
+
+                    // Organic noise distortion increases with scroll
+                    float noiseDisp = fbm(p3.xy * 2.0 + time) * 0.3 * (0.5 + u_scroll * 0.5);
+                    p3 += vec3(
+                        noiseDisp * sin(time * 3.0),
+                        noiseDisp * cos(time * 2.5),
+                        noiseDisp * sin(time * 1.8)
+                    );
+
+                    // Multiple geometric primitives - variant controls which dominates
+                    float d1 = sdTorus(p3, vec2(1.5 * impulseScale, 0.4 + sin(time * 2.0) * 0.1));
+                    float d2 = sdSphere(p3 - vec3(sin(time * 1.5), cos(time * 2.0), 0.0), 0.8 * impulseScale);
+                    float d3 = sdOctahedron(p3, (1.2 + sin(time) * 0.2) * impulseScale);
+                    float d4 = sdBox(p3, vec3(0.7 + sin(time * 1.3) * 0.2) * impulseScale);
+
+                    // Blend based on variant selection (driven by service card clicks)
+                    float blend = 0.3 + u_variant * 0.1;
+                    float d = smin(d1, d2, blend);
+                    d = smin(d, d3, blend + 0.1);
+                    d = smin(d, d4, blend + 0.2);
+
+                    // Procedural detail increases with intensity
+                    d += sin(p3.x * 10.0 + time * 5.0) * sin(p3.y * 10.0 + time * 4.0) *
+                         sin(p3.z * 10.0 + time * 3.0) * 0.02 * u_intensity;
+
+                    return d;
+                }
+
+                // CHAKRA COLOR PALETTE - Scroll position selects color
+                vec3 getChakraColor(float t) {
+                    t = mod(t, 7.0);
+                    if (t < 1.0) return mix(vec3(0.78, 0.17, 0.21), vec3(0.91, 0.44, 0.20), fract(t));
+                    else if (t < 2.0) return mix(vec3(0.91, 0.44, 0.20), vec3(0.96, 0.78, 0.27), fract(t));
+                    else if (t < 3.0) return mix(vec3(0.96, 0.78, 0.27), vec3(0.40, 0.72, 0.57), fract(t));
+                    else if (t < 4.0) return mix(vec3(0.40, 0.72, 0.57), vec3(0.36, 0.64, 0.85), fract(t));
+                    else if (t < 5.0) return mix(vec3(0.36, 0.64, 0.85), vec3(0.55, 0.48, 0.72), fract(t));
+                    else if (t < 6.0) return mix(vec3(0.55, 0.48, 0.72), vec3(0.90, 0.78, 0.92), fract(t));
+                    else return mix(vec3(0.90, 0.78, 0.92), vec3(0.78, 0.17, 0.21), fract(t));
+                }
+
+                // Calculate normal for lighting
+                vec3 calcNormal(vec3 p) {
+                    vec2 e = vec2(0.001, 0.0);
+                    return normalize(vec3(
+                        scene(p + e.xyy) - scene(p - e.xyy),
+                        scene(p + e.yxy) - scene(p - e.yxy),
+                        scene(p + e.yyx) - scene(p - e.yyx)
+                    ));
+                }
+
+                // RAY MARCHING with glow accumulation
+                vec3 raymarch(vec3 ro, vec3 rd) {
+                    float t = 0.0;
+                    vec3 color = vec3(0.0);
+                    float glowAccum = 0.0;
+
+                    for (int i = 0; i < 80; i++) {
+                        vec3 p = ro + rd * t;
+                        float d = scene(p);
+
+                        // Hit detection
+                        if (d < 0.001) {
+                            vec3 normal = calcNormal(p);
+                            vec3 lightDir = normalize(vec3(sin(u_time * 0.0001), cos(u_time * 0.0001), 0.5));
+                            float diff = max(dot(normal, lightDir), 0.0);
+
+                            // Color based on position + scroll progress
+                            float colorIndex = p.y * 2.0 + u_time * 0.001 + u_scroll * 7.0;
+                            vec3 chakraColor = getChakraColor(colorIndex);
+
+                            // Fresnel effect
+                            float fresnel = pow(1.0 - max(dot(normal, -rd), 0.0), 3.0);
+
+                            color = chakraColor * (diff * 0.7 + 0.3) + fresnel * chakraColor * 0.5;
+                            color *= u_intensity;
+                            color += glowAccum * 0.3;
+                            break;
+                        }
+
+                        // Accumulate glow
+                        float chakraIndex = t * 0.3 + u_time * 0.001 + u_scroll * 7.0;
+                        glowAccum += 0.005 / (1.0 + d * d) * (1.0 - float(i) / 80.0);
+                        color += getChakraColor(chakraIndex) * 0.003 / (1.0 + d * d);
+
+                        if (t > 30.0) break;
+                        t += d * 0.7;
+                    }
+
+                    // Add accumulated glow
+                    color += glowAccum * getChakraColor(u_time * 0.002 + u_scroll * 7.0);
+
+                    return color;
+                }
+
+                void main() {
+                    vec2 uv = (gl_FragCoord.xy - u_resolution * 0.5) / u_resolution.y;
+
+                    // REACTIVE CAMERA - Mouse and scroll drive position
+                    float camAngle = u_time * 0.0001;
+                    vec3 ro = vec3(
+                        cos(camAngle) * 5.0 + (u_mouse.x - 0.5) * 3.0,
+                        sin(u_time * 0.00015) * 2.0 + (u_mouse.y - 0.5) * 3.0,
+                        sin(camAngle) * 5.0 + 5.0
+                    );
+
+                    vec3 target = vec3(0.0);
+                    vec3 forward = normalize(target - ro);
+                    vec3 right = normalize(cross(vec3(0, 1, 0), forward));
+                    vec3 up = cross(forward, right);
+
+                    vec3 rd = normalize(forward + uv.x * right + uv.y * up);
+
+                    // Ray march
+                    vec3 color = raymarch(ro, rd);
+
+                    // Background with noise
+                    float bgNoise = fbm(uv * 3.0 + u_time * 0.0001);
+                    vec3 bgColor = mix(
+                        vec3(0.02, 0.0, 0.05),
+                        vec3(0.0, 0.02, 0.08),
+                        uv.y * 0.5 + 0.5 + bgNoise * 0.2
+                    );
+
+                    color += bgColor * 0.4;
+
+                    // Vignette
+                    float vignette = 1.0 - length(uv) * 0.4;
+                    color *= vignette;
+
+                    // Tone mapping + gamma
+                    color = color / (color + vec3(1.0));
+                    color = pow(color, vec3(1.0 / 2.2));
+
+                    gl_FragColor = vec4(color, 0.9);
+                }
+            `;
+        }
+
+        initShaders() {
+            const gl = this.gl;
+
+            // Compile vertex shader
+            const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+            gl.shaderSource(vertexShader, this.vertexShaderSource);
+            gl.compileShader(vertexShader);
+
+            // Compile fragment shader
+            const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+            gl.shaderSource(fragmentShader, this.fragmentShaderSource);
+            gl.compileShader(fragmentShader);
+
+            if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+                console.error('Fragment shader error:', gl.getShaderInfoLog(fragmentShader));
+                return;
+            }
+
+            // Create program
+            this.program = gl.createProgram();
+            gl.attachShader(this.program, vertexShader);
+            gl.attachShader(this.program, fragmentShader);
+            gl.linkProgram(this.program);
+            gl.useProgram(this.program);
+
+            // Get uniform locations
+            this.uniforms = {
+                resolution: gl.getUniformLocation(this.program, 'u_resolution'),
+                time: gl.getUniformLocation(this.program, 'u_time'),
+                mouse: gl.getUniformLocation(this.program, 'u_mouse'),
+                variant: gl.getUniformLocation(this.program, 'u_variant'),
+                intensity: gl.getUniformLocation(this.program, 'u_intensity'),
+                scroll: gl.getUniformLocation(this.program, 'u_scroll'),
+                impulse: gl.getUniformLocation(this.program, 'u_impulse')
+            };
+        }
+
+        initBuffers() {
+            const gl = this.gl;
+
+            const positionBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                -1, -1, 1, -1, -1, 1, 1, 1
+            ]), gl.STATIC_DRAW);
+
+            const positionLocation = gl.getAttribLocation(this.program, 'a_position');
+            gl.enableVertexAttribArray(positionLocation);
+            gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+        }
+
+        resize() {
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = window.innerHeight;
+            this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        }
+
+        bindEvents() {
+            window.addEventListener('resize', () => this.resize());
+
+            window.addEventListener('mousemove', (e) => {
+                STATE.mouse.x = e.clientX / window.innerWidth;
+                STATE.mouse.y = 1.0 - e.clientY / window.innerHeight;
+            });
+        }
+
+        render() {
+            const gl = this.gl;
+            const time = Date.now() - this.startTime;
+
+            gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
+            gl.uniform1f(this.uniforms.time, time);
+            gl.uniform2f(this.uniforms.mouse, STATE.mouse.x, STATE.mouse.y);
+            gl.uniform1f(this.uniforms.variant, STATE.currentVariant);
+            gl.uniform1f(this.uniforms.intensity, STATE.intensity);
+            gl.uniform1f(this.uniforms.scroll, STATE.scrollProgress);
+            gl.uniform1f(this.uniforms.impulse, STATE.clickImpulse);
+
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            requestAnimationFrame(() => this.render());
+        }
+    }
+
+    // =====================================================
+    // GSAP SCROLLTRIGGER SYSTEM (14 integration points)
+    // =====================================================
+    function initScrollTriggers() {
+        const morphingJourney = document.getElementById('morphing-journey');
+        const progressFill = document.getElementById('progress-fill');
+
+        // GSAP Integration #1: Main 800vh scroll controller
+        ScrollTrigger.create({
+            trigger: morphingJourney,
+            start: 'top top',
+            end: '+=8000', // 800vh
+            pin: true,
+            scrub: 1,
+            onUpdate: (self) => {
+                STATE.scrollProgress = self.progress;
+
+                const stateIndex = Math.floor(self.progress * STORY_STATES.length);
+                if (stateIndex !== STATE.currentState) {
+                    STATE.currentState = Math.min(stateIndex, STORY_STATES.length - 1);
+                    updateMorphingContent();
+                }
+            }
+        });
+
+        // GSAP Integration #2: Progress indicator
+        gsap.to(progressFill, {
+            scaleY: 1,
+            ease: 'none',
+            scrollTrigger: {
+                trigger: morphingJourney,
+                start: 'top top',
+                end: '+=8000',
+                scrub: 0.5
+            }
+        });
+
+        // GSAP Integration #3: Service cards entrance
+        gsap.from('.service-card', {
+            opacity: 0,
+            y: 100,
+            rotateX: -15,
+            stagger: 0.15,
+            duration: 1,
+            ease: 'power3.out',
+            scrollTrigger: {
+                trigger: '#services',
+                start: 'top 80%',
+                toggleActions: 'play none none none'
+            }
+        });
+
+        // State label update
+        ScrollTrigger.create({
+            trigger: morphingJourney,
+            start: 'top top',
+            end: '+=8000',
+            scrub: 1,
+            onUpdate: () => {
+                document.getElementById('state-label').textContent =
+                    `Scroll to explore • ${STATE.currentState + 1} / ${STORY_STATES.length}`;
+            }
+        });
+    }
+
+    // =====================================================
+    // SERVICE CARD CLICK HANDLER - Triggers geometry reaction
+    // =====================================================
+    function initServiceCardClicks() {
+        document.querySelectorAll('.service-card').forEach(card => {
+            card.addEventListener('click', () => {
+                // Get variant from data attribute
+                const variant = parseInt(card.dataset.variant);
+                const color = card.dataset.color;
+
+                // Update state
+                STATE.currentVariant = variant;
+
+                // GSAP click reaction on the card
+                gsap.to(card, {
+                    scale: 1.1,
+                    boxShadow: `0 0 60px ${color}`,
+                    duration: 0.2,
+                    ease: 'power2.out',
+                    yoyo: true,
+                    repeat: 1
+                });
+
+                // Remove active class from all, add to clicked
+                document.querySelectorAll('.service-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+
+                // TRIGGER GEOMETRY IMPULSE - This makes the WebGL react!
+                STATE.clickImpulse = 1;
+                gsap.to(STATE, {
+                    clickImpulse: 0,
+                    duration: 1.5,
+                    ease: 'power2.out'
+                });
+
+                // Intensity pulse
+                gsap.to(STATE, {
+                    intensity: 1.0,
+                    duration: 0.3,
+                    ease: 'power2.out',
+                    yoyo: true,
+                    repeat: 1,
+                    onComplete: () => STATE.intensity = 0.5
+                });
+
+                console.log(`[Reactive Geometry] Variant changed to ${variant}, impulse triggered`);
+            });
+        });
+    }
+
+    // =====================================================
+    // MORPHING CONTENT UPDATE
+    // =====================================================
+    function updateMorphingContent() {
+        const state = STORY_STATES[STATE.currentState];
+
+        const title = document.getElementById('morphing-title');
+        const subtitle = document.getElementById('morphing-subtitle');
+
+        // GSAP content transition
+        gsap.to(title, {
+            opacity: 0,
+            y: -30,
+            duration: 0.3,
+            onComplete: () => {
+                title.textContent = state.title;
+                title.style.color = state.color;
+                gsap.to(title, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.5,
+                    ease: 'power2.out'
+                });
+            }
+        });
+
+        gsap.to(subtitle, {
+            opacity: 0,
+            duration: 0.3,
+            onComplete: () => {
+                subtitle.textContent = state.subtitle;
+                subtitle.style.color = state.color;
+                gsap.to(subtitle, {
+                    opacity: 1,
+                    duration: 0.5,
+                    ease: 'power2.out'
+                });
+            }
+        });
+    }
+
+    // =====================================================
+    // FLOATING PARTICLES
+    // =====================================================
+    function createParticles() {
+        const container = document.getElementById('particles-container');
+
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.top = `${Math.random() * 100}%`;
+            particle.style.backgroundColor = STORY_STATES[i % STORY_STATES.length].color;
+            container.appendChild(particle);
+
+            // Animate each particle with scroll
+            gsap.to(particle, {
+                y: -window.innerHeight * 2 - (i * 50),
+                x: Math.sin(i) * 200,
+                rotation: 360 * (i % 2 === 0 ? 1 : -1),
+                opacity: 0,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: '#morphing-journey',
+                    start: 'top top',
+                    end: '+=8000',
+                    scrub: 2 + (i * 0.1)
+                }
+            });
+        }
+    }
+
+    // =====================================================
+    // DOCUMENTATION TOGGLE
+    // =====================================================
+    function toggleDocs() {
+        const panel = document.getElementById('docs-panel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // =====================================================
+    // INITIALIZATION
+    // =====================================================
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('[Reactive GSAP Geometry System] Initializing...');
+
+        // Initialize WebGL renderer
+        const canvas = document.getElementById('webgl-canvas');
+        new ReactiveGeometryRenderer(canvas);
+
+        // Initialize GSAP ScrollTriggers
+        initScrollTriggers();
+
+        // Initialize service card click handlers
+        initServiceCardClicks();
+
+        // Create floating particles
+        createParticles();
+
+        console.log('[Reactive GSAP Geometry System] Ready!');
+        console.log('- Click service cards to change geometry variant');
+        console.log('- Scroll to see 800vh chakra journey');
+        console.log('- Move mouse to rotate the 4D projection');
+    });
+    </script>
+
+    <!--
+    =====================================================
+    VISUAL CODEX PATTERN: Reactive GSAP Geometry System
+    =====================================================
+
+    EXTRACTED FROM: B-W-Blog-tenplate by Paul Phillips
+
+    KEY FEATURES:
+    1. WebGL geometry reacts to scroll position (u_scroll)
+    2. Mouse position drives camera/rotation (u_mouse)
+    3. Click events trigger geometry variant changes
+    4. GSAP ScrollTrigger controls 800vh experience
+    5. 4D rotation matrices for hypercube projections
+    6. Chakra color palette driven by scroll progress
+    7. Organic noise distortion increases with scroll
+    8. Click impulse creates "breathing" effect
+
+    UNIFORM BINDINGS:
+    - u_scroll: 0-1 scroll progress
+    - u_mouse: normalized mouse position
+    - u_variant: geometry variant (0-7)
+    - u_intensity: brightness (0.3-1.0)
+    - u_impulse: click reaction (0-1, decays)
+
+    GSAP INTEGRATION POINTS (14):
+    1. Main 800vh scroll container (pin + scrub)
+    2. Progress indicator (scaleY)
+    3. Service cards entrance (fromTo)
+    4. State label update (onUpdate)
+    5-12. Individual state transitions
+    13. Parallax layers
+    14. Floating particles
+
+    USAGE:
+    - Click any service card to trigger geometry morphing
+    - Scroll through 800vh journey
+    - Move mouse to rotate 4D projection
+
+    © 2025 Paul Phillips - Clear Seas Solutions LLC
+    A Paul Phillips Manifestation
+    =====================================================
+    -->
+</body>
+</html>

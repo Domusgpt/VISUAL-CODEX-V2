@@ -6,7 +6,7 @@
 
 ## Overview
 
-This chapter catalogs 21 sophisticated scroll-driven animation patterns extracted from Paul Phillips' web productions. It covers GSAP ScrollTrigger integration with WebGL visualizers, state-based scroll canvases, and the revolutionary Holographic Visualizer system.
+This chapter catalogs 22 sophisticated scroll-driven animation patterns extracted from Paul Phillips' web productions. It covers GSAP ScrollTrigger integration with WebGL visualizers, state-based scroll canvases, and the revolutionary Holographic Visualizer system.
 
 **Repository:** https://github.com/Domusgpt/VISUAL-CODEX-V2
 
@@ -35,6 +35,7 @@ This chapter catalogs 21 sophisticated scroll-driven animation patterns extracte
 | 15 | [Mouse & Interaction Binding](./gsap_core/15-mouse-interaction-binding.md) | Tutorial | Pointer parallax to visualizer |
 | 16 | [Orbital Animation](./gsap_core/16-orbital-animation.md) | Tutorial | Simone-style expand/collapse orbits |
 | 17 | [Special Callbacks](./gsap_core/17-special-callbacks.md) | Quick Ref | .call(), onComplete, lifecycle hooks |
+| 22 | [Reactive GSAP Geometry System](./gsap_core/22-reactive-gsap-geometry-system.md) | Tutorial | Multi-input WebGL with 4D rotation, click impulse, chakra colors |
 
 ### Visualizer System Patterns (18-21)
 
@@ -58,6 +59,8 @@ This chapter catalogs 21 sophisticated scroll-driven animation patterns extracte
 | [Visualizer Binding](./demos/visualizer-binding-demo.html) | 08, 12 | Scroll → WebGL parameter sync |
 | [Holographic Visualizer](./demos/holographic-visualizer-demo.html) | 18, 19, 20 | Complete JusDNCE-style WebGL |
 | [Quantum Glassmorphism](./demos/quantum-glassmorphism-demo.html) | 21 | Dark glass UI components |
+| [Reactive GSAP Geometry](./demos/reactive-gsap-geometry-system.html) | 22 | Full 800vh scroll with 4D geometry |
+| [Reactive Geometry Variations](./demos/reactive-geometry-variations.html) | 22 | 4 variations: buttons, sliders, hover, scroll |
 
 ---
 
@@ -71,6 +74,7 @@ This chapter catalogs 21 sophisticated scroll-driven animation patterns extracte
 | JusDNCE | [JusDNCE-core2](https://domusgpt.github.io/JusDNCE-core2/) | Holographic Visualizer, Impulse System |
 | Clear Seas Codex | [minoots-flow](https://domusgpt.github.io/Clearseas-codex-web/builds/minoots-flow/index.html) | 3D carousel, GSAP choreography |
 | Crystal Grimoire | [crystal-grimoire-2025](https://crystal-grimoire-2025.web.app) | Glassmorphic cards, AI response streaming |
+| B-W-Blog-tenplate | [B-W-Blog-tenplate](https://domusgpt.github.io/B-W-Blog-tenplate/) | Reactive GSAP Geometry, 4D rotations, chakra colors |
 
 ---
 
