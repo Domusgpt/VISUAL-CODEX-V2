@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Codex Gallery - FIXED MENU SYSTEM</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💎</text></svg>">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+        :root {
+            --neon-cyan: #00ffff;
+            --neon-magenta: #ff00ff;
+            --neon-yellow: #ffff00;
+            --electric-blue: #0080ff;
+            --hot-pink: #ff1088;
+            --cyber-purple: #8000ff;
+            --silicon-green: #0d2818;
+            --crystal-teal: #00ffaa;
+            --accent-red: #ff004d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: var(--crystal-teal);
+            font-family: 'Orbitron', 'Courier New', monospace;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* NAVIGATION MENU - FIXED */
+        .nav-toggle {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--silicon-green);
+            border: 2px solid var(--crystal-teal);
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 2100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px var(--crystal-teal);
+        }
+
+        .nav-toggle:hover {
+            background: rgba(0, 255, 170, 0.1);
+            transform: scale(1.05);
+        }
+
+        .nav-toggle span {
+            width: 20px;
+            height: 2px;
+            background: var(--crystal-teal);
+            transition: all 0.3s ease;
+        }
+
+        .nav-toggle.open span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .nav-toggle.open span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .nav-toggle.open span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        .nav-container {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--silicon-green), rgba(13, 40, 24, 0.95));
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            transition: left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-right: 2px solid var(--crystal-teal);
+            box-shadow: 0 0 40px var(--crystal-teal);
+            overflow-y: auto;
+        }
+
+        .nav-container.open {
+            left: 0;
+        }
+
+        .nav-header {
+            padding: 30px 20px;
+            border-bottom: 1px solid rgba(0, 255, 170, 0.3);
+        }
+
+        .nav-title {
+            color: var(--crystal-teal);
+            font-size: 1.4em;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 15px var(--crystal-teal);
+        }
+
+        .nav-subtitle {
+            color: var(--crystal-teal);
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .nav-sections {
+            padding: 20px 0;
+        }
+
+        .nav-section {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-section:hover {
+            background: rgba(0, 255, 170, 0.1);
+            border-left-color: var(--crystal-teal);
+            transform: translateX(5px);
+        }
+
+        .nav-section.active {
+            background: rgba(0, 255, 170, 0.2);
+            border-left-color: var(--crystal-teal);
+        }
+
+        .nav-section-name {
+            color: var(--crystal-teal);
+            font-size: 1.0em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .nav-section-info {
+            color: var(--crystal-teal);
+            font-size: 0.7em;
+            opacity: 0.6;
+        }
+
+        /* STATUS INDICATOR */
+        .status-indicator {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: var(--silicon-green);
+            border: 2px solid var(--crystal-teal);
+            border-radius: 15px;
+            padding: 20px 25px;
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            box-shadow: 0 0 30px var(--crystal-teal);
+        }
+
+        .status-title {
+            color: var(--crystal-teal);
+            font-size: 1.3em;
+            font-weight: 900;
+            margin-bottom: 8px;
+            text-shadow: 0 0 15px var(--crystal-teal);
+        }
+
+        .status-subtitle {
+            color: var(--crystal-teal);
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+
+        /* GALLERY GRID */
+        .gallery-container {
+            padding: 120px 40px 40px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+        }
+
+        .effect-card {
+            background: linear-gradient(135deg,
+                rgba(13, 40, 24, 0.95) 0%,
+                rgba(0, 255, 170, 0.1) 25%,
+                rgba(255, 0, 77, 0.05) 50%,
+                rgba(13, 40, 24, 0.95) 100%);
+            border: 3px solid var(--crystal-teal);
+            border-radius: 16px;
+            padding: 25px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            box-shadow:
+                0 0 40px rgba(0, 255, 170, 0.2),
+                inset 0 3px 0 rgba(0, 255, 170, 0.2);
+        }
+
+        .effect-card:hover {
+            transform: scale(1.05) translateY(-10px);
+            box-shadow:
+                0 0 60px var(--neon-cyan),
+                inset 0 3px 0 rgba(0, 255, 170, 0.4);
+            border-color: var(--neon-cyan);
+        }
+
+        .card-title {
+            color: var(--neon-yellow);
+            font-size: 1.4em;
+            font-weight: 900;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px var(--neon-yellow);
+        }
+
+        .card-description {
+            color: var(--crystal-teal);
+            font-size: 0.9em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: auto;
+        }
+
+        .card-tag {
+            background: rgba(255, 0, 255, 0.2);
+            color: var(--neon-magenta);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7em;
+            border: 1px solid var(--neon-magenta);
+        }
+
+        /* CONSOLE LOG DISPLAY */
+        .console-log {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--crystal-teal);
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+        }
+
+        .console-log-entry {
+            color: var(--crystal-teal);
+            margin: 2px 0;
+        }
+
+        .console-log-entry.success {
+            color: #00ff00;
+        }
+
+        .console-log-entry.warning {
+            color: #ffff00;
+        }
+
+        .console-log-entry.error {
+            color: #ff0000;
+        }
+
+        @media (max-width: 768px) {
+            .gallery-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .gallery-container {
+                padding: 100px 20px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Toggle -->
+    <div class="nav-toggle" id="navToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <!-- Navigation Container -->
+    <div class="nav-container" id="navContainer">
+        <div class="nav-header">
+            <div class="nav-title">Visual Codex</div>
+            <div class="nav-subtitle">Effect Categories</div>
+        </div>
+        <div class="nav-sections" id="navSections">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Status Indicator -->
+    <div class="status-indicator">
+        <div class="status-title" id="statusTitle">All Effects</div>
+        <div class="status-subtitle" id="statusSubtitle">37 visual demonstrations</div>
+    </div>
+
+    <!-- Gallery Container -->
+    <div class="gallery-container">
+        <div class="gallery-grid" id="galleryGrid">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Console Log Display -->
+    <div class="console-log" id="consoleLog">
+        <div class="console-log-entry success">🚀 Gallery system initializing...</div>
+    </div>
+
+    <script>
+        // Enhanced logging function
+        function log(message, type = 'info') {
+            const consoleLog = document.getElementById('consoleLog');
+            const entry = document.createElement('div');
+            entry.className = `console-log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleLog.appendChild(entry);
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+
+            // Also log to browser console
+            console.log(message);
+
+            // Keep only last 20 entries
+            while (consoleLog.children.length > 20) {
+                consoleLog.removeChild(consoleLog.firstChild);
+            }
+        }
+
+        // Effect categories for navigation
+        const categories = [
+            { name: 'All Effects', filter: 'all' },
+            { name: 'WebGL / 4D', filter: 'webgl' },
+            { name: 'CSS Effects', filter: 'css' },
+            { name: 'Holographic', filter: 'holographic' },
+            { name: 'Particle Systems', filter: 'particles' },
+            { name: 'UI Components', filter: 'ui' }
+        ];
+
+        // All visual effects
+        const effects = [
+            { title: "Active Holographic Systems", description: "30 holographic variations with tabs", tags: ["webgl", "holographic", "4d"], url: "demos/active-holographic-systems-mega-demo.html" },
+            { title: "MVEP Hypercube", description: "4D hypercube with moire patterns", tags: ["webgl", "4d"], url: "effects/mvep-moire-hypercube.html" },
+            { title: "VIB34D Complete System", description: "Revolutionary 4D framework", tags: ["webgl", "4d"], url: "effects/vib34d-complete-system.html" },
+            { title: "Neoskeuomorphic Cards", description: "Modern depth-based card design", tags: ["css", "ui"], url: "demos/neoskeuomorphic-cards-demo.html" },
+            { title: "Holographic Progress", description: "Futuristic progress indicators", tags: ["css", "holographic", "ui"], url: "demos/holographic-progress-indicators-demo.html" },
+            { title: "Particle System", description: "Advanced particle physics", tags: ["webgl", "particles"], url: "demos/holographic-particle-system-demo.html" },
+            { title: "Glassmorphism UI", description: "Translucent glass-like elements", tags: ["css", "ui"], url: "demos/css-glassmorphism-demo.html" },
+            { title: "Cyberpunk UI", description: "Futuristic interface elements", tags: ["css", "ui"], url: "demos/css-cyberpunk-ui-demo.html" },
+            { title: "Glitch Effects", description: "Digital corruption effects", tags: ["css"], url: "demos/css-glitch-effects-demo.html" },
+            { title: "Vaporwave Aesthetics", description: "Retro synthwave styling", tags: ["css"], url: "demos/css-vaporwave-aesthetics-demo.html" },
+            { title: "Holographic Parallax", description: "35 parallax variations", tags: ["css", "holographic"], url: "demos/holographic-parallax-systems-mega-demo.html" },
+            { title: "State Control Dots", description: "Interactive navigation dots", tags: ["css", "ui"], url: "demos/state-control-dots-demo.html" }
+        ];
+
+        // Gallery Manager
+        class GalleryManager {
+            constructor() {
+                this.currentFilter = 'all';
+                this.init();
+            }
+
+            init() {
+                log('💎 Initializing Gallery Manager', 'success');
+                this.setupNavigation();
+                this.setupInteractions();
+                this.renderGallery();
+                log('✅ Gallery ready - All systems operational', 'success');
+            }
+
+            setupNavigation() {
+                const navSections = document.getElementById('navSections');
+
+                categories.forEach((category, index) => {
+                    const section = document.createElement('div');
+                    section.className = 'nav-section';
+                    if (index === 0) section.classList.add('active');
+
+                    section.innerHTML = `
+                        <div class="nav-section-name">${category.name}</div>
+                        <div class="nav-section-info">Filter: ${category.filter}</div>
+                    `;
+
+                    section.addEventListener('click', () => {
+                        this.filterGallery(category.filter);
+                        document.querySelectorAll('.nav-section').forEach(s => s.classList.remove('active'));
+                        section.classList.add('active');
+                        log(`🎯 Filtered to: ${category.name}`, 'success');
+                    });
+
+                    navSections.appendChild(section);
+                });
+
+                log('📋 Navigation menu created with ' + categories.length + ' categories', 'success');
+            }
+
+            setupInteractions() {
+                const navToggle = document.getElementById('navToggle');
+                const navContainer = document.getElementById('navContainer');
+
+                // Navigation toggle with enhanced logging
+                navToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    navToggle.classList.toggle('open');
+                    navContainer.classList.toggle('open');
+
+                    const isOpen = navContainer.classList.contains('open');
+                    log(isOpen ? '📂 Navigation opened' : '📁 Navigation closed', 'success');
+                });
+
+                // Close navigation when clicking outside
+                document.addEventListener('click', (e) => {
+                    const clickedToggle = navToggle.contains(e.target);
+                    const clickedNav = navContainer.contains(e.target);
+
+                    if (!clickedToggle && !clickedNav && navContainer.classList.contains('open')) {
+                        navToggle.classList.remove('open');
+                        navContainer.classList.remove('open');
+                        log('🔒 Navigation closed (clicked outside)', 'info');
+                    }
+                });
+
+                log('⚡ Interaction handlers attached', 'success');
+            }
+
+            filterGallery(filter) {
+                this.currentFilter = filter;
+                this.renderGallery();
+
+                // Update status
+                const category = categories.find(c => c.filter === filter);
+                document.getElementById('statusTitle').textContent = category.name;
+
+                const filteredCount = this.getFilteredEffects().length;
+                document.getElementById('statusSubtitle').textContent = `${filteredCount} effects`;
+            }
+
+            getFilteredEffects() {
+                if (this.currentFilter === 'all') {
+                    return effects;
+                }
+                return effects.filter(effect => effect.tags.includes(this.currentFilter));
+            }
+
+            renderGallery() {
+                const grid = document.getElementById('galleryGrid');
+                grid.innerHTML = '';
+
+                const filteredEffects = this.getFilteredEffects();
+                log(`🎨 Rendering ${filteredEffects.length} effects`, 'info');
+
+                filteredEffects.forEach((effect, index) => {
+                    const card = this.createCard(effect, index);
+                    grid.appendChild(card);
+                });
+
+                log(`✅ Gallery rendered successfully`, 'success');
+            }
+
+            createCard(effect, index) {
+                const card = document.createElement('div');
+                card.className = 'effect-card';
+
+                card.innerHTML = `
+                    <div class="card-title">${effect.title}</div>
+                    <div class="card-description">${effect.description}</div>
+                    <div class="card-tags">
+                        ${effect.tags.map(tag => `<span class="card-tag">${tag}</span>`).join('')}
+                    </div>
+                `;
+
+                card.addEventListener('click', () => {
+                    log(`🚀 Opening: ${effect.title}`, 'success');
+                    window.open(effect.url, '_blank');
+                });
+
+                return card;
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            log('🌟 Page loaded, starting gallery...', 'success');
+            const gallery = new GalleryManager();
+            window.gallery = gallery;
+
+            // Test menu after 1 second
+            setTimeout(() => {
+                log('✅ Gallery fully initialized - Menu should be functional', 'success');
+                log('💡 Click the hamburger menu (top-left) to test navigation', 'info');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
