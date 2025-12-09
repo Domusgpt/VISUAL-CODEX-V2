@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pattern 13: CSS Filter & Blur Cascades - Visual Codex</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0f;
+            color: #e8e8f0;
+            min-height: 100vh;
+        }
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 6rem 2rem 2rem;
+        }
+        .title {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .filter-demo {
+            background: rgba(26, 26, 46, 0.8);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .demo-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #a8b2ff;
+        }
+        .demo-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+        .filter-target {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .text-target {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+        .play-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .controls-panel {
+            background: rgba(10, 10, 15, 0.9);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+        .control-group {
+            margin-bottom: 1rem;
+        }
+        .control-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #a8b2ff;
+        }
+        .control-slider {
+            width: 100%;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 10px;
+            height: 20px;
+            -webkit-appearance: none;
+            appearance: none;
+            outline: none;
+        }
+        .control-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .live-demo {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        .cascade-container {
+            position: relative;
+        }
+        .cascade-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        .cascade-layer:nth-child(1) { z-index: 3; }
+        .cascade-layer:nth-child(2) { z-index: 2; }
+        .cascade-layer:nth-child(3) { z-index: 1; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="../index.html" class="back-link">← Back to GSAP Patterns</a>
+        <h1>Pattern 13: CSS Filter & Blur Cascades</h1>
+    </div>
+
+    <div class="container">
+        <h1 class="title">🎨 Filter Cascade System</h1>
+        
+        <!-- Interactive Controls -->
+        <div class="controls-panel">
+            <h3 style="margin-bottom: 1rem; color: #a8b2ff;">Real-Time Filter Controls</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div class="control-group">
+                    <label class="control-label">Blur: <span id="blurValue">0px</span></label>
+                    <input type="range" class="control-slider" id="blurSlider" min="0" max="20" value="0" step="0.5">
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Brightness: <span id="brightnessValue">100%</span></label>
+                    <input type="range" class="control-slider" id="brightnessSlider" min="50" max="200" value="100" step="5">
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Contrast: <span id="contrastValue">100%</span></label>
+                    <input type="range" class="control-slider" id="contrastSlider" min="50" max="200" value="100" step="5">
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Hue Rotate: <span id="hueValue">0deg</span></label>
+                    <input type="range" class="control-slider" id="hueSlider" min="0" max="360" value="0" step="10">
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Saturate: <span id="saturateValue">100%</span></label>
+                    <input type="range" class="control-slider" id="saturateSlider" min="0" max="200" value="100" step="10">
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Drop Shadow: <span id="shadowValue">0px</span></label>
+                    <input type="range" class="control-slider" id="shadowSlider" min="0" max="20" value="0" step="1">
+                </div>
+            </div>
+            <div class="live-demo" id="liveDemo">Live Filter Demo</div>
+        </div>
+
+        <div class="filter-grid">
+            <!-- Progressive Blur Reveal -->
+            <div class="filter-demo">
+                <h3 class="demo-title">1. Progressive Blur Reveal</h3>
+                <p class="demo-description">Text revelation through blur-to-focus transition</p>
+                <div class="text-target" id="blurText">FOCUS REVEAL</div>
+                <button class="play-btn" onclick="playBlurReveal()">Play Blur Reveal</button>
+            </div>
+
+            <!-- Brightness & Contrast -->
+            <div class="filter-demo">
+                <h3 class="demo-title">2. Brightness/Contrast Wave</h3>
+                <p class="demo-description">Dynamic brightness and contrast modulation</p>
+                <div class="filter-target" id="brightnessTarget">BRIGHTNESS</div>
+                <button class="play-btn" onclick="playBrightnessWave()">Play Brightness Wave</button>
+            </div>
+
+            <!-- Hue Rotation -->
+            <div class="filter-demo">
+                <h3 class="demo-title">3. Hue Rotation Cycle</h3>
+                <p class="demo-description">Complete color spectrum rotation</p>
+                <div class="filter-target" id="hueTarget">COLOR CYCLE</div>
+                <button class="play-btn" onclick="playHueRotation()">Play Hue Cycle</button>
+            </div>
+
+            <!-- Drop Shadow Pulse -->
+            <div class="filter-demo">
+                <h3 class="demo-title">4. Drop Shadow Pulse</h3>
+                <p class="demo-description">Pulsing drop shadow with color changes</p>
+                <div class="filter-target" id="shadowTarget">SHADOW PULSE</div>
+                <button class="play-btn" onclick="playShadowPulse()">Play Shadow Pulse</button>
+            </div>
+
+            <!-- Combined Cascade -->
+            <div class="filter-demo">
+                <h3 class="demo-title">5. Combined Filter Cascade</h3>
+                <p class="demo-description">Multiple filters applied in sequence</p>
+                <div class="filter-target" id="cascadeTarget">FULL CASCADE</div>
+                <button class="play-btn" onclick="playCascade()">Play Full Cascade</button>
+            </div>
+
+            <!-- Layered Blur Stack -->
+            <div class="filter-demo">
+                <h3 class="demo-title">6. Layered Blur Stack</h3>
+                <p class="demo-description">Multiple layers with different blur amounts</p>
+                <div class="cascade-container" style="height: 150px;">
+                    <div class="cascade-layer">Layer 1</div>
+                    <div class="cascade-layer">Layer 2</div>
+                    <div class="cascade-layer">Layer 3</div>
+                </div>
+                <button class="play-btn" onclick="playLayeredBlur()">Play Layered Blur</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Progressive Blur Reveal
+        function playBlurReveal() {
+            const target = document.getElementById('blurText');
+            gsap.fromTo(target, 
+                { filter: "blur(20px)", opacity: 0 },
+                { 
+                    filter: "blur(0px)", 
+                    opacity: 1,
+                    duration: 2,
+                    ease: "power2.out"
+                }
+            );
+        }
+
+        // Brightness Wave
+        function playBrightnessWave() {
+            const target = document.getElementById('brightnessTarget');
+            gsap.timeline({ repeat: 2 })
+                .to(target, { 
+                    filter: "brightness(200%) contrast(150%)", 
+                    duration: 0.8,
+                    ease: "sine.inOut"
+                })
+                .to(target, { 
+                    filter: "brightness(50%) contrast(200%)", 
+                    duration: 0.8,
+                    ease: "sine.inOut"
+                })
+                .to(target, { 
+                    filter: "brightness(100%) contrast(100%)", 
+                    duration: 0.8,
+                    ease: "sine.inOut"
+                });
+        }
+
+        // Hue Rotation
+        function playHueRotation() {
+            const target = document.getElementById('hueTarget');
+            gsap.to(target, {
+                filter: "hue-rotate(360deg) saturate(150%)",
+                duration: 3,
+                ease: "none"
+            });
+        }
+
+        // Shadow Pulse
+        function playShadowPulse() {
+            const target = document.getElementById('shadowTarget');
+            gsap.timeline({ repeat: 3 })
+                .to(target, {
+                    filter: "drop-shadow(0 0 20px #667eea) drop-shadow(0 0 40px #764ba2)",
+                    duration: 0.6,
+                    ease: "power2.inOut"
+                })
+                .to(target, {
+                    filter: "drop-shadow(0 0 5px #667eea)",
+                    duration: 0.6,
+                    ease: "power2.inOut"
+                });
+        }
+
+        // Combined Cascade
+        function playCascade() {
+            const target = document.getElementById('cascadeTarget');
+            gsap.timeline()
+                .to(target, {
+                    filter: "blur(10px) brightness(150%)",
+                    duration: 0.5
+                })
+                .to(target, {
+                    filter: "blur(0px) brightness(150%) contrast(200%)",
+                    duration: 0.5
+                })
+                .to(target, {
+                    filter: "hue-rotate(180deg) brightness(150%) contrast(200%)",
+                    duration: 1
+                })
+                .to(target, {
+                    filter: "hue-rotate(360deg) saturate(200%) drop-shadow(0 0 15px #f093fb)",
+                    duration: 1
+                })
+                .to(target, {
+                    filter: "none",
+                    duration: 0.5
+                });
+        }
+
+        // Layered Blur
+        function playLayeredBlur() {
+            const layers = document.querySelectorAll('.cascade-layer');
+            gsap.timeline()
+                .to(layers[0], { filter: "blur(15px)", duration: 0.5 })
+                .to(layers[1], { filter: "blur(10px)", duration: 0.5 }, "<0.2")
+                .to(layers[2], { filter: "blur(5px)", duration: 0.5 }, "<0.2")
+                .to(layers[0], { filter: "blur(0px)", duration: 1 }, "+=0.5")
+                .to(layers[1], { filter: "blur(0px)", duration: 1 }, "<0.2")
+                .to(layers[2], { filter: "blur(0px)", duration: 1 }, "<0.2");
+        }
+
+        // Real-time controls
+        const liveDemo = document.getElementById('liveDemo');
+        
+        document.getElementById('blurSlider').addEventListener('input', function(e) {
+            const value = e.target.value;
+            document.getElementById('blurValue').textContent = value + 'px';
+            updateLiveFilter();
+        });
+
+        document.getElementById('brightnessSlider').addEventListener('input', function(e) {
+            const value = e.target.value;
+            document.getElementById('brightnessValue').textContent = value + '%';
+            updateLiveFilter();
+        });
+
+        document.getElementById('contrastSlider').addEventListener('input', function(e) {
+            const value = e.target.value;
+            document.getElementById('contrastValue').textContent = value + '%';
+            updateLiveFilter();
+        });
+
+        document.getElementById('hueSlider').addEventListener('input', function(e) {
+            const value = e.target.value;
+            document.getElementById('hueValue').textContent = value + 'deg';
+            updateLiveFilter();
+        });
+
+        document.getElementById('saturateSlider').addEventListener('input', function(e) {
+            const value = e.target.value;
+            document.getElementById('saturateValue').textContent = value + '%';
+            updateLiveFilter();
+        });
+
+        document.getElementById('shadowSlider').addEventListener('input', function(e) {
+            const value = e.target.value;
+            document.getElementById('shadowValue').textContent = value + 'px';
+            updateLiveFilter();
+        });
+
+        function updateLiveFilter() {
+            const blur = document.getElementById('blurSlider').value;
+            const brightness = document.getElementById('brightnessSlider').value;
+            const contrast = document.getElementById('contrastSlider').value;
+            const hue = document.getElementById('hueSlider').value;
+            const saturate = document.getElementById('saturateSlider').value;
+            const shadow = document.getElementById('shadowSlider').value;
+
+            const filter = `blur(${blur}px) brightness(${brightness}%) contrast(${contrast}%) hue-rotate(${hue}deg) saturate(${saturate}%) drop-shadow(0 0 ${shadow}px #667eea)`;
+            liveDemo.style.filter = filter;
+        }
+
+        // Auto-play demo
+        setTimeout(() => {
+            playBlurReveal();
+            setTimeout(playBrightnessWave, 1000);
+            setTimeout(playHueRotation, 2000);
+            setTimeout(playShadowPulse, 3000);
+        }, 1000);
+
+        console.log('%c CSS Filter & Blur Cascades Demo ', 
+            'background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 10px; font-size: 16px;');
+    </script>
+</body>
+</html>

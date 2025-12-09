@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pattern 25: Chakra Color Binding System - Visual Codex</title>
+
+    <!-- GSAP from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Chakra Color System - 7 Energy Centers */
+            --chakra-root: #FF0000;        /* Muladhara - Base/Root - Red */
+            --chakra-sacral: #FF7F00;      /* Svadhisthana - Sacral - Orange */
+            --chakra-solar: #FFFF00;       /* Manipura - Solar Plexus - Yellow */
+            --chakra-heart: #00FF00;       /* Anahata - Heart - Green */
+            --chakra-throat: #00BFFF;      /* Vishuddha - Throat - Blue */
+            --chakra-third: #4B0082;       /* Ajna - Third Eye - Indigo */
+            --chakra-crown: #9400D3;       /* Sahasrara - Crown - Violet */
+
+            /* Current active chakra (dynamic) */
+            --active-chakra: var(--chakra-root);
+            --active-glow: rgba(255, 0, 0, 0.5);
+
+            --bg-dark: #0a0a0f;
+            --text-light: #e8e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.2rem;
+            background: linear-gradient(90deg, var(--chakra-root), var(--chakra-crown));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .back-link {
+            color: var(--text-light);
+            text-decoration: none;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+        }
+
+        /* Chakra Progress Indicator */
+        .chakra-progress {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chakra-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .chakra-dot::before {
+            content: attr(data-name);
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            color: var(--text-light);
+        }
+
+        .chakra-dot:hover::before {
+            opacity: 1;
+        }
+
+        .chakra-dot.active {
+            transform: scale(1.3);
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .chakra-dot[data-chakra="root"] { background: var(--chakra-root); }
+        .chakra-dot[data-chakra="sacral"] { background: var(--chakra-sacral); }
+        .chakra-dot[data-chakra="solar"] { background: var(--chakra-solar); }
+        .chakra-dot[data-chakra="heart"] { background: var(--chakra-heart); }
+        .chakra-dot[data-chakra="throat"] { background: var(--chakra-throat); }
+        .chakra-dot[data-chakra="third"] { background: var(--chakra-third); }
+        .chakra-dot[data-chakra="crown"] { background: var(--chakra-crown); }
+
+        /* Scroll Container */
+        .scroll-container {
+            height: 800vh;
+            position: relative;
+        }
+
+        /* Chakra Sections */
+        .chakra-section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Dynamic Background Gradient */
+        .chakra-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+            transition: background 0.5s ease;
+        }
+
+        /* WebGL Canvas for Visualizer */
+        #chakra-visualizer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Section Content */
+        .section-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 2rem;
+            max-width: 800px;
+        }
+
+        .chakra-symbol {
+            font-size: 8rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 30px var(--active-chakra));
+            transition: filter 0.5s ease;
+        }
+
+        .chakra-name {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--active-chakra);
+            text-shadow: 0 0 30px var(--active-glow);
+            transition: color 0.5s, text-shadow 0.5s;
+        }
+
+        .chakra-sanskrit {
+            font-size: 1.5rem;
+            font-style: italic;
+            opacity: 0.7;
+            margin-bottom: 1rem;
+        }
+
+        .chakra-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .chakra-properties {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .property {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--active-chakra);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            min-width: 120px;
+            transition: border-color 0.5s, box-shadow 0.5s;
+        }
+
+        .property:hover {
+            box-shadow: 0 0 20px var(--active-glow);
+        }
+
+        .property-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .property-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--active-chakra);
+        }
+
+        /* Intro Section */
+        .intro-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6rem 2rem 2rem;
+        }
+
+        .intro-title {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--chakra-root), var(--chakra-sacral), var(--chakra-solar), var(--chakra-heart), var(--chakra-throat), var(--chakra-third), var(--chakra-crown));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .intro-subtitle {
+            font-size: 1.3rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chakra-symbol { font-size: 5rem; }
+            .chakra-name { font-size: 2rem; }
+            .chakra-progress { right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <a href="../index.html" class="back-link">← Back to GSAP Patterns</a>
+        <h1>Pattern 25: Chakra Color Binding System</h1>
+    </div>
+
+    <!-- Dynamic Background -->
+    <div class="chakra-bg" id="chakra-bg"></div>
+
+    <!-- WebGL Visualizer -->
+    <canvas id="chakra-visualizer"></canvas>
+
+    <!-- Chakra Progress Dots -->
+    <div class="chakra-progress">
+        <div class="chakra-dot active" data-chakra="root" data-name="Root - Muladhara"></div>
+        <div class="chakra-dot" data-chakra="sacral" data-name="Sacral - Svadhisthana"></div>
+        <div class="chakra-dot" data-chakra="solar" data-name="Solar - Manipura"></div>
+        <div class="chakra-dot" data-chakra="heart" data-name="Heart - Anahata"></div>
+        <div class="chakra-dot" data-chakra="throat" data-name="Throat - Vishuddha"></div>
+        <div class="chakra-dot" data-chakra="third" data-name="Third Eye - Ajna"></div>
+        <div class="chakra-dot" data-chakra="crown" data-name="Crown - Sahasrara"></div>
+    </div>
+
+    <!-- Scroll Container -->
+    <div class="scroll-container">
+        <!-- Intro Section -->
+        <section class="intro-section">
+            <div class="section-content">
+                <h1 class="intro-title">Chakra Color Binding</h1>
+                <p class="intro-subtitle">
+                    Scroll through the seven energy centers. Watch as colors, geometry,
+                    and consciousness flow through the rainbow spectrum of human experience.
+                    Each chakra binds its unique frequency to the visual parameters.
+                </p>
+            </div>
+        </section>
+
+        <!-- Chakra 1: Root -->
+        <section class="chakra-section" data-chakra="root">
+            <div class="section-content">
+                <div class="chakra-symbol">🔴</div>
+                <h2 class="chakra-name">Root Chakra</h2>
+                <p class="chakra-sanskrit">Muladhara - मूलाधार</p>
+                <p class="chakra-description">
+                    The foundation of your energy system. Grounded in the earth element,
+                    the root chakra governs survival, stability, and security. Its deep red
+                    frequency anchors you to physical existence.
+                </p>
+                <div class="chakra-properties">
+                    <div class="property">
+                        <div class="property-label">Element</div>
+                        <div class="property-value">Earth</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Frequency</div>
+                        <div class="property-value">396 Hz</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Mantra</div>
+                        <div class="property-value">LAM</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chakra 2: Sacral -->
+        <section class="chakra-section" data-chakra="sacral">
+            <div class="section-content">
+                <div class="chakra-symbol">🟠</div>
+                <h2 class="chakra-name">Sacral Chakra</h2>
+                <p class="chakra-sanskrit">Svadhisthana - स्वाधिष्ठान</p>
+                <p class="chakra-description">
+                    The seat of creativity and passion. Flowing with the water element,
+                    the sacral chakra governs emotions, pleasure, and sensuality. Its vibrant
+                    orange frequency unlocks creative expression.
+                </p>
+                <div class="chakra-properties">
+                    <div class="property">
+                        <div class="property-label">Element</div>
+                        <div class="property-value">Water</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Frequency</div>
+                        <div class="property-value">417 Hz</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Mantra</div>
+                        <div class="property-value">VAM</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chakra 3: Solar Plexus -->
+        <section class="chakra-section" data-chakra="solar">
+            <div class="section-content">
+                <div class="chakra-symbol">🟡</div>
+                <h2 class="chakra-name">Solar Plexus</h2>
+                <p class="chakra-sanskrit">Manipura - मणिपूर</p>
+                <p class="chakra-description">
+                    The center of personal power and will. Burning with the fire element,
+                    the solar plexus governs confidence, transformation, and identity.
+                    Its brilliant yellow frequency ignites inner strength.
+                </p>
+                <div class="chakra-properties">
+                    <div class="property">
+                        <div class="property-label">Element</div>
+                        <div class="property-value">Fire</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Frequency</div>
+                        <div class="property-value">528 Hz</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Mantra</div>
+                        <div class="property-value">RAM</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chakra 4: Heart -->
+        <section class="chakra-section" data-chakra="heart">
+            <div class="section-content">
+                <div class="chakra-symbol">💚</div>
+                <h2 class="chakra-name">Heart Chakra</h2>
+                <p class="chakra-sanskrit">Anahata - अनाहत</p>
+                <p class="chakra-description">
+                    The bridge between earth and spirit. Dancing with the air element,
+                    the heart chakra governs love, compassion, and connection.
+                    Its healing green frequency opens the doorway to unconditional love.
+                </p>
+                <div class="chakra-properties">
+                    <div class="property">
+                        <div class="property-label">Element</div>
+                        <div class="property-value">Air</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Frequency</div>
+                        <div class="property-value">639 Hz</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Mantra</div>
+                        <div class="property-value">YAM</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chakra 5: Throat -->
+        <section class="chakra-section" data-chakra="throat">
+            <div class="section-content">
+                <div class="chakra-symbol">🔵</div>
+                <h2 class="chakra-name">Throat Chakra</h2>
+                <p class="chakra-sanskrit">Vishuddha - विशुद्ध</p>
+                <p class="chakra-description">
+                    The voice of truth and expression. Resonating with the ether element,
+                    the throat chakra governs communication, authenticity, and self-expression.
+                    Its clear blue frequency amplifies your authentic voice.
+                </p>
+                <div class="chakra-properties">
+                    <div class="property">
+                        <div class="property-label">Element</div>
+                        <div class="property-value">Ether</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Frequency</div>
+                        <div class="property-value">741 Hz</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Mantra</div>
+                        <div class="property-value">HAM</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chakra 6: Third Eye -->
+        <section class="chakra-section" data-chakra="third">
+            <div class="section-content">
+                <div class="chakra-symbol">🔮</div>
+                <h2 class="chakra-name">Third Eye</h2>
+                <p class="chakra-sanskrit">Ajna - आज्ञा</p>
+                <p class="chakra-description">
+                    The seat of intuition and inner vision. Transcending physical elements,
+                    the third eye governs insight, imagination, and wisdom.
+                    Its deep indigo frequency awakens psychic perception.
+                </p>
+                <div class="chakra-properties">
+                    <div class="property">
+                        <div class="property-label">Element</div>
+                        <div class="property-value">Light</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Frequency</div>
+                        <div class="property-value">852 Hz</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Mantra</div>
+                        <div class="property-value">OM</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chakra 7: Crown -->
+        <section class="chakra-section" data-chakra="crown">
+            <div class="section-content">
+                <div class="chakra-symbol">👑</div>
+                <h2 class="chakra-name">Crown Chakra</h2>
+                <p class="chakra-sanskrit">Sahasrara - सहस्रार</p>
+                <p class="chakra-description">
+                    The gateway to cosmic consciousness. Beyond all elements,
+                    the crown chakra governs enlightenment, unity, and divine connection.
+                    Its violet frequency dissolves the boundary between self and universe.
+                </p>
+                <div class="chakra-properties">
+                    <div class="property">
+                        <div class="property-label">Element</div>
+                        <div class="property-value">Thought</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Frequency</div>
+                        <div class="property-value">963 Hz</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-label">Mantra</div>
+                        <div class="property-value">AUM</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ============================================
+        // CHAKRA COLOR BINDING SYSTEM
+        // Pattern 25 - Visual Codex
+        // ============================================
+
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Chakra Configuration
+        const CHAKRAS = [
+            {
+                name: 'root',
+                hue: 0,
+                saturation: 1.0,
+                color: '#FF0000',
+                glow: 'rgba(255, 0, 0, 0.5)',
+                geometry: 0, // Cube - grounded
+                chaos: 0.15,
+                speed: 0.3
+            },
+            {
+                name: 'sacral',
+                hue: 30,
+                saturation: 1.0,
+                color: '#FF7F00',
+                glow: 'rgba(255, 127, 0, 0.5)',
+                geometry: 1, // Sphere - flowing
+                chaos: 0.25,
+                speed: 0.4
+            },
+            {
+                name: 'solar',
+                hue: 60,
+                saturation: 1.0,
+                color: '#FFFF00',
+                glow: 'rgba(255, 255, 0, 0.5)',
+                geometry: 2, // Octahedron - powerful
+                chaos: 0.35,
+                speed: 0.5
+            },
+            {
+                name: 'heart',
+                hue: 120,
+                saturation: 0.8,
+                color: '#00FF00',
+                glow: 'rgba(0, 255, 0, 0.5)',
+                geometry: 3, // Torus - connected
+                chaos: 0.2,
+                speed: 0.35
+            },
+            {
+                name: 'throat',
+                hue: 195,
+                saturation: 0.9,
+                color: '#00BFFF',
+                glow: 'rgba(0, 191, 255, 0.5)',
+                geometry: 4, // Crystal - clear
+                chaos: 0.3,
+                speed: 0.45
+            },
+            {
+                name: 'third',
+                hue: 275,
+                saturation: 0.7,
+                color: '#4B0082',
+                glow: 'rgba(75, 0, 130, 0.5)',
+                geometry: 5, // Eye shape - vision
+                chaos: 0.4,
+                speed: 0.55
+            },
+            {
+                name: 'crown',
+                hue: 285,
+                saturation: 0.8,
+                color: '#9400D3',
+                glow: 'rgba(148, 0, 211, 0.5)',
+                geometry: 6, // Lotus/Star - transcendent
+                chaos: 0.5,
+                speed: 0.6
+            }
+        ];
+
+        // Current state
+        let currentChakra = CHAKRAS[0];
+        let visualizerParams = {
+            hue: 0,
+            saturation: 1.0,
+            chaos: 0.15,
+            speed: 0.3,
+            geometry: 0
+        };
+
+        // ============================================
+        // SCROLL BINDING SYSTEM
+        // ============================================
+
+        function updateChakra(chakra, progress = 0) {
+            currentChakra = chakra;
+
+            // Smoothly animate visualizer params
+            gsap.to(visualizerParams, {
+                hue: chakra.hue,
+                saturation: chakra.saturation,
+                chaos: chakra.chaos,
+                speed: chakra.speed,
+                geometry: chakra.geometry,
+                duration: 0.5,
+                ease: 'power2.out'
+            });
+
+            // Update CSS variables
+            document.documentElement.style.setProperty('--active-chakra', chakra.color);
+            document.documentElement.style.setProperty('--active-glow', chakra.glow);
+
+            // Update background gradient
+            const bg = document.getElementById('chakra-bg');
+            bg.style.background = `radial-gradient(circle at center, ${chakra.glow}, transparent 70%)`;
+
+            // Update chakra dots
+            document.querySelectorAll('.chakra-dot').forEach(dot => {
+                dot.classList.toggle('active', dot.dataset.chakra === chakra.name);
+            });
+        }
+
+        // Main scroll trigger for chakra progression
+        ScrollTrigger.create({
+            trigger: '.scroll-container',
+            start: 'top top',
+            end: 'bottom bottom',
+            onUpdate: (self) => {
+                // Calculate which chakra we're in (0-6)
+                const rawIndex = self.progress * 7;
+                const index = Math.min(Math.floor(rawIndex), 6);
+                const localProgress = rawIndex - index;
+
+                if (CHAKRAS[index] !== currentChakra) {
+                    updateChakra(CHAKRAS[index], localProgress);
+                }
+            }
+        });
+
+        // Section-specific ScrollTriggers for content animation
+        document.querySelectorAll('.chakra-section').forEach((section, i) => {
+            const content = section.querySelector('.section-content');
+
+            gsap.fromTo(content,
+                {
+                    opacity: 0,
+                    y: 50,
+                    scale: 0.9
+                },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 1,
+                    ease: 'power2.out',
+                    scrollTrigger: {
+                        trigger: section,
+                        start: 'top 70%',
+                        end: 'top 30%',
+                        toggleActions: 'play none none reverse'
+                    }
+                }
+            );
+
+            // Symbol pulse animation
+            const symbol = section.querySelector('.chakra-symbol');
+            if (symbol) {
+                gsap.to(symbol, {
+                    scale: 1.1,
+                    duration: 2,
+                    ease: 'sine.inOut',
+                    repeat: -1,
+                    yoyo: true,
+                    scrollTrigger: {
+                        trigger: section,
+                        start: 'top center',
+                        end: 'bottom center',
+                        toggleActions: 'play pause resume pause'
+                    }
+                });
+            }
+        });
+
+        // ============================================
+        // INTERACTIVE CONTROLS
+        // ============================================
+
+        // Chakra dot clicks for navigation
+        document.querySelectorAll('.chakra-dot').forEach((dot, i) => {
+            dot.addEventListener('click', () => {
+                const targetY = (i + 1) * window.innerHeight;
+                gsap.to(window, {
+                    scrollTo: targetY,
+                    duration: 1,
+                    ease: 'power2.inOut'
+                });
+            });
+        });
+
+        // Initial chakra
+        updateChakra(CHAKRAS[0]);
+
+        // ============================================
+        // ACCESSIBILITY
+        // ============================================
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            const currentIndex = CHAKRAS.findIndex(c => c.name === currentChakra.name);
+            let targetIndex = currentIndex;
+
+            if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+                targetIndex = Math.min(currentIndex + 1, 6);
+            } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                targetIndex = Math.max(currentIndex - 1, 0);
+            } else if (e.key === 'Home') {
+                targetIndex = 0;
+            } else if (e.key === 'End') {
+                targetIndex = 6;
+            }
+
+            if (targetIndex !== currentIndex) {
+                e.preventDefault();
+                const targetY = (targetIndex + 1) * window.innerHeight;
+                gsap.to(window, {
+                    scrollTo: targetY,
+                    duration: 0.8,
+                    ease: 'power2.inOut'
+                });
+            }
+        });
+
+        // Reduced motion support
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            gsap.globalTimeline.timeScale(0.1);
+        }
+
+        console.log('%c Chakra Color Binding System ',
+            'background: linear-gradient(90deg, #FF0000, #FF7F00, #FFFF00, #00FF00, #00BFFF, #4B0082, #9400D3); color: white; font-size: 16px; padding: 10px;');
+        console.log('Pattern 25 - Visual Codex | Scroll to activate each chakra');
+    </script>
+
+    <!--
+    ╔═══════════════════════════════════════════════════════════════╗
+    ║  Visual Codex Pattern 25: Chakra Color Binding System         ║
+    ║  Category: GSAP Scroll Choreography + Color Theory            ║
+    ║                                                               ║
+    ║  🌟 A Paul Phillips Manifestation                             ║
+    ║                                                               ║
+    ║  Features:                                                    ║
+    ║  • 7 chakra energy centers with unique geometries             ║
+    ║  • Scroll-bound color transitions                             ║
+    ║  • CSS variable dynamic theming                               ║
+    ║  • Keyboard navigation support                                ║
+    ║  • Reduced motion accessibility                               ║
+    ║  • Sanskrit names and frequencies                             ║
+    ║                                                               ║
+    ║  © 2025 Paul Phillips - Clear Seas Solutions LLC              ║
+    ╚═══════════════════════════════════════════════════════════════╝
+    -->
+</body>
+</html>

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSAP Scroll Choreography - Visual Codex V2</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #1a1a2e;
+            --text-primary: #e8e8f0;
+            --text-secondary: #a8a8b8;
+            --accent-gradient: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            --card-bg: rgba(26, 26, 46, 0.6);
+            --border-subtle: rgba(102, 126, 234, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(240, 147, 251, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 4rem 1rem;
+            margin-bottom: 4rem;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+        }
+
+        /* Categories */
+        .category {
+            margin-bottom: 4rem;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .category-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-gradient);
+            border-radius: 8px;
+        }
+
+        .category-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .category-count {
+            margin-left: auto;
+            padding: 0.25rem 0.75rem;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Demo grid */
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .demo-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            overflow: hidden;
+        }
+
+        .demo-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--accent-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .demo-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .demo-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .pattern-number {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            color: #a8b2ff;
+        }
+
+        .demo-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .demo-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .new-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.625rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .demo-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            padding: 0.25rem 0.5rem;
+            background: rgba(240, 147, 251, 0.1);
+            border: 1px solid rgba(240, 147, 251, 0.2);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: #f093fb;
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 1rem;
+            margin-top: 6rem;
+            border-top: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+        }
+
+        .footer-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .demo-grid { grid-template-columns: 1fr; }
+            .stats { gap: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-link">← Back to Visual Codex</a>
+        
+        <header>
+            <h1>GSAP Scroll Choreography</h1>
+            <p class="subtitle">
+                Advanced animation patterns, scroll-driven narratives, and WebGL integrations.
+                Complete collection of GSAP techniques extracted from revolutionary projects.
+            </p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">20</div>
+                    <div class="stat-label">Total Patterns</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">New Additions</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Coverage</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Existing Patterns -->
+        <section class="category">
+            <div class="category-header">
+                <div class="category-icon">🎭</div>
+                <h2 class="category-title">Existing Patterns</h2>
+                <span class="category-count">13 demos</span>
+            </div>
+            <div class="demo-grid">
+                <a href="demos/chromatic-aberration-demo.html" class="demo-card">
+                    <span class="pattern-number">Existing</span>
+                    <h3 class="demo-title">Chromatic Aberration</h3>
+                    <p class="demo-description">
+                        Advanced shader effects with color channel separation and distortion.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">WebGL</span>
+                        <span class="tag">Shaders</span>
+                        <span class="tag">Color</span>
+                    </div>
+                </a>
+
+                <a href="demos/geometry-morphing-showcase.html" class="demo-card">
+                    <span class="pattern-number">Existing</span>
+                    <h3 class="demo-title">Geometry Morphing</h3>
+                    <p class="demo-description">
+                        Dynamic 3D geometry transformations with smooth morphing animations.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">3D</span>
+                        <span class="tag">Morphing</span>
+                        <span class="tag">Geometry</span>
+                    </div>
+                </a>
+
+                <a href="demos/holographic-visualizer-demo.html" class="demo-card">
+                    <span class="pattern-number">Existing</span>
+                    <h3 class="demo-title">Holographic Visualizer</h3>
+                    <p class="demo-description">
+                        Holographic effects with iridescent colors and depth illusions.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">Holographic</span>
+                        <span class="tag">Visual Effects</span>
+                        <span class="tag">VIB3D</span>
+                    </div>
+                </a>
+
+                <a href="demos/jusdnce-visualizer-exact.html" class="demo-card">
+                    <span class="pattern-number">Existing</span>
+                    <h3 class="demo-title">JusDNCE Visualizer</h3>
+                    <p class="demo-description">
+                        Exact implementation from JusDNCE with choreographic animations.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">JusDNCE</span>
+                        <span class="tag">Choreography</span>
+                        <span class="tag">Audio-Visual</span>
+                    </div>
+                </a>
+
+                <a href="demos/multi-visualizer-choreography.html" class="demo-card">
+                    <span class="pattern-number">Existing</span>
+                    <h3 class="demo-title">Multi-Visualizer Choreography</h3>
+                    <p class="demo-description">
+                        Coordinated multi-element visualizations with synchronized timing.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">Multi-Element</span>
+                        <span class="tag">Synchronization</span>
+                        <span class="tag">Orchestration</span>
+                    </div>
+                </a>
+
+                <a href="demos/particle-system-demo.html" class="demo-card">
+                    <span class="pattern-number">Existing</span>
+                    <h3 class="demo-title">Particle System</h3>
+                    <p class="demo-description">
+                        Advanced particle physics with attraction, repulsion, and flow fields.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">Particles</span>
+                        <span class="tag">Physics</span>
+                        <span class="tag">Interactive</span>
+                    </div>
+                </a>
+
+                <a href="demos/quantum-glassmorphism-demo.html" class="demo-card">
+                    <span class="pattern-number">Existing</span>
+                    <h3 class="demo-title">Quantum Glassmorphism</h3>
+                    <p class="demo-description">
+                        Glass-like effects with quantum-inspired visual distortions.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">Glass</span>
+                        <span class="tag">Quantum</span>
+                        <span class="tag">Materials</span>
+                    </div>
+                </a>
+
+                <a href="demos/quantum-visualizer-showcase.html" class="demo-card">
+                    <span class="pattern-number">Existing</span>
+                    <h3 class="demo-title">Quantum Visualizer</h3>
+                    <p class="demo-description">
+                        Quantum state visualizations with wave functions and probability clouds.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">Quantum</span>
+                        <span class="tag">Science</span>
+                        <span class="tag">Waves</span>
+                    </div>
+                </a>
+
+                <a href="demos/reactive-geometry-variations.html" class="demo-card">
+                    <span class="pattern-number">Existing</span>
+                    <h3 class="demo-title">Reactive Geometry Variations</h3>
+                    <p class="demo-description">
+                        Geometry that responds to user input with various reaction patterns.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">Reactive</span>
+                        <span class="tag">Interactive</span>
+                        <span class="tag">Geometry</span>
+                    </div>
+                </a>
+
+                <a href="demos/reactive-gsap-geometry-system.html" class="demo-card">
+                    <span class="pattern-number">Pattern 22</span>
+                    <h3 class="demo-title">Reactive GSAP Geometry</h3>
+                    <p class="demo-description">
+                        WebGL geometry system with reactive parameters controlled by GSAP.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">WebGL</span>
+                        <span class="tag">Reactive</span>
+                        <span class="tag">GSAP</span>
+                    </div>
+                </a>
+
+                <a href="demos/three-phase-animation-demo.html" class="demo-card">
+                    <span class="pattern-number">Existing</span>
+                    <h3 class="demo-title">Three-Phase Animation</h3>
+                    <p class="demo-description">
+                        Complex animations with intro, main, and outro phases.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">Phases</span>
+                        <span class="tag">Timeline</span>
+                        <span class="tag">Complex</span>
+                    </div>
+                </a>
+
+                <a href="demos/timeline-scrolltrigger-demo.html" class="demo-card">
+                    <span class="pattern-number">Existing</span>
+                    <h3 class="demo-title">Timeline ScrollTrigger</h3>
+                    <p class="demo-description">
+                        Advanced ScrollTrigger configurations with timeline control.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">ScrollTrigger</span>
+                        <span class="tag">Timeline</span>
+                        <span class="tag">Advanced</span>
+                    </div>
+                </a>
+
+                <a href="demos/visualizer-binding-demo.html" class="demo-card">
+                    <span class="pattern-number">Existing</span>
+                    <h3 class="demo-title">Visualizer Binding</h3>
+                    <p class="demo-description">
+                        Data binding between visualizers and animation parameters.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">Binding</span>
+                        <span class="tag">Data</span>
+                        <span class="tag">Sync</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- New Patterns -->
+        <section class="category">
+            <div class="category-header">
+                <div class="category-icon">✨</div>
+                <h2 class="category-title">New Patterns Added</h2>
+                <span class="category-count">7 demos</span>
+            </div>
+            <div class="demo-grid">
+                <a href="demos/easing-functions-showcase.html" class="demo-card">
+                    <span class="new-badge">NEW</span>
+                    <span class="pattern-number">Pattern 04</span>
+                    <h3 class="demo-title">Easing Functions Interactive</h3>
+                    <p class="demo-description">
+                        Interactive visualization of 30+ GSAP easing curves. Compare different
+                        easing functions side by side with animated balls and SVG curves.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">Easing</span>
+                        <span class="tag">Interactive</span>
+                        <span class="tag">Comparison</span>
+                    </div>
+                </a>
+
+                <a href="demos/stagger-patterns-suite.html" class="demo-card">
+                    <span class="new-badge">NEW</span>
+                    <span class="pattern-number">Pattern 05</span>
+                    <h3 class="demo-title">Stagger Patterns Suite</h3>
+                    <p class="demo-description">
+                        Six different stagger animation patterns including from center, grid wave,
+                        function-based, axes-based, and amount-based staggers.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">Stagger</span>
+                        <span class="tag">Grid</span>
+                        <span class="tag">Wave</span>
+                    </div>
+                </a>
+
+                <a href="demos/3d-transform-patterns-demo.html" class="demo-card">
+                    <span class="new-badge">NEW</span>
+                    <span class="pattern-number">Pattern 06</span>
+                    <h3 class="demo-title">3D Transform Patterns</h3>
+                    <p class="demo-description">
+                        Six 3D transform demonstrations including Z-depth emergence, Y-axis flip,
+                        3D cube rotation, and card spread animations.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">3D</span>
+                        <span class="tag">Transform</span>
+                        <span class="tag">Perspective</span>
+                    </div>
+                </a>
+
+                <a href="demos/filter-blur-patterns-demo.html" class="demo-card">
+                    <span class="new-badge">NEW</span>
+                    <span class="pattern-number">Pattern 13</span>
+                    <h3 class="demo-title">CSS Filter & Blur Cascades</h3>
+                    <p class="demo-description">
+                        Progressive blur reveals, brightness/contrast modulation, hue rotation,
+                        and combined filter cascades with interactive controls.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">Filters</span>
+                        <span class="tag">Blur</span>
+                        <span class="tag">Interactive</span>
+                    </div>
+                </a>
+
+                <a href="demos/mouse-interaction-demo.html" class="demo-card">
+                    <span class="new-badge">NEW</span>
+                    <span class="pattern-number">Pattern 15</span>
+                    <h3 class="demo-title">Mouse Interaction Binding</h3>
+                    <p class="demo-description">
+                        WebGL shader with 4D rotation matrices. Mouse position controls
+                        geometry rotation with click impulse effects.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">WebGL</span>
+                        <span class="tag">4D</span>
+                        <span class="tag">Interactive</span>
+                    </div>
+                </a>
+
+                <a href="demos/orbital-animation-demo.html" class="demo-card">
+                    <span class="new-badge">NEW</span>
+                    <span class="pattern-number">Pattern 16</span>
+                    <h3 class="demo-title">Orbital Animation System</h3>
+                    <p class="demo-description">
+                        Simone-style orbital animations with 13 items across 3 rings.
+                        Expand/collapse, rotate, and interactive navigation.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">Orbital</span>
+                        <span class="tag">Navigation</span>
+                        <span class="tag">3D</span>
+                    </div>
+                </a>
+
+                <a href="demos/chakra-color-binding-demo.html" class="demo-card">
+                    <span class="new-badge">NEW</span>
+                    <span class="pattern-number">Pattern 25</span>
+                    <h3 class="demo-title">Chakra Color Binding</h3>
+                    <p class="demo-description">
+                        Seven chakra energy centers with scroll-driven color binding,
+                        dynamic CSS theming, and consciousness state transitions.
+                    </p>
+                    <div class="demo-tags">
+                        <span class="tag">Color</span>
+                        <span class="tag">Chakra</span>
+                        <span class="tag">Scroll</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer-title">🌟 A Paul Phillips Manifestation</div>
+            <p>GSAP Scroll Choreography - Complete Pattern Collection</p>
+            <p style="margin-top: 0.5rem; font-size: 0.875rem;">
+                Extracted from Crystal Grimoire, VIB34D, JusDNCE, and other revolutionary projects
+            </p>
+            <p style="margin-top: 1rem; font-size: 0.75rem; opacity: 0.6;">
+                © 2025 Paul Phillips - Clear Seas Solutions LLC
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
